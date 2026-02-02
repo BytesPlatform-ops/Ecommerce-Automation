@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL") // runtime (pooler / ipv4)
+  directUrl  = env("DIRECT_URL")   // migrations (direct)
+}
+
+model Theme {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  primaryHex    String
+  secondaryHex  String
+  fontFamily    String
+  createdAt     DateTime @default(now())
+
+  stores Store[]
+
+  @@map("themes")
+}
+
+model Store {
+  id              String   @id @default(cuid())
+  ownerId         String   // References auth.users.id
+  subdomainSlug   String   @unique
+  storeName       String
+  aboutText       String?
+  themeId         String
+  theme           Theme    @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  products Product[]
+
+  @@index([ownerId])
+  @@index([themeId])
+  @@map("stores")
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@map("products")
+}
