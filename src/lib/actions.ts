@@ -93,9 +93,14 @@ export async function deleteProduct(productId: string) {
     throw new Error("Product not found or unauthorized");
   }
 
-  return await prisma.product.delete({
+  const deletedProduct = await prisma.product.delete({
     where: { id: productId },
   });
+
+  return {
+    ...deletedProduct,
+    price: deletedProduct.price.toString(),
+  };
 }
 
 export async function updateStore(

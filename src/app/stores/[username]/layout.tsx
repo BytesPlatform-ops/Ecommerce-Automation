@@ -22,14 +22,23 @@ export default async function StorefrontLayout({
     notFound();
   }
 
+  // Helper function to ensure hex codes have # prefix
+  const formatHex = (hex: string | null) => {
+    if (!hex) return undefined;
+    return hex.startsWith("#") ? hex : `#${hex}`;
+  };
+
   // CSS variables for theming
   const themeStyles = store.theme
     ? ({
-        "--primary": store.theme.primaryHex,
-        "--secondary": store.theme.secondaryHex,
+        "--primary": formatHex(store.theme.primaryHex),
+        "--secondary": formatHex(store.theme.secondaryHex),
         "--font-family": store.theme.fontFamily,
       } as React.CSSProperties)
     : {};
+
+  const primaryColor = formatHex(store.theme?.primaryHex) || "#3b82f6";
+  const secondaryColor = formatHex(store.theme?.secondaryHex) || "#8b5cf6";
 
   return (
     <div
@@ -38,8 +47,8 @@ export default async function StorefrontLayout({
     >
       <style>{`
         :root {
-          --primary: ${store.theme?.primaryHex || "#3b82f6"};
-          --secondary: ${store.theme?.secondaryHex || "#8b5cf6"};
+          --primary: ${primaryColor};
+          --secondary: ${secondaryColor};
           --font-family: ${store.theme?.fontFamily || "Inter, sans-serif"};
         }
         .storefront {
