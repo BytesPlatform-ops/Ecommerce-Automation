@@ -19,16 +19,15 @@ export default async function ProductsPage() {
     redirect("/onboarding");
   }
 
-  const products = await prisma.product.findMany({
+  const productsData = await prisma.product.findMany({
     where: { storeId: store.id },
     orderBy: { createdAt: "desc" },
   });
 
-  // Convert Decimal to string for client component serialization
-  const serializedProducts = products.map((product) => ({
+  const products = productsData.map((product) => ({
     ...product,
-    price: product.price.toString(),
+    price: product.price.toNumber(),
   }));
 
-  return <ProductsPageContent products={serializedProducts} />;
+  return <ProductsPageContent products={products} />;
 }

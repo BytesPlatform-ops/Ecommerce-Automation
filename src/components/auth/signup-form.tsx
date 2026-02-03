@@ -65,7 +65,7 @@ export function SignupForm() {
           Email
         </label>
         <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Mail className="absolute left-3.5 top-4 h-5 w-5 text-gray-400 pointer-events-none" />
           <input
             id="email"
             type="email"
@@ -83,7 +83,7 @@ export function SignupForm() {
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Lock className="absolute left-3.5 top-4 h-5 w-5 text-gray-400 pointer-events-none" />
           <input
             id="password"
             type="password"
@@ -101,7 +101,7 @@ export function SignupForm() {
           Confirm Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Lock className="absolute left-3.5 top-4 h-5 w-5 text-gray-400 pointer-events-none" />
           <input
             id="confirmPassword"
             type="password"

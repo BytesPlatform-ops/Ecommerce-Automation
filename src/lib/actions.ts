@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { validateDomainFormat, normalizeDomain, DOMAIN_STATUS } from "@/lib/domain-utils";
+import { DomainStatus } from "@prisma/client";
 
 export async function createProduct(
   storeId: string,
@@ -172,6 +174,93 @@ export async function createStore(
       storeName: data.storeName,
       subdomainSlug: data.subdomainSlug,
       themeId: data.themeId,
+    },
+  });
+}
+
+/**
+ * Update the custom domain for a store
+ * Sets the domain and resets status to Pending
+ */
+export async function updateStoreDomain(
+  storeId: string,
+  domain: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  // Verify store ownership
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    return { success: false, error: "Store not found or unauthorized" };
+  }
+
+  // If removing domain
+  if (!domain) {
+    await prisma.store.update({
+      where: { id: storeId },
+      data: {
+        domain: null,
+        domainStatus: DomainStatus.Pending,
+        certificateGeneratedAt: null,
+      },
+    });
+    return { success: true };
+  }
+
+  // Validate and normalize domain
+  const normalizedDomain = normalizeDomain(domain);
+  const validation = validateDomainFormat(normalizedDomain);
+
+  if (!validation.valid) {
+    return { success: false, error: validation.error };
+  }
+
+  // Check if domain is already used by another store
+  const existingStore = await prisma.store.findFirst({
+    where: {
+      domain: normalizedDomain,
+      id: { not: storeId },
+    },
+  });
+
+  if (existingStore) {
+    return { success: false, error: "This domain is already in use by another store" };
+  }
+
+  // Update store with new domain
+  await prisma.store.update({
+    where: { id: storeId },
+    data: {
+      domain: normalizedDomain,
+      domainStatus: DomainStatus.Pending,
+      certificateGeneratedAt: null,
+    },
+  });
+
+  return { success: true };
+}
+
+/**
+ * Update domain status for a store (internal use by API routes)
+ */
+export async function updateDomainStatus(
+  storeId: string,
+  status: DomainStatus,
+  certificateGeneratedAt?: Date
+) {
+  return await prisma.store.update({
+    where: { id: storeId },
+    data: {
+      domainStatus: status,
+      ...(certificateGeneratedAt && { certificateGeneratedAt }),
     },
   });
 }

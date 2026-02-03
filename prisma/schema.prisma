@@ -8,7 +8,14 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL") // runtime (pooler / ipv4)
-  directUrl  = env("DIRECT_URL")   // migrations (direct)
+  // directUrl  = env("DIRECT_URL")   // migrations (direct)
+}
+
+enum DomainStatus {
+  Pending
+  Verifying
+  Securing
+  Live
 }
 
 model Theme {
@@ -25,15 +32,18 @@ model Theme {
 }
 
 model Store {
-  id              String   @id @default(cuid())
-  ownerId         String   // References auth.users.id
-  subdomainSlug   String   @unique
-  storeName       String
-  aboutText       String?
-  themeId         String
-  theme           Theme    @relation(fields: [themeId], references: [id], onDelete: SetNull)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                     String        @id @default(cuid())
+  ownerId                String        // References auth.users.id
+  subdomainSlug          String        @unique
+  storeName              String
+  aboutText              String?
+  themeId                String
+  theme                  Theme         @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  domain                 String?       @unique
+  domainStatus           DomainStatus  @default(Pending)
+  certificateGeneratedAt DateTime?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
   products Product[]
 

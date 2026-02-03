@@ -107,7 +107,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           Price
         </label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">$</span>
+          <span className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-500 font-medium">$</span>
           <input
             id="price"
             type="number"

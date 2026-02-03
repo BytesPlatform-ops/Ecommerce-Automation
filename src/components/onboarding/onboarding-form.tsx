@@ -28,6 +28,11 @@ export function OnboardingForm({ themes, userId }: OnboardingFormProps) {
       .replace(/^-+|-+$/g, "");
   };
 
+  const formatHex = (hex: string) => {
+    // Ensure hex starts with #
+    return hex.startsWith('#') ? hex : `#${hex}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -113,37 +118,46 @@ export function OnboardingForm({ themes, userId }: OnboardingFormProps) {
       {/* Theme Selection */}
       {themes.length > 0 && (
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-6">
             Choose a Theme
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {themes.map((theme) => (
               <button
                 key={theme.id}
                 type="button"
                 onClick={() => setSelectedTheme(theme.id)}
-                className={`relative p-4 rounded-2xl border-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                className={`group relative rounded-2xl overflow-hidden transition-all duration-200 ${
                   selectedTheme === theme.id
-                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 shadow-lg shadow-blue-500/10"
-                    : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                    ? "ring-2 ring-blue-500 shadow-lg"
+                    : "hover:shadow-md"
                 }`}
               >
-                {selectedTheme === theme.id && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full p-1.5 shadow-lg">
-                    <Check className="h-3 w-3" />
-                  </div>
-                )}
-                <div className="flex gap-2 mb-3 justify-center">
-                  <div
-                    className="w-10 h-10 rounded-xl shadow-sm"
-                    style={{ backgroundColor: theme.primaryHex }}
+                {/* Color Preview Background */}
+                <div className="flex h-32 overflow-hidden rounded-2xl border-2 transition-all" style={{
+                  borderColor: selectedTheme === theme.id ? formatHex(theme.primaryHex) : "#e5e7eb"
+                }}>
+                  <div 
+                    className="flex-1"
+                    style={{ backgroundColor: formatHex(theme.primaryHex) }}
                   />
-                  <div
-                    className="w-10 h-10 rounded-xl shadow-sm"
-                    style={{ backgroundColor: theme.secondaryHex }}
+                  <div 
+                    className="flex-1"
+                    style={{ backgroundColor: formatHex(theme.secondaryHex) }}
                   />
                 </div>
-                <p className="text-sm font-semibold text-gray-900">{theme.name}</p>
+
+                {/* Theme Name */}
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-gray-900 text-center">{theme.name}</p>
+                </div>
+
+                {/* Selection Checkmark */}
+                {selectedTheme === theme.id && (
+                  <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1.5 shadow-lg">
+                    <Check className="h-4 w-4" />
+                  </div>
+                )}
               </button>
             ))}
           </div>

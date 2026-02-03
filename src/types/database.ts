@@ -1,7 +1,8 @@
-import { Theme, Store, Product } from "@prisma/client";
+import { Theme, Store, Product, DomainStatus } from "@prisma/client";
 
 export type {
   Theme,
   Store,
   Product,
+  DomainStatus,
 };
