@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { Store, ShoppingBag, Menu, Search, Heart } from "lucide-react";
+import { Store, ShoppingBag, Menu, Search, Heart, User, Info } from "lucide-react";
+import { useState } from "react";
 
 interface StorefrontNavbarProps {
   storeName: string;
@@ -7,6 +10,9 @@ interface StorefrontNavbarProps {
 }
 
 export function StorefrontNavbar({ storeName, slug }: StorefrontNavbarProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartItems, setCartItems] = useState(0);
+
   return (
     <nav className="border-b border-gray-100 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm hover:shadow-md transition-shadow">
       <div className="container mx-auto px-4 md:px-6">
@@ -59,7 +65,8 @@ export function StorefrontNavbar({ storeName, slug }: StorefrontNavbarProps) {
 
             {/* Wishlist */}
             <button 
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors hidden sm:flex items-center justify-center"
+              onClick={() => alert("Wishlist feature coming soon!")}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
               title="Wishlist"
             >
               <Heart className="h-5 w-5 text-gray-600 hover:text-red-500 transition-colors" />
@@ -67,15 +74,42 @@ export function StorefrontNavbar({ storeName, slug }: StorefrontNavbarProps) {
 
             {/* Cart Button */}
             <button 
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-white transition-all hover:shadow-lg hover:scale-105 active:scale-95 shadow-md"
+              onClick={() => alert("Cart feature coming soon!")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-white transition-all hover:shadow-lg hover:scale-105 active:scale-95 shadow-md relative"
               style={{ backgroundColor: "var(--primary)" }}
             >
               <ShoppingBag className="h-4 w-4" />
               <span className="hidden sm:inline">Cart</span>
+              {cartItems > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center -mr-2 -mt-2">
+                  {cartItems}
+                </span>
+              )}
             </button>
 
+            {/* Account Button */}
+            <button 
+              onClick={() => alert("Account feature coming soon!")}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+              title="Account"
+            >
+              <User className="h-5 w-5 text-gray-600" />
+            </button>
+
+            {/* About Button */}
+            <Link
+              href={`/stores/${slug}/about`}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
+              title="About"
+            >
+              <Info className="h-5 w-5 text-gray-600" />
+            </Link>
+
             {/* Mobile Menu */}
-            <button className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <Menu className="h-6 w-6 text-gray-600" />
             </button>
           </div>

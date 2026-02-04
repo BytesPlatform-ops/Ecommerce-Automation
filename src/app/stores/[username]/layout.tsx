@@ -74,7 +74,7 @@ export default async function StorefrontLayout({
       <div className="storefront flex flex-col min-h-screen">
         <StorefrontNavbar storeName={store.storeName} slug={username} />
         <main className="flex-1">{children}</main>
-        <StorefrontFooter storeName={store.storeName} />
+        <StorefrontFooter storeName={store.storeName} slug={username} />
       </div>
     </div>
   );
