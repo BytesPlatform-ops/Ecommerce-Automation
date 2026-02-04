@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Store, ShoppingBag, Menu, Search, Heart, User, Info } from "lucide-react";
+import { Store, Menu, Search, Heart, User, Info } from "lucide-react";
 import { useState } from "react";
+import { CartButton } from "./cart-button";
 
 interface StorefrontNavbarProps {
   storeName: string;
   slug: string;
+  storeId: string;
 }
 
-export function StorefrontNavbar({ storeName, slug }: StorefrontNavbarProps) {
+export function StorefrontNavbar({ storeName, slug, storeId }: StorefrontNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(0);
 
   return (
     <nav className="border-b border-gray-100 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm hover:shadow-md transition-shadow">
@@ -73,19 +74,7 @@ export function StorefrontNavbar({ storeName, slug }: StorefrontNavbarProps) {
             </button>
 
             {/* Cart Button */}
-            <button 
-              onClick={() => alert("Cart feature coming soon!")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm text-white transition-all hover:shadow-lg hover:scale-105 active:scale-95 shadow-md relative"
-              style={{ backgroundColor: "var(--primary)" }}
-            >
-              <ShoppingBag className="h-4 w-4" />
-              <span className="hidden sm:inline">Cart</span>
-              {cartItems > 0 && (
-                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center -mr-2 -mt-2">
-                  {cartItems}
-                </span>
-              )}
-            </button>
+            <CartButton />
 
             {/* Account Button */}
             <button 

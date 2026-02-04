@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ShoppingCart, Shield, Truck, RotateCcw, Heart, Share2, Star, Check } from "lucide-react";
+import { ArrowLeft, Shield, Truck, RotateCcw, Heart, Share2, Star, Check } from "lucide-react";
+import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 
 export default async function ProductDetailPage({
   params,
@@ -16,6 +17,11 @@ export default async function ProductDetailPage({
     where: {
       id,
       store: { subdomainSlug: username },
+    },
+    include: {
+      store: {
+        select: { id: true },
+      },
     },
   });
 
@@ -109,26 +115,21 @@ export default async function ProductDetailPage({
 
             {/* Color and Size Options */}
             <div className="space-y-6 mb-8 pb-8 border-b border-gray-200">
-              {/* Quantity */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
-                <div className="flex items-center border border-gray-300 rounded-lg w-fit">
-                  <button className="px-4 py-2 text-gray-600 hover:bg-gray-100">−</button>
-                  <input type="number" defaultValue="1" className="w-12 text-center border-l border-r border-gray-300 py-2 outline-none" />
-                  <button className="px-4 py-2 text-gray-600 hover:bg-gray-100">+</button>
-                </div>
-              </div>
+              {/* Add to Cart with Quantity */}
+              <AddToCartButton
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  price: Number(product.price),
+                  imageUrl: product.imageUrl,
+                }}
+                storeId={product.store.id}
+                storeSlug={username}
+              />
             </div>
 
             {/* Action Buttons */}
             <div className="space-y-3 mb-8">
-              <button 
-                className="w-full flex items-center justify-center gap-3 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-md"
-                style={{ backgroundColor: "var(--primary)" }}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                Add to Cart
-              </button>
               <div className="flex gap-3">
                 <button className="flex-1 px-8 py-4 rounded-xl font-semibold text-lg border-2 border-gray-300 text-gray-700 hover:bg-gray-100 transition-all flex items-center justify-center gap-2">
                   <Heart className="h-5 w-5" />
@@ -140,10 +141,6 @@ export default async function ProductDetailPage({
                 </button>
               </div>
             </div>
-
-            <p className="text-xs text-gray-400 mb-8">
-              * Cart & checkout functionality coming soon
-            </p>
 
             {/* Trust Badges */}
             <div className="bg-gray-100 rounded-2xl p-6 space-y-4">

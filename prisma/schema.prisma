@@ -18,6 +18,20 @@ enum DomainStatus {
   Live
 }
 
+enum StripeConnectStatus {
+  NotConnected
+  Pending
+  Active
+  Restricted
+}
+
+enum OrderStatus {
+  Pending
+  Completed
+  Failed
+  Refunded
+}
+
 model Theme {
   id            String   @id @default(cuid())
   name          String   @unique
@@ -32,20 +46,25 @@ model Theme {
 }
 
 model Store {
-  id                     String        @id @default(cuid())
-  ownerId                String        // References auth.users.id
-  subdomainSlug          String        @unique
+  id                     String              @id @default(cuid())
+  ownerId                String              // References auth.users.id
+  subdomainSlug          String              @unique
   storeName              String
   aboutText              String?
-  themeId                String
-  theme                  Theme         @relation(fields: [themeId], references: [id], onDelete: SetNull)
-  domain                 String?       @unique
-  domainStatus           DomainStatus  @default(Pending)
+  themeId                String?
+  theme                  Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  domain                 String?             @unique
+  domainStatus           DomainStatus        @default(Pending)
   certificateGeneratedAt DateTime?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
+  // Stripe Connect fields
+  stripeConnectId        String?             @unique
+  stripeConnectStatus    StripeConnectStatus @default(NotConnected)
+  stripeConnectedAt      DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
 
   products Product[]
+  orders   Order[]
 
   @@index([ownerId])
   @@index([themeId])
@@ -53,15 +72,55 @@ model Store {
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  storeId   String
-  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name      String
-  price     Decimal  @db.Decimal(10, 2)
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String      @id @default(cuid())
+  storeId     String
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  sku         String?
+  price       Decimal     @db.Decimal(10, 2)
+  imageUrl    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  orderItems OrderItem[]
 
   @@index([storeId])
   @@map("products")
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  storeId            String
+  store              Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  stripePaymentId    String      @unique
+  stripeSessionId    String?     @unique
+  customerEmail      String
+  customerName       String?
+  total              Decimal     @db.Decimal(10, 2)
+  currency           String      @default("usd")
+  status             OrderStatus @default(Pending)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  items OrderItem[]
+
+  @@index([storeId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName String  // Snapshot of product name at time of purchase
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
 }

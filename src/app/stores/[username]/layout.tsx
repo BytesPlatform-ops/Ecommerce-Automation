@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
+import { CartProvider } from "@/components/storefront/cart-context";
 
 export default async function StorefrontLayout({
   children,
@@ -23,7 +24,7 @@ export default async function StorefrontLayout({
   }
 
   // Helper function to ensure hex codes have # prefix
-  const formatHex = (hex: string | null) => {
+  const formatHex = (hex: string | null | undefined) => {
     if (!hex) return undefined;
     return hex.startsWith("#") ? hex : `#${hex}`;
   };
@@ -72,9 +73,11 @@ export default async function StorefrontLayout({
         }
       `}</style>
       <div className="storefront flex flex-col min-h-screen">
-        <StorefrontNavbar storeName={store.storeName} slug={username} />
-        <main className="flex-1">{children}</main>
-        <StorefrontFooter storeName={store.storeName} slug={username} />
+        <CartProvider>
+          <StorefrontNavbar storeName={store.storeName} slug={username} storeId={store.id} />
+          <main className="flex-1">{children}</main>
+          <StorefrontFooter storeName={store.storeName} slug={username} />
+        </CartProvider>
       </div>
     </div>
   );

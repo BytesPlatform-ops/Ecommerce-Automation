@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles } from "lucide-react";
+import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard } from "lucide-react";
 
 export default async function AdminLayout({
   children,
@@ -85,6 +85,20 @@ export default async function AdminLayout({
               <Palette className="h-5 w-5 text-purple-600 group-hover:text-white transition-colors" />
             </div>
             <span className="font-medium">Themes</span>
+          </Link>
+          <Link
+            href="/dashboard/payments"
+            className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all group"
+          >
+            <div className="h-9 w-9 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
+              <CreditCard className="h-5 w-5 text-emerald-600 group-hover:text-white transition-colors" />
+            </div>
+            <span className="font-medium">Payments</span>
+            {store && !store.stripeConnectId && (
+              <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                Setup
+              </span>
+            )}
           </Link>
           <Link
             href="/dashboard/settings"
