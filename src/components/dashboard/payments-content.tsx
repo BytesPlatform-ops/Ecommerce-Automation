@@ -29,6 +29,7 @@ interface PaymentsContentProps {
 }
 
 type DateFilter = "7days" | "30days" | "all" | "custom";
+type StatusFilter = "all" | "Pending" | "Completed" | "Failed" | "Refunded";
 
 interface Order {
   id: string;
@@ -95,6 +96,7 @@ export default function PaymentsContent({
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>("30days");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,7 +120,7 @@ export default function PaymentsContent({
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFilter, isConnected]);
+  }, [dateFilter, isConnected, statusFilter]);
 
   async function loadData() {
     setIsLoading(true);
@@ -305,6 +307,32 @@ export default function PaymentsContent({
     return Math.max(...dailyRevenue.map((d) => d.revenue), 0);
   }
 
+  function getPendingPaymentMetrics() {
+    const pendingOrders = orders.filter((o) => o.status === "Pending");
+    const totalPending = pendingOrders.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    return {
+      count: pendingOrders.length,
+      total: totalPending,
+    };
+  }
+
+  function getFilteredOrders(): Order[] {
+    return orders.filter((order) => {
+      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+      return matchesStatus;
+    });
+  }
+
+  function getOrderStatusCounts() {
+    return {
+      all: orders.length,
+      pending: orders.filter((o) => o.status === "Pending").length,
+      completed: orders.filter((o) => o.status === "Completed").length,
+      failed: orders.filter((o) => o.status === "Failed").length,
+      refunded: orders.filter((o) => o.status === "Refunded").length,
+    };
+  }
+
   return (
     <div className="space-y-6">
       {/* Error Alert */}
@@ -487,7 +515,101 @@ export default function PaymentsContent({
         )}
       </div>
 
-      {/* Stats Cards */}
+      {/* Pending Payments Analytics */}
+      {isConnected && orders.length > 0 && (
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Pending Count */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2.5 bg-amber-200 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-amber-700" />
+                </div>
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Pending Orders
+                </p>
+              </div>
+              <p className="text-3xl font-bold text-amber-900">
+                {getPendingPaymentMetrics().count}
+              </p>
+              <p className="text-xs text-amber-700 mt-2">
+                Awaiting customer payment
+              </p>
+            </div>
+
+            {/* Pending Total */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2.5 bg-orange-200 rounded-lg">
+                  <DollarSign className="h-5 w-5 text-orange-700" />
+                </div>
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Pending Amount
+                </p>
+              </div>
+              <p className="text-3xl font-bold text-orange-900">
+                {formatCurrency(getPendingPaymentMetrics().total)}
+              </p>
+              <p className="text-xs text-orange-700 mt-2">
+                Total pending revenue
+              </p>
+            </div>
+
+            {/* Processing/In-Transit from Stripe */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2.5 bg-blue-200 rounded-lg">
+                  <Zap className="h-5 w-5 text-blue-700" />
+                </div>
+                <div className="group relative">
+                  <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide cursor-help">
+                    Processing
+                  </p>
+                  <div className="hidden group-hover:block absolute left-0 top-full mt-1 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-10">
+                    Payments in transit (1-2 days)
+                  </div>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-blue-900">
+                {accountDetails?.balance?.pending && accountDetails.balance.pending.length > 0
+                  ? formatCurrency(accountDetails.balance.pending[0].amount / 100, accountDetails.balance.pending[0].currency)
+                  : "$0.00"}
+              </p>
+              <p className="text-xs text-blue-700 mt-2">
+                In Stripe account
+              </p>
+            </div>
+
+            {/* Status Summary */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2.5 bg-green-200 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-green-700" />
+                </div>
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                  Order Status
+                </p>
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Completed:</span>
+                  <span className="font-semibold text-green-700">{getOrderStatusCounts().completed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Failed:</span>
+                  <span className="font-semibold text-red-700">{getOrderStatusCounts().failed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Refunded:</span>
+                  <span className="font-semibold text-gray-700">{getOrderStatusCounts().refunded}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-linear-to-br from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -701,14 +823,25 @@ export default function PaymentsContent({
 
       {/* Orders List */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-linear-to-r from-white to-gray-50">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-linear-to-r from-white to-gray-50 flex-wrap gap-4">
           <div>
             <h2 className="text-xl font-bold text-gray-900">Transactions</h2>
             <p className="text-sm text-gray-600 mt-1">
               View and manage your customer orders
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              <option value="all">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+              <option value="Failed">Failed</option>
+              <option value="Refunded">Refunded</option>
+            </select>
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as DateFilter)}
@@ -738,7 +871,7 @@ export default function PaymentsContent({
               Loading transactions...
             </p>
           </div>
-        ) : orders.length === 0 ? (
+        ) : getFilteredOrders().length === 0 ? (
           <div className="p-12 text-center">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-gray-100 rounded-full">
@@ -746,10 +879,10 @@ export default function PaymentsContent({
               </div>
             </div>
             <p className="text-lg font-semibold text-gray-700">
-              No transactions yet
+              {orders.length === 0 ? "No transactions yet" : "No transactions match this filter"}
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              Orders will appear here when customers make purchases
+              {orders.length === 0 ? "Orders will appear here when customers make purchases" : "Try adjusting your filters"}
             </p>
           </div>
         ) : (
@@ -778,7 +911,7 @@ export default function PaymentsContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {orders.map((order, index) => (
+                {getFilteredOrders().map((order, index) => (
                   <tr
                     key={order.id}
                     className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}

@@ -1,8 +1,18 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, ArrowRight, Star, TrendingUp, Award, Zap, Package, Clock, Shield } from "lucide-react";
+
+// Check if we're on a custom domain
+async function isCustomDomain() {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+  const isRender = host.includes("ecommerce-automation-wt2l.onrender.com");
+  return !isLocal && !isRender;
+}
 
 export default async function StorefrontHomePage({
   params,
@@ -10,6 +20,7 @@ export default async function StorefrontHomePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
+  const onCustomDomain = await isCustomDomain();
 
   // Fetch store with products
   const store = await prisma.store.findUnique({
@@ -27,6 +38,10 @@ export default async function StorefrontHomePage({
   const products = store.products;
   const featuredProducts = products.slice(0, 6);
   const latestProducts = products.slice(0, 12);
+
+  // Simple URL pattern based on domain type
+  const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
+  const storePath = onCustomDomain ? "/" : `/stores/${username}`;
 
   return (
     <div className="min-h-screen">
@@ -113,7 +128,7 @@ export default async function StorefrontHomePage({
               {featuredProducts.map((product, idx) => (
                 <Link
                   key={product.id}
-                  href={`/stores/${username}/product/${product.id}`}
+                  href={`${productPath}/${product.id}`}
                   className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
                 >
                   <div className="aspect-square relative bg-gray-100 overflow-hidden">
@@ -220,7 +235,7 @@ export default async function StorefrontHomePage({
               {products.map((product) => (
                 <Link
                   key={product.id}
-                  href={`/stores/${username}/product/${product.id}`}
+                  href={`${productPath}/${product.id}`}
                   className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
                   <div className="aspect-square relative bg-gray-100 overflow-hidden">

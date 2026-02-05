@@ -83,8 +83,15 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const storeId = session.metadata?.storeId;
   const itemsJson = session.metadata?.items;
 
+  console.log("[Webhook] checkout.session.completed", {
+    sessionId: session.id,
+    storeId,
+    amount: session.amount_total,
+    hasItemsMetadata: !!itemsJson
+  });
+
   if (!storeId || !itemsJson) {
-    console.error("Missing metadata in checkout session");
+    console.error("[Webhook] Missing metadata in checkout session", { storeId, hasItems: !!itemsJson });
     return;
   }
 
@@ -96,21 +103,30 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   }>;
 
   // Create the order
-  await createOrder({
-    storeId,
-    stripePaymentId: session.payment_intent as string,
-    stripeSessionId: session.id,
-    customerEmail: session.customer_email || session.customer_details?.email || "unknown@email.com",
-    customerName: session.customer_details?.name || undefined,
-    total: session.amount_total || 0,
-    currency: session.currency || "usd",
-    items: items.map((item) => ({
-      productId: item.productId,
-      productName: item.name,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-    })),
-  });
+  try {
+    await createOrder({
+      storeId,
+      stripePaymentId: session.payment_intent as string,
+      stripeSessionId: session.id,
+      customerEmail: session.customer_email || session.customer_details?.email || "unknown@email.com",
+      customerName: session.customer_details?.name || undefined,
+      total: session.amount_total || 0,
+      currency: session.currency || "usd",
+      items: items.map((item) => ({
+        productId: item.productId,
+        productName: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+      })),
+    });
 
-  console.log("Order created for session:", session.id);
+    console.log("[Webhook] Order created successfully for session:", session.id);
+  } catch (error) {
+    console.error("[Webhook] Failed to create order", {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId: session.id,
+      storeId
+    });
+    throw error;
+  }
 }

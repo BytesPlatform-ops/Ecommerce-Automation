@@ -415,29 +415,45 @@ export async function createOrder(data: {
     unitPrice: number;
   }>;
 }) {
-  return await prisma.order.create({
-    data: {
-      storeId: data.storeId,
-      stripePaymentId: data.stripePaymentId,
-      stripeSessionId: data.stripeSessionId,
-      customerEmail: data.customerEmail,
-      customerName: data.customerName,
-      total: data.total / 100, // Convert from cents to dollars
-      currency: data.currency,
-      status: OrderStatus.Completed,
-      items: {
-        create: data.items.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice / 100, // Convert from cents to dollars
-        })),
+  try {
+    const order = await prisma.order.create({
+      data: {
+        storeId: data.storeId,
+        stripePaymentId: data.stripePaymentId,
+        stripeSessionId: data.stripeSessionId,
+        customerEmail: data.customerEmail,
+        customerName: data.customerName,
+        total: data.total / 100, // Convert from cents to dollars
+        currency: data.currency,
+        status: OrderStatus.Completed,
+        items: {
+          create: data.items.map((item) => ({
+            productId: item.productId,
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice / 100, // Convert from cents to dollars
+          })),
+        },
       },
-    },
-    include: {
-      items: true,
-    },
-  });
+      include: {
+        items: true,
+      },
+    });
+    console.log("[Order Created]", {
+      orderId: order.id,
+      storeId: order.storeId,
+      amount: order.total,
+      itemsCount: order.items.length
+    });
+    return order;
+  } catch (error) {
+    console.error("[Order Creation Failed]", {
+      error: error instanceof Error ? error.message : String(error),
+      storeId: data.storeId,
+      paymentId: data.stripePaymentId,
+    });
+    throw error;
+  }
 }
 
 /**
