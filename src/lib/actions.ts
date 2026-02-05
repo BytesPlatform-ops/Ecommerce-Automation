@@ -395,6 +395,31 @@ export async function getStripeAccountStatus() {
   };
 }
 
+export async function getStripePendingCharges(accountId: string, limit = 50) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return [];
+  }
+
+  // Verify the account belongs to the user's store
+  const store = await prisma.store.findFirst({
+    where: { 
+      ownerId: user.id,
+      stripeConnectId: accountId,
+    },
+  });
+
+  if (!store) {
+    return [];
+  }
+
+  // Import and call getPendingCharges (server-side only)
+  const { getPendingCharges } = await import("@/lib/stripe");
+  return await getPendingCharges(accountId, limit);
+}
+
 // ==================== ORDER ACTIONS ====================
 
 /**
@@ -414,6 +439,7 @@ export async function createOrder(data: {
     quantity: number;
     unitPrice: number;
   }>;
+  initialStatus?: "Pending" | "Completed";
 }) {
   try {
     const order = await prisma.order.create({
@@ -425,7 +451,7 @@ export async function createOrder(data: {
         customerName: data.customerName,
         total: data.total / 100, // Convert from cents to dollars
         currency: data.currency,
-        status: OrderStatus.Completed,
+        status: data.initialStatus === "Completed" ? OrderStatus.Completed : OrderStatus.Pending,
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,

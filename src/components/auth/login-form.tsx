@@ -51,8 +51,8 @@ export function LoginForm() {
         <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
           Email
         </label>
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <div className="relative flex items-center">
+          <Mail className="absolute left-3.5 h-5 w-5 text-gray-400" />
           <input
             id="email"
             type="email"
@@ -69,8 +69,8 @@ export function LoginForm() {
         <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
           Password
         </label>
-        <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+        <div className="relative flex items-center">
+          <Lock className="absolute left-3.5 h-5 w-5 text-gray-400" />
           <input
             id="password"
             type="password"

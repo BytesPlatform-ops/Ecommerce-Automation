@@ -17,6 +17,7 @@ import {
   getStoreOrders,
   getOrderStats,
   disconnectStripeAccount,
+  getStripePendingCharges,
 } from "@/lib/actions";
 
 interface PaymentsContentProps {
@@ -94,6 +95,7 @@ export default function PaymentsContent({
   const [accountDetails, setAccountDetails] =
     useState<StripeAccountDetails | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [pendingCharges, setPendingCharges] = useState<any[]>([]);
   const [stats, setStats] = useState<OrderStats | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>("30days");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -130,6 +132,12 @@ export default function PaymentsContent({
       if (accountStatus) {
         setAccountDetails(accountStatus as unknown as StripeAccountDetails);
         setIsConnected(accountStatus.isConnected);
+
+        // Fetch pending charges if connected
+        if (accountStatus.isConnected && accountStatus.account?.id) {
+          const charges = await getStripePendingCharges(accountStatus.account.id, 50);
+          setPendingCharges(charges || []);
+        }
       }
 
       // Load stats
@@ -321,6 +329,36 @@ export default function PaymentsContent({
       const matchesStatus = statusFilter === "all" || order.status === statusFilter;
       return matchesStatus;
     });
+  }
+
+  function getDisplayTransactions() {
+    // Convert pending charges to display format
+    const pendingTransactions = pendingCharges.map((charge: any) => ({
+      id: charge.id,
+      customerEmail: charge.billing_details?.email || charge.metadata?.email || "Guest",
+      customerName: charge.billing_details?.name || charge.metadata?.customer_name || "Guest Customer",
+      total: (charge.amount / 100).toString(),
+      currency: charge.currency,
+      status: "Processing",
+      createdAt: new Date(charge.created * 1000),
+      items: [
+        {
+          id: "",
+          productName: "Payment (in processing)",
+          quantity: 1,
+          unitPrice: (charge.amount / 100).toString(),
+        }
+      ],
+      isPending: true,
+    }));
+
+    // Combine with actual orders
+    const allTransactions = [...pendingTransactions, ...getFilteredOrders()];
+    
+    // Sort by date
+    return allTransactions.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   function getOrderStatusCounts() {
@@ -871,7 +909,7 @@ export default function PaymentsContent({
               Loading transactions...
             </p>
           </div>
-        ) : getFilteredOrders().length === 0 ? (
+        ) : getDisplayTransactions().length === 0 ? (
           <div className="p-12 text-center">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-gray-100 rounded-full">
@@ -879,10 +917,10 @@ export default function PaymentsContent({
               </div>
             </div>
             <p className="text-lg font-semibold text-gray-700">
-              {orders.length === 0 ? "No transactions yet" : "No transactions match this filter"}
+              No transactions yet
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              {orders.length === 0 ? "Orders will appear here when customers make purchases" : "Try adjusting your filters"}
+              Orders will appear here when customers make purchases
             </p>
           </div>
         ) : (
@@ -911,55 +949,66 @@ export default function PaymentsContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {getFilteredOrders().map((order, index) => (
+                {getDisplayTransactions().map((transaction: any, index) => (
                   <tr
-                    key={order.id}
-                    className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                    key={transaction.id}
+                    className={`hover:bg-gray-50 transition-colors ${
+                      transaction.isPending ? "bg-blue-50/30" : index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                    }`}
                   >
                     <td className="px-6 py-4">
                       <code className="text-xs font-mono bg-gray-100 px-3 py-1.5 rounded text-gray-700">
-                        {order.id.slice(0, 8)}
+                        {transaction.id.slice(0, 8)}
                       </code>
                     </td>
                     <td className="px-6 py-4">
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
-                          {order.customerName || "Guest Customer"}
+                          {transaction.customerName}
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          {order.customerEmail}
+                          {transaction.customerEmail}
                         </p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm font-medium text-gray-700">
-                        {order.items.length} item
-                        {order.items.length !== 1 ? "s" : ""}
+                        {transaction.items.length} item
+                        {transaction.items.length !== 1 ? "s" : ""}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-bold text-gray-900">
-                        {formatCurrency(order.total, order.currency)}
+                        {formatCurrency(transaction.total, transaction.currency)}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
-                          order.status === "Completed"
+                          transaction.status === "Processing"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.status === "Completed"
                             ? "bg-green-100 text-green-800"
-                            : order.status === "Failed"
+                            : transaction.status === "Failed"
                               ? "bg-red-100 text-red-800"
-                              : order.status === "Refunded"
+                              : transaction.status === "Refunded"
                                 ? "bg-gray-100 text-gray-800"
                                 : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {order.status}
+                        {transaction.isPending ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>
+                            {transaction.status}
+                          </span>
+                        ) : (
+                          transaction.status
+                        )}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-600">
-                        {formatDate(order.createdAt)}
+                        {formatDate(transaction.createdAt)}
                       </p>
                     </td>
                   </tr>

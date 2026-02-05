@@ -13,7 +13,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
  * Get the Stripe Connect OAuth URL for a store owner to connect their account
  */
 export function getStripeConnectOAuthUrl(storeId: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
   const redirectUri = `${baseUrl}/api/payments/connect/callback`;
   
   if (!process.env.NEXT_PUBLIC_STRIPE_CONNECT_CLIENT_ID) {
@@ -95,6 +95,25 @@ export async function getAccountPayouts(accountId: string, limit = 10) {
     return payouts.data;
   } catch (error) {
     console.error("Error retrieving payouts:", error);
+    return [];
+  }
+}
+
+/**
+ * Get pending charges (succeeded but not yet paid out)
+ */
+export async function getPendingCharges(accountId: string, limit = 50) {
+  try {
+    const charges = await stripe.charges.list(
+      {
+        limit,
+      },
+      { stripeAccount: accountId }
+    );
+    // Filter for succeeded charges only (these are pending payout)
+    return charges.data.filter((charge) => charge.status === "succeeded");
+  } catch (error) {
+    console.error("Error retrieving pending charges:", error);
     return [];
   }
 }

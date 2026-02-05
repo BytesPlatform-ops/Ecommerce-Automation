@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
 import { CartProvider } from "@/components/storefront/cart-context";
+import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success-handler";
 
 export default async function StorefrontLayout({
   children,
@@ -74,6 +75,7 @@ export default async function StorefrontLayout({
       `}</style>
       <div className="storefront flex flex-col min-h-screen">
         <CartProvider>
+          <CheckoutSuccessHandler />
           <StorefrontNavbar storeName={store.storeName} slug={username} storeId={store.id} />
           <main className="flex-1">{children}</main>
           <StorefrontFooter storeName={store.storeName} slug={username} />

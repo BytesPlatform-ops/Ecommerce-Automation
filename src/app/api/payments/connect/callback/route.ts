@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
   const redirectUrl = `${baseUrl}/dashboard/payments`;
 
   // Handle errors from Stripe

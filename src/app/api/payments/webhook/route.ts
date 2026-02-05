@@ -49,6 +49,13 @@ export async function POST(request: NextRequest) {
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log("Payment succeeded:", paymentIntent.id);
+        // Update order status to Completed
+        try {
+          await updateOrderStatus(paymentIntent.id, "Completed");
+          console.log("[Webhook] Order marked as Completed:", paymentIntent.id);
+        } catch (error) {
+          console.error("[Webhook] Failed to update order status:", error);
+        }
         break;
       }
 
@@ -87,6 +94,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     sessionId: session.id,
     storeId,
     amount: session.amount_total,
+    paymentStatus: session.payment_status,
     hasItemsMetadata: !!itemsJson
   });
 
@@ -101,6 +109,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     quantity: number;
     unitPrice: number;
   }>;
+
+  // Determine initial status based on payment status
+  // If payment is already completed, set status to Completed, otherwise Pending
+  const initialStatus = session.payment_status === "paid" ? "Completed" : "Pending";
 
   // Create the order
   try {
@@ -118,9 +130,10 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         quantity: item.quantity,
         unitPrice: item.unitPrice,
       })),
+      initialStatus,
     });
 
-    console.log("[Webhook] Order created successfully for session:", session.id);
+    console.log("[Webhook] Order created successfully for session:", session.id, "with status:", initialStatus);
   } catch (error) {
     console.error("[Webhook] Failed to create order", {
       error: error instanceof Error ? error.message : String(error),
