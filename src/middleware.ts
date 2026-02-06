@@ -102,23 +102,32 @@ export async function middleware(request: NextRequest) {
   const storeSlug = await getStoreByDomain(hostname);
 
   if (storeSlug) {
-    // Build the rewrite path
-    // If user visits www.example.com/about, rewrite to /stores/username/about
-    // If user visits www.example.com/, rewrite to /stores/username
-    let rewritePath = `/stores/${storeSlug}`;
+    // Build the redirect path
+    // If user visits example.com/about, redirect to platform/stores/username/about
+    // If user visits example.com/, redirect to platform/stores/username
+    let redirectPath = `/stores/${storeSlug}`;
     
     // Append the current path (but not if it's just "/")
     if (pathname && pathname !== "/") {
-      rewritePath += pathname;
+      redirectPath += pathname;
     }
 
     // Append query string if present
     if (url.search) {
-      rewritePath += url.search;
+      redirectPath += url.search;
     }
 
-    // Rewrite internally - user still sees www.example.com in browser
-    return NextResponse.rewrite(new URL(rewritePath, request.url));
+    // Determine the platform domain to redirect to
+    let platformDomain = "localhost:3000"; // Default for development
+    if (hostname.includes("render") || process.env.VERCEL) {
+      // In production, use the environment variable or infer from Render
+      platformDomain = process.env.NEXT_PUBLIC_PLATFORM_URL || "ecommerce-automation-wt2l.onrender.com";
+    }
+
+    // Redirect to platform domain with the store path
+    const protocol = platformDomain.includes("localhost") ? "http" : "https";
+    const redirectUrl = new URL(`${protocol}://${platformDomain}${redirectPath}`);
+    return NextResponse.redirect(redirectUrl);
   }
 
   // Store not found for this domain - show a 404 page
