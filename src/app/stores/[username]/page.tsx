@@ -51,7 +51,7 @@ export default async function StorefrontHomePage({
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-40 bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <section className="relative overflow-hidden py-8 md:py-8 bg-gradient-to-br from-slate-50 via-white to-slate-50">
         {heroImageUrl ? (
           <>
             <Image

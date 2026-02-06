@@ -3,9 +3,10 @@ import { Store, Heart, Facebook, Twitter, Instagram, Mail, Phone, MapPin } from 
 interface StorefrontFooterProps {
   storeName: string;
   slug: string;
+  aboutPath: string;
 }
 
-export function StorefrontFooter({ storeName, slug }: StorefrontFooterProps) {
+export function StorefrontFooter({ storeName, slug, aboutPath }: StorefrontFooterProps) {
   return (
     <footer className="bg-gray-900 text-gray-100 border-t border-gray-800 mt-16">
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
@@ -52,7 +53,7 @@ export function StorefrontFooter({ storeName, slug }: StorefrontFooterProps) {
                 </a>
               </li>
               <li>
-                <a href={`/stores/${slug}/about`} className="text-gray-400 hover:text-white text-sm transition-colors">
+                <a href={aboutPath} className="text-gray-400 hover:text-white text-sm transition-colors">
                   About Us
                 </a>
               </li>

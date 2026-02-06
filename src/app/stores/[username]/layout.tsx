@@ -1,9 +1,19 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
 import { CartProvider } from "@/components/storefront/cart-context";
 import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success-handler";
+
+// Check if we're on a custom domain
+async function isCustomDomain() {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+  const isRender = host.includes("ecommerce-automation-wt2l.onrender.com");
+  return !isLocal && !isRender;
+}
 
 export default async function StorefrontLayout({
   children,
@@ -13,6 +23,7 @@ export default async function StorefrontLayout({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
+  const onCustomDomain = await isCustomDomain();
 
   // Fetch store with theme
   const store = await prisma.store.findUnique({
@@ -23,6 +34,10 @@ export default async function StorefrontLayout({
   if (!store) {
     notFound();
   }
+
+  // Determine correct paths based on domain type
+  const aboutPath = onCustomDomain ? "/about" : `/stores/${username}/about`;
+  const homePath = onCustomDomain ? "/" : `/stores/${username}`;
 
   // Helper function to ensure hex codes have # prefix
   const formatHex = (hex: string | null | undefined) => {
@@ -76,9 +91,9 @@ export default async function StorefrontLayout({
       <div className="storefront flex flex-col min-h-screen">
         <CartProvider>
           <CheckoutSuccessHandler />
-          <StorefrontNavbar storeName={store.storeName} slug={username} storeId={store.id} />
+          <StorefrontNavbar storeName={store.storeName} slug={username} storeId={store.id} aboutPath={aboutPath} homePath={homePath} />
           <main className="flex-1">{children}</main>
-          <StorefrontFooter storeName={store.storeName} slug={username} />
+          <StorefrontFooter storeName={store.storeName} slug={username} aboutPath={aboutPath} />
         </CartProvider>
       </div>
     </div>

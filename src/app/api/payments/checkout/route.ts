@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       storeId: string;
       items: Array<{
         productId: string;
-        variantId?: string;
         quantity: number;
       }>;
       customerEmail?: string;
@@ -76,14 +75,13 @@ export async function POST(request: NextRequest) {
         unitAmount: Math.round(Number(product.price) * 100), // Convert to cents
         quantity: item.quantity,
         productId: product.id,
-        variantId: item.variantId,
       };
     });
 
     // Determine URLs for success and cancel
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
     const storeUrl = `${baseUrl}/stores/${store.subdomainSlug}`;
-    const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}&store_id=${storeId}`;
+    const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${storeUrl}?checkout=cancelled`;
 
     // Create checkout session

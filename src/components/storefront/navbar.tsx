@@ -9,9 +9,11 @@ interface StorefrontNavbarProps {
   storeName: string;
   slug: string;
   storeId: string;
+  aboutPath: string;
+  homePath: string;
 }
 
-export function StorefrontNavbar({ storeName, slug, storeId }: StorefrontNavbarProps) {
+export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath }: StorefrontNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -20,7 +22,7 @@ export function StorefrontNavbar({ storeName, slug, storeId }: StorefrontNavbarP
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link
-            href={`/stores/${slug}`}
+            href={homePath}
             className="flex items-center gap-3 font-bold text-xl md:text-2xl group flex-shrink-0 hover:opacity-80 transition-opacity"
           >
             <div 
@@ -37,14 +39,14 @@ export function StorefrontNavbar({ storeName, slug, storeId }: StorefrontNavbarP
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8 flex-1 ml-12">
             <Link
-              href={`/stores/${slug}`}
+              href={homePath}
               className="text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:transition-all after:duration-300"
               style={{ ["--tw-after-bg" as string]: "var(--primary)" }}
             >
               Home
             </Link>
             <Link
-              href={`/stores/${slug}/about`}
+              href={aboutPath}
               className="text-sm font-bold text-gray-600 hover:text-gray-900 transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:transition-all after:duration-300"
               style={{ ["--tw-after-bg" as string]: "var(--primary)" }}
             >
@@ -87,7 +89,7 @@ export function StorefrontNavbar({ storeName, slug, storeId }: StorefrontNavbarP
 
             {/* About Button */}
             <Link
-              href={`/stores/${slug}/about`}
+              href={aboutPath}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
               title="About"
             >
