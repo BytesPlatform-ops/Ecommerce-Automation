@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Plus, Minus, Check } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
 import { useCart } from "./cart-context";
 
 interface AddToCartButtonProps {
@@ -17,7 +17,6 @@ interface AddToCartButtonProps {
 
 export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButtonProps) {
   const { addItem, items } = useCart();
-  const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
 
   const existingItem = items.find((i) => i.productId === product.id);
@@ -30,7 +29,7 @@ export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButton
       imageUrl: product.imageUrl,
       storeId,
       storeSlug,
-      quantity,
+      quantity: 1,
     });
 
     setIsAdded(true);
@@ -39,28 +38,6 @@ export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButton
 
   return (
     <div className="space-y-3">
-      {/* Quantity Selector */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">Quantity</label>
-        <div className="flex items-center border border-gray-300 rounded-lg w-fit">
-          <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="h-4 w-4" />
-          </button>
-          <span className="w-12 text-center font-medium">{quantity}</span>
-          <button
-            onClick={() => setQuantity((q) => q + 1)}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Increase quantity"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
       {/* Add to Cart Button */}
       <button
         onClick={handleAddToCart}

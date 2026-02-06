@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, ArrowRight, Star, TrendingUp, Award, Zap, Package, Clock, Shield } from "lucide-react";
+import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 
 // Check if we're on a custom domain
 async function isCustomDomain() {
@@ -126,54 +127,60 @@ export default async function StorefrontHomePage({
           {featuredProducts && featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product, idx) => (
-                <Link
+                <div
                   key={product.id}
-                  href={`${productPath}/${product.id}`}
                   className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
                 >
-                  <div className="aspect-square relative bg-gray-100 overflow-hidden">
-                    {idx === 0 && (
-                      <div 
-                        className="absolute top-3 right-3 px-4 py-2 rounded-full text-xs font-bold text-white z-10 shadow-lg"
-                        style={{ backgroundColor: "var(--primary)" }}
-                      >
-                        🔥 Hot
-                      </div>
-                    )}
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-125 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <span className="text-gray-400 font-medium">No image</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:opacity-80 transition-opacity line-clamp-2">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
+                  <Link
+                    href={`${productPath}/${product.id}`}
+                    className="block"
+                  >
+                    <div className="aspect-square relative bg-gray-100 overflow-hidden">
+                      {idx === 0 && (
+                        <div 
+                          className="absolute top-3 right-3 px-4 py-2 rounded-full text-xs font-bold text-white z-10 shadow-lg"
+                          style={{ backgroundColor: "var(--primary)" }}
+                        >
+                          🔥 Hot
+                        </div>
+                      )}
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-125 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                          <span className="text-gray-400 font-medium">No image</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    </div>
+                    <div className="p-5 pb-3">
+                      <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:opacity-80 transition-opacity line-clamp-2">
+                        {product.name}
+                      </h3>
                       <p 
                         className="text-2xl font-bold"
                         style={{ color: "var(--primary)" }}
                       >
                         ${Number(product.price).toFixed(2)}
                       </p>
-                      <span 
-                        className="text-sm font-bold opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        →
-                      </span>
                     </div>
+                  </Link>
+                  <div className="px-5 pb-5">
+                    <AddToCartButton 
+                      product={{
+                        ...product,
+                        price: Number(product.price),
+                      }}
+                      storeId={store.id}
+                      storeSlug={username}
+                    />
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           ) : null}
@@ -233,46 +240,52 @@ export default async function StorefrontHomePage({
           {products && products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {products.map((product) => (
-                <Link
+                <div
                   key={product.id}
-                  href={`${productPath}/${product.id}`}
                   className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="aspect-square relative bg-gray-100 overflow-hidden">
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                        <span className="text-gray-400 font-medium">No image</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center justify-between">
+                  <Link
+                    href={`${productPath}/${product.id}`}
+                    className="block"
+                  >
+                    <div className="aspect-square relative bg-gray-100 overflow-hidden">
+                      {product.imageUrl ? (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                          <span className="text-gray-400 font-medium">No image</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                    </div>
+                    <div className="p-5 pb-3">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                        {product.name}
+                      </h3>
                       <p 
                         className="text-xl font-bold"
                         style={{ color: "var(--primary)" }}
                       >
                         ${Number(product.price).toFixed(2)}
                       </p>
-                      <span 
-                        className="text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                        style={{ color: "var(--primary)" }}
-                      >
-                        View →
-                      </span>
                     </div>
+                  </Link>
+                  <div className="px-5 pb-5">
+                    <AddToCartButton 
+                      product={{
+                        ...product,
+                        price: Number(product.price),
+                      }}
+                      storeId={store.id}
+                      storeSlug={username}
+                    />
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           ) : (
