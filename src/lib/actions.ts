@@ -170,7 +170,7 @@ export async function deleteProduct(productId: string) {
 
 export async function updateStore(
   storeId: string,
-  data: { storeName?: string; aboutText?: string; themeId?: string }
+  data: { storeName?: string; aboutText?: string; themeId?: string; heroImageUrl?: string }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -188,13 +188,19 @@ export async function updateStore(
     throw new Error("Store not found or unauthorized");
   }
 
+  const updateData: any = {
+    storeName: data.storeName,
+    aboutText: data.aboutText,
+    themeId: data.themeId,
+  };
+
+  if (data.heroImageUrl !== undefined) {
+    updateData.heroImageUrl = data.heroImageUrl;
+  }
+
   return await prisma.store.update({
     where: { id: storeId },
-    data: {
-      storeName: data.storeName,
-      aboutText: data.aboutText,
-      themeId: data.themeId,
-    },
+    data: updateData,
   });
 }
 

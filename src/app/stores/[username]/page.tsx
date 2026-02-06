@@ -36,6 +36,10 @@ export default async function StorefrontHomePage({
     notFound();
   }
 
+  // Cast store to include heroImageUrl for now (Prisma types being updated)
+  const storeWithHero = store as any;
+  const heroImageUrl = storeWithHero.heroImageUrl;
+
   const products = store.products;
   const featuredProducts = products.slice(0, 6);
   const latestProducts = products.slice(0, 12);
@@ -48,15 +52,30 @@ export default async function StorefrontHomePage({
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-40 bg-gradient-to-br from-slate-50 via-white to-slate-50">
-        <div 
-          className="absolute inset-0 opacity-5"
-          style={{ 
-            background: `radial-gradient(circle at 30% 50%, var(--primary) 0%, transparent 50%), 
-                         radial-gradient(circle at 70% 80%, var(--secondary) 0%, transparent 50%)` 
-          }}
-        />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-20 -z-10 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-100 to-pink-100 rounded-full blur-3xl opacity-20 -z-10 animate-pulse" />
+        {heroImageUrl ? (
+          <>
+            <Image
+              src={heroImageUrl}
+              alt={store.storeName}
+              fill
+              className="object-cover absolute inset-0"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </>
+        ) : (
+          <>
+            <div 
+              className="absolute inset-0 opacity-5"
+              style={{ 
+                background: `radial-gradient(circle at 30% 50%, var(--primary) 0%, transparent 50%), 
+                             radial-gradient(circle at 70% 80%, var(--secondary) 0%, transparent 50%)` 
+              }}
+            />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full blur-3xl opacity-20 -z-10 animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-100 to-pink-100 rounded-full blur-3xl opacity-20 -z-10 animate-pulse" />
+          </>
+        )}
         
         <div className="container mx-auto px-4 md:px-6 relative">
           <div className="max-w-4xl mx-auto text-center">
@@ -66,13 +85,21 @@ export default async function StorefrontHomePage({
             >
               ✨ Welcome to our store
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 mb-6 leading-tight">
+            <h1 className={`text-5xl md:text-7xl lg:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-r mb-6 leading-tight ${
+              heroImageUrl 
+                ? "from-white via-white to-gray-200" 
+                : "from-gray-900 via-gray-800 to-gray-600"
+            }`}>
               {store.storeName}
             </h1>
-            <p className="text-lg md:text-2xl text-gray-600 max-w-3xl mx-auto mb-4 leading-relaxed font-light">
+            <p className={`text-lg md:text-2xl max-w-3xl mx-auto mb-4 leading-relaxed font-light ${
+              heroImageUrl ? "text-white" : "text-gray-600"
+            }`}>
               Discover our curated collection of premium products crafted with quality and care
             </p>
-            <p className="text-sm md:text-base text-gray-500 max-w-2xl mx-auto mb-8">
+            <p className={`text-sm md:text-base max-w-2xl mx-auto mb-8 ${
+              heroImageUrl ? "text-gray-200" : "text-gray-500"
+            }`}>
               Shop with confidence from a trusted storefront with thousands of satisfied customers
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

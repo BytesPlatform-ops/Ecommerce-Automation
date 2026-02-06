@@ -285,7 +285,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
               endpoint="productImage"
               onClientUploadComplete={(res) => {
                 if (res?.[0]) {
-                  setImageUrl(res[0].ufsUrl);
+                  setImageUrl(res[0].url);
                 }
               }}
               onUploadError={(error: Error) => {

@@ -114,6 +114,7 @@ model Store {
   subdomainSlug          String              @unique
   storeName              String
   aboutText              String?
+  heroImageUrl           String?
   themeId                String?
   theme                  Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)
   domain                 String?             @unique
