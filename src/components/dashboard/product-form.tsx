@@ -6,22 +6,109 @@ import { createProduct, updateProduct } from "@/lib/actions";
 import { Product } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
 
 interface ProductFormProps {
   storeId: string;
   product?: Product | (Omit<Product, 'price'> & { price: string });
 }
 
+type SizeType = "VOLUME" | "WEIGHT" | "APPAREL_ALPHA" | "APPAREL_NUMERIC" | "FOOTWEAR" | "DIMENSION" | "COUNT" | "STORAGE";
+type Unit = "ML" | "L" | "G" | "KG" | "XS" | "S" | "M" | "L_SIZE" | "XL" | "XXL" | "SIZE_28" | "SIZE_30" | "SIZE_32" | "SIZE_34" | "SIZE_36" | "SIZE_38" | "SIZE_40" | "SIZE_42" | "US_6" | "US_7" | "US_8" | "US_9" | "US_10" | "US_11" | "US_12" | "US_13" | "CM" | "METER" | "INCH" | "FEET" | "PCS" | "PACK" | "GB" | "TB";
+
+interface Variant {
+  id?: string;
+  sizeType: SizeType | "";
+  value: string;
+  unit: Unit | "";
+  stock: number;
+}
+
+// Map of size types to their allowed units
+const UNIT_OPTIONS: Record<SizeType, { value: Unit; label: string }[]> = {
+  VOLUME: [
+    { value: "ML", label: "ml" },
+    { value: "L", label: "L" },
+  ],
+  WEIGHT: [
+    { value: "G", label: "g" },
+    { value: "KG", label: "kg" },
+  ],
+  APPAREL_ALPHA: [
+    { value: "XS", label: "XS" },
+    { value: "S", label: "S" },
+    { value: "M", label: "M" },
+    { value: "L_SIZE", label: "L" },
+    { value: "XL", label: "XL" },
+    { value: "XXL", label: "XXL" },
+  ],
+  APPAREL_NUMERIC: [
+    { value: "SIZE_28", label: "28" },
+    { value: "SIZE_30", label: "30" },
+    { value: "SIZE_32", label: "32" },
+    { value: "SIZE_34", label: "34" },
+    { value: "SIZE_36", label: "36" },
+    { value: "SIZE_38", label: "38" },
+    { value: "SIZE_40", label: "40" },
+    { value: "SIZE_42", label: "42" },
+  ],
+  FOOTWEAR: [
+    { value: "US_6", label: "US 6" },
+    { value: "US_7", label: "US 7" },
+    { value: "US_8", label: "US 8" },
+    { value: "US_9", label: "US 9" },
+    { value: "US_10", label: "US 10" },
+    { value: "US_11", label: "US 11" },
+    { value: "US_12", label: "US 12" },
+    { value: "US_13", label: "US 13" },
+  ],
+  DIMENSION: [
+    { value: "CM", label: "cm" },
+    { value: "METER", label: "m" },
+    { value: "INCH", label: "in" },
+    { value: "FEET", label: "ft" },
+  ],
+  COUNT: [
+    { value: "PCS", label: "pcs" },
+    { value: "PACK", label: "pack" },
+  ],
+  STORAGE: [
+    { value: "GB", label: "GB" },
+    { value: "TB", label: "TB" },
+  ],
+};
+
 export function ProductForm({ storeId, product }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
+  const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price?.toString() || "");
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
+  const [variants, setVariants] = useState<Variant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const isEditing = !!product;
+
+  const addVariant = () => {
+    setVariants([...variants, { sizeType: "", value: "", unit: "", stock: 0 }]);
+  };
+
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const updateVariant = (index: number, field: keyof Variant, value: any) => {
+    const updated = [...variants];
+    updated[index] = { ...updated[index], [field]: value };
+    
+    // Reset unit when size type changes
+    if (field === "sizeType") {
+      updated[index].unit = "";
+    }
+    
+    setVariants(updated);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,20 +125,47 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
       return;
     }
 
+    // Validate variants
+    for (const variant of variants) {
+      if (!variant.sizeType || !variant.unit) {
+        setError("Please complete all variant fields or remove incomplete variants");
+        return;
+      }
+      if (variant.stock < 0) {
+        setError("Stock cannot be negative");
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
       if (isEditing && product) {
         await updateProduct(product.id, {
           name: name.trim(),
+          description: description.trim() || undefined,
           price: priceNum,
           imageUrl: imageUrl || undefined,
+          variants: variants.map(v => ({
+            id: v.id,
+            sizeType: v.sizeType as SizeType,
+            value: v.value || undefined,
+            unit: v.unit as Unit,
+            stock: v.stock,
+          })),
         });
       } else {
         const result = await createProduct(storeId, {
           name: name.trim(),
+          description: description.trim() || undefined,
           price: priceNum,
           imageUrl: imageUrl || undefined,
+          variants: variants.map(v => ({
+            sizeType: v.sizeType as SizeType,
+            value: v.value || undefined,
+            unit: v.unit as Unit,
+            stock: v.stock,
+          })),
         });
         console.log("Product created:", result);
       }
@@ -95,6 +209,24 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           required
           className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
           placeholder="e.g. Premium Wireless Headphones"
+        />
+      </div>
+
+      {/* Description */}
+      <div>
+        <label
+          htmlFor="description"
+          className="block text-sm font-semibold text-gray-700 mb-2"
+        >
+          Description (Optional)
+        </label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all resize-none"
+          placeholder="Describe your product in detail..."
         />
       </div>
 
@@ -160,6 +292,128 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                 setError(`Upload failed: ${error.message}`);
               }}
             />
+          </div>
+        )}
+      </div>
+
+      {/* Product Variants */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700">
+              Product Variants (Optional)
+            </label>
+            <p className="text-xs text-gray-500 mt-1">
+              Add different sizes, volumes, or variations of this product
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addVariant}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+          >
+            <Plus className="h-4 w-4" />
+            Add Variant
+          </button>
+        </div>
+
+        {variants.length > 0 && (
+          <div className="space-y-3">
+            {variants.map((variant, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-12 gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl"
+              >
+                {/* Size Type */}
+                <div className="col-span-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Type
+                  </label>
+                  <select
+                    value={variant.sizeType}
+                    onChange={(e) =>
+                      updateVariant(index, "sizeType", e.target.value)
+                    }
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                  >
+                    <option value="">Select type</option>
+                    <option value="VOLUME">Volume</option>
+                    <option value="WEIGHT">Weight</option>
+                    <option value="APPAREL_ALPHA">Apparel (S/M/L)</option>
+                    <option value="APPAREL_NUMERIC">Apparel (28/30/32)</option>
+                    <option value="FOOTWEAR">Footwear</option>
+                    <option value="DIMENSION">Dimension</option>
+                    <option value="COUNT">Count</option>
+                    <option value="STORAGE">Storage</option>
+                  </select>
+                </div>
+
+                {/* Value (optional) */}
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Value
+                  </label>
+                  <input
+                    type="text"
+                    value={variant.value}
+                    onChange={(e) =>
+                      updateVariant(index, "value", e.target.value)
+                    }
+                    placeholder="e.g. 500"
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                  />
+                </div>
+
+                {/* Unit */}
+                <div className="col-span-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Unit
+                  </label>
+                  <select
+                    value={variant.unit}
+                    onChange={(e) => updateVariant(index, "unit", e.target.value)}
+                    disabled={!variant.sizeType}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select unit</option>
+                    {variant.sizeType &&
+                      UNIT_OPTIONS[variant.sizeType as SizeType]?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {/* Stock */}
+                <div className="col-span-3">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={variant.stock}
+                    onChange={(e) =>
+                      updateVariant(index, "stock", parseInt(e.target.value) || 0)
+                    }
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                  />
+                </div>
+
+                {/* Remove Button */}
+                <div className="col-span-1 flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => removeVariant(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Remove variant"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

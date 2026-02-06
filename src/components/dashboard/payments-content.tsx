@@ -11,6 +11,9 @@ import {
   Calendar,
   RefreshCw,
   Zap,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   getStripeAccountStatus,
@@ -39,6 +42,7 @@ interface Order {
   total: string;
   currency: string;
   status: string;
+  paymentStatus: string;
   createdAt: Date;
   items: Array<{
     id: string;
@@ -103,6 +107,9 @@ export default function PaymentsContent({
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dailyRevenue, setDailyRevenue] = useState<DailyRevenue[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Check for URL params (success/error from OAuth)
   useEffect(() => {
@@ -355,11 +362,39 @@ export default function PaymentsContent({
     // Combine with actual orders
     const allTransactions = [...pendingTransactions, ...getFilteredOrders()];
     
+    // Apply search filter
+    const filtered = allTransactions.filter((transaction: any) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        transaction.id.toLowerCase().includes(query) ||
+        transaction.customerEmail.toLowerCase().includes(query) ||
+        transaction.customerName.toLowerCase().includes(query) ||
+        transaction.status.toLowerCase().includes(query) ||
+        transaction.total.toString().includes(query)
+      );
+    });
+    
     // Sort by date
-    return allTransactions.sort((a, b) => 
+    return filtered.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   }
+
+  function getPaginatedTransactions() {
+    const allTransactions = getDisplayTransactions();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return allTransactions.slice(startIndex, endIndex);
+  }
+
+  function getTotalPages() {
+    return Math.ceil(getDisplayTransactions().length / itemsPerPage);
+  }
+
+  // Reset to page 1 when search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, dateFilter]);
 
   function getOrderStatusCounts() {
     return {
@@ -648,7 +683,26 @@ export default function PaymentsContent({
       )}
 
       
-      {stats && (
+      {/* Stats Cards - Loading or Content */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="p-3 bg-gray-100 rounded-lg">
+                  <div className="h-5 w-5 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-2"></div>
+              <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-linear-to-br from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -710,10 +764,46 @@ export default function PaymentsContent({
             <p className="text-xs text-gray-600 mt-2">Orders in past month</p>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {/* Analytics Section */}
-      {isConnected && orders.length > 0 && (
+      {/* Analytics Section - Loading or Content */}
+      {isLoading ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+          <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Chart Skeleton */}
+            <div className="space-y-4">
+              <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
+            </div>
+            {/* Metrics Skeleton */}
+            <div className="space-y-6">
+              <div>
+                <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mb-3"></div>
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 bg-gray-100 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-3"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="h-12 w-12 bg-gray-100 rounded animate-pulse"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-3 w-16 bg-gray-100 rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : isConnected && orders.length > 0 && (
         <div className="space-y-4">
           {/* Analytics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -861,14 +951,36 @@ export default function PaymentsContent({
 
       {/* Orders List */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-linear-to-r from-white to-gray-50 flex-wrap gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Transactions</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              View and manage your customer orders
-            </p>
+        <div className="p-6 border-b border-gray-200 bg-linear-to-r from-white to-gray-50">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Transactions</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                View and manage your customer orders
+              </p>
+            </div>
+            <button
+              onClick={loadData}
+              disabled={isLoading}
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Refresh orders"
+            >
+              <RefreshCw
+                className={`h-5 w-5 text-gray-600 ${isLoading ? "animate-spin" : ""}`}
+              />
+            </button>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-[200px] max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by ID, customer, email, status..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              />
+            </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
@@ -889,25 +1001,68 @@ export default function PaymentsContent({
               <option value="30days">Last 30 days</option>
               <option value="all">All time</option>
             </select>
-            <button
-              onClick={loadData}
-              disabled={isLoading}
-              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              title="Refresh orders"
-            >
-              <RefreshCw
-                className={`h-5 w-5 text-gray-600 ${isLoading ? "animate-spin" : ""}`}
-              />
-            </button>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="p-12 text-center">
-            <Loader2 className="h-10 w-10 animate-spin mx-auto text-blue-500" />
-            <p className="mt-3 text-sm font-medium text-gray-700">
-              Loading transactions...
-            </p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Order ID
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Items
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Payment Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                    <td className="px-6 py-4">
+                      <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                        <div className="h-3 w-40 bg-gray-100 rounded animate-pulse"></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : getDisplayTransactions().length === 0 ? (
           <div className="p-12 text-center">
@@ -944,12 +1099,15 @@ export default function PaymentsContent({
                     Status
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Payment Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Date
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {getDisplayTransactions().map((transaction: any, index) => (
+                {getPaginatedTransactions().map((transaction: any, index) => (
                   <tr
                     key={transaction.id}
                     className={`hover:bg-gray-50 transition-colors ${
@@ -1007,6 +1165,23 @@ export default function PaymentsContent({
                       </span>
                     </td>
                     <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
+                          transaction.paymentStatus === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : transaction.paymentStatus === "Paid"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.paymentStatus === "Settled"
+                            ? "bg-green-100 text-green-800"
+                            : transaction.paymentStatus === "Refunded"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {transaction.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
                       <p className="text-sm text-gray-600">
                         {formatDate(transaction.createdAt)}
                       </p>
@@ -1015,6 +1190,65 @@ export default function PaymentsContent({
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!isLoading && getDisplayTransactions().length > 0 && (
+          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, getDisplayTransactions().length)} of{" "}
+              {getDisplayTransactions().length} transactions
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    return (
+                      page === 1 ||
+                      page === getTotalPages() ||
+                      Math.abs(page - currentPage) <= 1
+                    );
+                  })
+                  .map((page, index, array) => (
+                    <div key={page} className="flex items-center">
+                      {index > 0 && array[index - 1] !== page - 1 && (
+                        <span className="px-2 text-gray-400">...</span>
+                      )}
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                          currentPage === page
+                            ? "bg-blue-500 text-white font-semibold"
+                            : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(getTotalPages(), prev + 1))}
+                disabled={currentPage === getTotalPages()}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>

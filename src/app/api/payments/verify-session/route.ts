@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { createOrder } from "@/lib/actions";
+import { createOrder, updateOrderStatus } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -36,9 +36,15 @@ export async function POST(request: NextRequest) {
     // Check if order already exists for this session
     const existingOrder = await prisma.order.findUnique({
       where: { stripeSessionId: sessionId },
+      include: { items: true },
     });
 
     if (existingOrder) {
+      // If order exists but is still Pending, update to Completed and reduce stock
+      if (existingOrder.status === "Pending") {
+        console.log("[Session Verify] Existing order is Pending, updating to Completed:", existingOrder.id);
+        await updateOrderStatus(existingOrder.stripePaymentId, "Completed", "Paid");
+      }
       return NextResponse.json({ 
         success: true, 
         orderId: existingOrder.id,
@@ -71,6 +77,7 @@ export async function POST(request: NextRequest) {
 
     const items = JSON.parse(itemsJson) as Array<{
       productId: string;
+      variantId?: string;
       name: string;
       quantity: number;
       unitPrice: number;
@@ -87,6 +94,7 @@ export async function POST(request: NextRequest) {
       currency: session.currency || "usd",
       items: items.map((item) => ({
         productId: item.productId,
+        variantId: item.variantId || null,
         productName: item.name,
         quantity: item.quantity,
         unitPrice: item.unitPrice,

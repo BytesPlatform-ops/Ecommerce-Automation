@@ -33,6 +33,7 @@ export function CartButton() {
           storeId: items[0].storeId,
           items: items.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId || null,
             quantity: item.quantity,
           })),
         }),

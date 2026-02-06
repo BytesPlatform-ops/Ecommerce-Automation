@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         console.log("Payment succeeded:", paymentIntent.id);
-        // Update order status to Completed
+        // Update order status to Completed and payment status to Paid
         try {
-          await updateOrderStatus(paymentIntent.id, "Completed");
-          console.log("[Webhook] Order marked as Completed:", paymentIntent.id);
+          await updateOrderStatus(paymentIntent.id, "Completed", "Paid");
+          console.log("[Webhook] Order marked as Completed, payment status: Paid", paymentIntent.id);
         } catch (error) {
           console.error("[Webhook] Failed to update order status:", error);
         }
@@ -103,16 +103,18 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     return;
   }
 
-  const items = JSON.parse(itemsJson) as Array<{
+  const parsedItems = JSON.parse(itemsJson);
+  const items = parsedItems as Array<{
     productId: string;
+    variantId: string | null;
     name: string;
     quantity: number;
     unitPrice: number;
   }>;
 
-  // Determine initial status based on payment status
-  // If payment is already completed, set status to Completed, otherwise Pending
-  const initialStatus = session.payment_status === "paid" ? "Completed" : "Pending";
+  // Always create order with Pending status
+  // It will be updated to Completed when payment_intent.succeeded webhook fires
+  const initialStatus = "Pending";
 
   // Create the order
   try {
@@ -126,6 +128,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       currency: session.currency || "usd",
       items: items.map((item) => ({
         productId: item.productId,
+        variantId: item.variantId || null,
         productName: item.name,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
@@ -133,7 +136,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       initialStatus,
     });
 
-    console.log("[Webhook] Order created successfully for session:", session.id, "with status:", initialStatus);
+    console.log("[Webhook] Order created successfully for session:", session.id, "with status: Pending");
   } catch (error) {
     console.error("[Webhook] Failed to create order", {
       error: error instanceof Error ? error.message : String(error),

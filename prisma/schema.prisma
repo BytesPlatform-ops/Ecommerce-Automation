@@ -32,6 +32,69 @@ enum OrderStatus {
   Refunded
 }
 
+enum PaymentStatus {
+  Pending
+  Paid
+  Settled
+  Refunded
+}
+
+enum SizeType {
+  VOLUME
+  WEIGHT
+  APPAREL_ALPHA
+  APPAREL_NUMERIC
+  FOOTWEAR
+  DIMENSION
+  COUNT
+  STORAGE
+}
+
+enum Unit {
+  // Volume
+  ML
+  L
+  // Weight
+  G
+  KG
+  // Apparel Alpha
+  XS
+  S
+  M
+  L_SIZE
+  XL
+  XXL
+  // Apparel Numeric
+  SIZE_28
+  SIZE_30
+  SIZE_32
+  SIZE_34
+  SIZE_36
+  SIZE_38
+  SIZE_40
+  SIZE_42
+  // Footwear
+  US_6
+  US_7
+  US_8
+  US_9
+  US_10
+  US_11
+  US_12
+  US_13
+  // Dimension
+  CM
+  METER
+  INCH
+  FEET
+  // Count
+  PCS
+  PACK
+  // Storage
+  GB
+  TB
+}
+
 model Theme {
   id            String   @id @default(cuid())
   name          String   @unique
@@ -76,17 +139,35 @@ model Product {
   storeId     String
   store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
   name        String
-  description String?
+  description String?     @db.Text
   sku         String?
   price       Decimal     @db.Decimal(10, 2)
   imageUrl    String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  variants   ProductVariant[]
   orderItems OrderItem[]
 
   @@index([storeId])
   @@map("products")
+}
+
+model ProductVariant {
+  id        String    @id @default(cuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sizeType  SizeType?
+  value     String?   // For numeric values or additional descriptors
+  unit      Unit?
+  stock     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
 }
 
 model Order {
@@ -100,6 +181,7 @@ model Order {
   total              Decimal     @db.Decimal(10, 2)
   currency           String      @default("usd")
   status             OrderStatus @default(Pending)
+  paymentStatus      PaymentStatus @default(Pending)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
@@ -107,20 +189,25 @@ model Order {
 
   @@index([storeId])
   @@index([status])
+  @@index([paymentStatus])
   @@map("orders")
 }
 
 model OrderItem {
-  id          String  @id @default(cuid())
+  id          String         @id @default(cuid())
   orderId     String
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId   String
-  product     Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-  productName String  // Snapshot of product name at time of purchase
+  product     Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variantId   String?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  productName String         // Snapshot of product name at time of purchase
+  variantInfo String?        // Snapshot of variant details (e.g., "Size: L", "Volume: 500ml")
   quantity    Int
-  unitPrice   Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal        @db.Decimal(10, 2)
 
   @@index([orderId])
   @@index([productId])
+  @@index([variantId])
   @@map("order_items")
 }

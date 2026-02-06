@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Shield, Truck, RotateCcw, Heart, Share2, Star, Check } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
+import { ProductVariantSelector } from "@/components/storefront/product-variant-selector";
 
 export default async function ProductDetailPage({
   params,
@@ -21,6 +22,9 @@ export default async function ProductDetailPage({
     include: {
       store: {
         select: { id: true },
+      },
+      variants: {
+        orderBy: { createdAt: 'asc' },
       },
     },
   });
@@ -105,27 +109,35 @@ export default async function ProductDetailPage({
                   Save 17%
                 </span>
               </div>
-
-              {/* Stock Status */}
-              <div className="flex items-center gap-2 text-green-600 font-medium">
-                <Check className="h-5 w-5" />
-                In Stock (24 units available)
-              </div>
             </div>
 
-            {/* Color and Size Options */}
+            {/* Variant Selection */}
             <div className="space-y-6 mb-8 pb-8 border-b border-gray-200">
-              {/* Add to Cart with Quantity */}
-              <AddToCartButton
-                product={{
-                  id: product.id,
-                  name: product.name,
-                  price: Number(product.price),
-                  imageUrl: product.imageUrl,
-                }}
-                storeId={product.store.id}
-                storeSlug={username}
-              />
+              {product.variants.length > 0 && (
+                <ProductVariantSelector
+                  variants={product.variants}
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: Number(product.price),
+                    imageUrl: product.imageUrl,
+                  }}
+                  storeId={product.store.id}
+                  storeSlug={username}
+                />
+              )}
+              {product.variants.length === 0 && (
+                <AddToCartButton
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: Number(product.price),
+                    imageUrl: product.imageUrl,
+                  }}
+                  storeId={product.store.id}
+                  storeSlug={username}
+                />
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -178,14 +190,22 @@ export default async function ProductDetailPage({
             <div className="bg-white rounded-2xl p-8 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Product Details</h2>
               <div className="prose max-w-none">
-                <p className="text-gray-600 leading-relaxed mb-4">
-                  This premium product has been carefully selected to meet the highest quality standards. 
-                  Each item is thoroughly inspected and tested to ensure exceptional performance and durability.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  Enjoy the perfect blend of quality, style, and functionality with this must-have product.
-                  Whether you're a first-time buyer or a loyal customer, you'll appreciate the attention to detail.
-                </p>
+                {product.description ? (
+                  <div className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                    {product.description}
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                      This premium product has been carefully selected to meet the highest quality standards. 
+                      Each item is thoroughly inspected and tested to ensure exceptional performance and durability.
+                    </p>
+                    <p className="text-gray-600 leading-relaxed">
+                      Enjoy the perfect blend of quality, style, and functionality with this must-have product.
+                      Whether you're a first-time buyer or a loyal customer, you'll appreciate the attention to detail.
+                    </p>
+                  </>
+                )}
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-4">

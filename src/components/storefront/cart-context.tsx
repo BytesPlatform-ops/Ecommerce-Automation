@@ -4,6 +4,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 export interface CartItem {
   productId: string;
+  variantId?: string;
+  variantInfo?: string;
   name: string;
   price: number;
   imageUrl: string | null;
@@ -15,8 +17,9 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: { id: string; name: string; price: number; imageUrl: string | null; variantId?: string; variantInfo?: string }, quantity: number, storeId: string, storeSlug: string) => void;
+  removeItem: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   getItemCount: () => number;
   getTotal: () => number;
@@ -64,10 +67,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return [{ ...item, quantity: item.quantity || 1 }];
       }
 
-      const existing = prev.find((i) => i.productId === item.productId);
+      // For products with variants, check both productId and variantId
+      const matchKey = item.variantId 
+        ? (i: CartItem) => i.productId === item.productId && i.variantId === item.variantId
+        : (i: CartItem) => i.productId === item.productId && !i.variantId;
+      
+      const existing = prev.find(matchKey);
       if (existing) {
         return prev.map((i) =>
-          i.productId === item.productId
+          matchKey(i)
             ? { ...i, quantity: i.quantity + (item.quantity || 1) }
             : i
         );
@@ -76,17 +84,55 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  function removeItem(productId: string) {
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
+  function addToCart(
+    product: { 
+      id: string; 
+      name: string; 
+      price: number; 
+      imageUrl: string | null; 
+      variantId?: string; 
+      variantInfo?: string 
+    }, 
+    quantity: number,
+    storeId: string,
+    storeSlug: string
+  ) {
+    addItem({
+      productId: product.id,
+      variantId: product.variantId,
+      variantInfo: product.variantInfo,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl,
+      storeId,
+      storeSlug,
+      quantity,
+    });
   }
 
-  function updateQuantity(productId: string, quantity: number) {
+  function removeItem(productId: string, variantId?: string) {
+    setItems((prev) => {
+      if (variantId) {
+        return prev.filter((i) => !(i.productId === productId && i.variantId === variantId));
+      }
+      return prev.filter((i) => i.productId !== productId);
+    });
+  }
+
+  function updateQuantity(productId: string, quantity: number, variantId?: string) {
     if (quantity < 1) {
-      removeItem(productId);
+      removeItem(productId, variantId);
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (i.productId === productId ? { ...i, quantity } : i))
+      prev.map((i) => {
+        if (variantId) {
+          return i.productId === productId && i.variantId === variantId 
+            ? { ...i, quantity } 
+            : i;
+        }
+        return i.productId === productId ? { ...i, quantity } : i;
+      })
     );
   }
 
@@ -111,6 +157,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         items,
         addItem,
+        addToCart,
         removeItem,
         updateQuantity,
         clearCart,

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateDomainFormat, normalizeDomain, DOMAIN_STATUS } from "@/lib/domain-utils";
-import { DomainStatus, StripeConnectStatus, OrderStatus } from "@prisma/client";
+import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus } from "@prisma/client";
 import {
   getConnectedAccount,
   getAccountBalance,
@@ -13,7 +13,18 @@ import {
 
 export async function createProduct(
   storeId: string,
-  data: { name: string; price: number; imageUrl?: string }
+  data: { 
+    name: string; 
+    description?: string;
+    price: number; 
+    imageUrl?: string;
+    variants?: Array<{
+      sizeType: string;
+      value?: string;
+      unit: string;
+      stock: number;
+    }>;
+  }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -35,8 +46,20 @@ export async function createProduct(
     data: {
       storeId,
       name: data.name,
+      description: data.description || null,
       price: data.price,
       imageUrl: data.imageUrl || null,
+      variants: data.variants && data.variants.length > 0 ? {
+        create: data.variants.map(v => ({
+          sizeType: v.sizeType,
+          value: v.value || null,
+          unit: v.unit,
+          stock: v.stock,
+        })),
+      } : undefined,
+    },
+    include: {
+      variants: true,
     },
   });
   
@@ -48,7 +71,19 @@ export async function createProduct(
 
 export async function updateProduct(
   productId: string,
-  data: { name: string; price: number; imageUrl?: string }
+  data: { 
+    name: string; 
+    description?: string;
+    price: number; 
+    imageUrl?: string;
+    variants?: Array<{
+      id?: string;
+      sizeType: string;
+      value?: string;
+      unit: string;
+      stock: number;
+    }>;
+  }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -60,19 +95,42 @@ export async function updateProduct(
   // Verify product ownership via store
   const existingProduct = await prisma.product.findFirst({
     where: { id: productId },
-    include: { store: true },
+    include: { 
+      store: true,
+      variants: true,
+    },
   });
 
   if (!existingProduct || existingProduct.store.ownerId !== user.id) {
     throw new Error("Product not found or unauthorized");
   }
 
+  // Handle variant updates (delete old ones and create new ones for simplicity)
+  if (data.variants !== undefined) {
+    // Delete existing variants
+    await prisma.productVariant.deleteMany({
+      where: { productId },
+    });
+  }
+
   const product = await prisma.product.update({
     where: { id: productId },
     data: {
       name: data.name,
+      description: data.description ?? undefined,
       price: data.price,
       imageUrl: data.imageUrl ?? undefined,
+      variants: data.variants && data.variants.length > 0 ? {
+        create: data.variants.map(v => ({
+          sizeType: v.sizeType,
+          value: v.value || null,
+          unit: v.unit,
+          stock: v.stock,
+        })),
+      } : undefined,
+    },
+    include: {
+      variants: true,
     },
   });
   
@@ -435,6 +493,7 @@ export async function createOrder(data: {
   currency: string;
   items: Array<{
     productId: string;
+    variantId: string | null;
     productName: string;
     quantity: number;
     unitPrice: number;
@@ -455,6 +514,7 @@ export async function createOrder(data: {
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId,
             productName: item.productName,
             quantity: item.quantity,
             unitPrice: item.unitPrice / 100, // Convert from cents to dollars
@@ -465,6 +525,24 @@ export async function createOrder(data: {
         items: true,
       },
     });
+
+    // Reduce stock when order is created as Completed (e.g., via verify-session)
+    if (data.initialStatus === "Completed") {
+      for (const item of order.items) {
+        if (item.variantId) {
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
+      }
+      console.log("[Order Created] Stock reduced for Completed order:", order.id);
+    }
+
     console.log("[Order Created]", {
       orderId: order.id,
       storeId: order.storeId,
@@ -483,16 +561,45 @@ export async function createOrder(data: {
 }
 
 /**
- * Update order status
+ * Update order status and payment status, reduce stock if order is completed
  */
 export async function updateOrderStatus(
   stripePaymentId: string,
-  status: "Pending" | "Completed" | "Failed" | "Refunded"
+  status: "Pending" | "Completed" | "Failed" | "Refunded",
+  paymentStatus?: "Pending" | "Paid" | "Settled" | "Refunded"
 ) {
-  return await prisma.order.update({
+  const updateData: any = {
+    status: status as OrderStatus,
+  };
+
+  if (paymentStatus) {
+    updateData.paymentStatus = paymentStatus as PaymentStatus;
+  }
+
+  const updatedOrder = await prisma.order.update({
     where: { stripePaymentId },
-    data: { status: status as OrderStatus },
+    data: updateData,
+    include: { items: true },
   });
+
+  // Reduce stock when order is completed
+  if (status === "Completed") {
+    for (const item of updatedOrder.items) {
+      if (item.variantId) {
+        // If item has a variant, reduce variant stock
+        await prisma.productVariant.update({
+          where: { id: item.variantId },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+      }
+    }
+  }
+
+  return updatedOrder;
 }
 
 /**

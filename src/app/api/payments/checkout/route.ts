@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       storeId: string;
       items: Array<{
         productId: string;
+        variantId?: string;
         quantity: number;
       }>;
       customerEmail?: string;
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
         unitAmount: Math.round(Number(product.price) * 100), // Convert to cents
         quantity: item.quantity,
         productId: product.id,
+        variantId: item.variantId,
       };
     });
 

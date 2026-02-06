@@ -137,6 +137,7 @@ export async function createCheckoutSession({
     unitAmount: number; // in cents
     quantity: number;
     productId: string;
+    variantId?: string;
   }>;
   customerEmail?: string;
   successUrl: string;
@@ -166,6 +167,7 @@ export async function createCheckoutSession({
         items: JSON.stringify(
           lineItems.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId === undefined ? null : item.variantId,
             name: item.name,
             quantity: item.quantity,
             unitPrice: item.unitAmount,
