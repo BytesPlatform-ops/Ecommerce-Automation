@@ -170,7 +170,21 @@ export async function deleteProduct(productId: string) {
 
 export async function updateStore(
   storeId: string,
-  data: { storeName?: string; aboutText?: string; themeId?: string; heroImageUrl?: string }
+  data: { 
+    storeName?: string; 
+    aboutText?: string; 
+    themeId?: string; 
+    heroImageUrl?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    instagramUrl?: string;
+    facebookUrl?: string;
+    twitterUrl?: string;
+    linkedinUrl?: string;
+    youtubeUrl?: string;
+    whatsappNumber?: string;
+    supportedQueryTypes?: string;
+  }
 ) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -196,6 +210,42 @@ export async function updateStore(
 
   if (data.heroImageUrl !== undefined) {
     updateData.heroImageUrl = data.heroImageUrl;
+  }
+
+  if (data.contactEmail !== undefined) {
+    updateData.contactEmail = data.contactEmail;
+  }
+
+  if (data.contactPhone !== undefined) {
+    updateData.contactPhone = data.contactPhone;
+  }
+
+  if (data.instagramUrl !== undefined) {
+    updateData.instagramUrl = data.instagramUrl;
+  }
+
+  if (data.facebookUrl !== undefined) {
+    updateData.facebookUrl = data.facebookUrl;
+  }
+
+  if (data.twitterUrl !== undefined) {
+    updateData.twitterUrl = data.twitterUrl;
+  }
+
+  if (data.linkedinUrl !== undefined) {
+    updateData.linkedinUrl = data.linkedinUrl;
+  }
+
+  if (data.youtubeUrl !== undefined) {
+    updateData.youtubeUrl = data.youtubeUrl;
+  }
+
+  if (data.whatsappNumber !== undefined) {
+    updateData.whatsappNumber = data.whatsappNumber;
+  }
+
+  if (data.supportedQueryTypes !== undefined) {
+    updateData.supportedQueryTypes = data.supportedQueryTypes;
   }
 
   return await prisma.store.update({

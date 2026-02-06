@@ -124,6 +124,16 @@ model Store {
   stripeConnectId        String?             @unique
   stripeConnectStatus    StripeConnectStatus @default(NotConnected)
   stripeConnectedAt      DateTime?
+  // Contact Information fields
+  contactEmail           String?
+  contactPhone           String?
+  instagramUrl           String?
+  facebookUrl            String?
+  twitterUrl             String?
+  linkedinUrl            String?
+  youtubeUrl             String?
+  whatsappNumber         String?
+  supportedQueryTypes    String?             // JSON array: ["feedback", "complaint", "inquiry", "support"]
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
 

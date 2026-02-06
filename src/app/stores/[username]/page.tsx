@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Sparkles, ArrowRight, Star, TrendingUp, Award, Zap, Package, Clock, Shield } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 import { ProductSearch } from "@/components/storefront/product-search";
+import { ContactSection } from "@/components/storefront/contact-section";
 
 // Check if we're on a custom domain
 async function isCustomDomain() {
@@ -394,6 +395,20 @@ export default async function StorefrontHomePage({
           </div>
         </div>
       </section>
+
+      {/* Contact Section */}
+      <ContactSection
+        storeName={store.storeName}
+        contactEmail={(store as any).contactEmail}
+        contactPhone={(store as any).contactPhone}
+        whatsappNumber={(store as any).whatsappNumber}
+        instagramUrl={(store as any).instagramUrl}
+        facebookUrl={(store as any).facebookUrl}
+        twitterUrl={(store as any).twitterUrl}
+        linkedinUrl={(store as any).linkedinUrl}
+        youtubeUrl={(store as any).youtubeUrl}
+        supportedQueryTypes={(store as any).supportedQueryTypes}
+      />
 
       {/* CTA Section */}
       <section className="py-16 md:py-24 relative overflow-hidden">
