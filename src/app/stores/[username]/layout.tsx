@@ -113,7 +113,16 @@ export default async function StorefrontLayout({
             productPath={productPath}
           />
           <main className="flex-1">{children}</main>
-          <StorefrontFooter storeName={store.storeName} slug={username} aboutPath={aboutPath} />
+          <StorefrontFooter 
+            storeName={store.storeName} 
+            slug={username} 
+            aboutPath={aboutPath}
+            instagramUrl={(store as any).instagramUrl}
+            facebookUrl={(store as any).facebookUrl}
+            twitterUrl={(store as any).twitterUrl}
+            linkedinUrl={(store as any).linkedinUrl}
+            youtubeUrl={(store as any).youtubeUrl}
+          />
         </CartProvider>
       </div>
     </div>

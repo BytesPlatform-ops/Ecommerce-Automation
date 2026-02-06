@@ -174,16 +174,16 @@ export async function updateStore(
     storeName?: string; 
     aboutText?: string; 
     themeId?: string; 
-    heroImageUrl?: string;
-    contactEmail?: string;
-    contactPhone?: string;
-    instagramUrl?: string;
-    facebookUrl?: string;
-    twitterUrl?: string;
-    linkedinUrl?: string;
-    youtubeUrl?: string;
-    whatsappNumber?: string;
-    supportedQueryTypes?: string;
+    heroImageUrl?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    instagramUrl?: string | null;
+    facebookUrl?: string | null;
+    twitterUrl?: string | null;
+    linkedinUrl?: string | null;
+    youtubeUrl?: string | null;
+    whatsappNumber?: string | null;
+    supportedQueryTypes?: string | null;
   }
 ) {
   const supabase = await createClient();

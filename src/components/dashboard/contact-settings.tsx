@@ -64,15 +64,15 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
     try {
       await updateStore(store.id, {
-        contactEmail: contactEmail.trim() || undefined,
-        contactPhone: contactPhone.trim() || undefined,
-        instagramUrl: instagramUrl.trim() || undefined,
-        facebookUrl: facebookUrl.trim() || undefined,
-        twitterUrl: twitterUrl.trim() || undefined,
-        linkedinUrl: linkedinUrl.trim() || undefined,
-        youtubeUrl: youtubeUrl.trim() || undefined,
-        whatsappNumber: whatsappNumber.trim() || undefined,
-        supportedQueryTypes: selectedQueryTypes.length > 0 ? JSON.stringify(selectedQueryTypes) : undefined,
+        contactEmail: contactEmail.trim() || null,
+        contactPhone: contactPhone.trim() || null,
+        instagramUrl: instagramUrl.trim() || null,
+        facebookUrl: facebookUrl.trim() || null,
+        twitterUrl: twitterUrl.trim() || null,
+        linkedinUrl: linkedinUrl.trim() || null,
+        youtubeUrl: youtubeUrl.trim() || null,
+        whatsappNumber: whatsappNumber.trim() || null,
+        supportedQueryTypes: selectedQueryTypes.length > 0 ? JSON.stringify(selectedQueryTypes) : null,
       });
 
       setSuccess(true);

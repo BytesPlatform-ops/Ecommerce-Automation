@@ -6,13 +6,14 @@ import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
 import { Store as StoreIcon, Globe, Phone } from "lucide-react";
+import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
   store: Store;
   domainStore: {
     id: string;
     domain: string | null;
-    domainStatus: string;
+    domainStatus: DomainStatus;
     certificateGeneratedAt: Date | null;
   };
 }
