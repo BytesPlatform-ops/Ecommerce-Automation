@@ -86,13 +86,13 @@ export function ContactSection({
   }
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <section className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4 md:px-6">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Get in Touch</h2>
-            <p className="text-xl text-slate-300">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Get in Touch</h2>
+            <p className="text-xl text-gray-600">
               We'd love to hear from you! Reach out through any of our contact channels.
             </p>
           </div>
@@ -101,19 +101,20 @@ export function ContactSection({
             {/* Contact Information */}
             <div className="lg:col-span-1 space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-6 text-blue-400">Contact Information</h3>
+                <h3 className="text-lg font-semibold mb-6 text-gray-900" style={{ color: "var(--primary)" }}>Contact Information</h3>
 
                 {/* Email */}
                 {contactEmail && (
-                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors cursor-pointer group">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
                       <Mail className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-300 mb-1">Email</p>
+                      <p className="text-sm text-gray-600 mb-1">Email</p>
                       <a
                         href={`mailto:${contactEmail}`}
-                        className="text-white font-medium group-hover:text-blue-400 transition-colors truncate block"
+                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80"
+                        style={{ color: 'var(--primary)' }}
                       >
                         {contactEmail}
                       </a>
@@ -123,15 +124,16 @@ export function ContactSection({
 
                 {/* Phone */}
                 {contactPhone && (
-                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors cursor-pointer group">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
                       <Phone className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-300 mb-1">Phone</p>
+                      <p className="text-sm text-gray-600 mb-1">Phone</p>
                       <a
                         href={`tel:${contactPhone}`}
-                        className="text-white font-medium group-hover:text-green-400 transition-colors truncate block"
+                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80"
+                        style={{ color: 'var(--primary)' }}
                       >
                         {contactPhone}
                       </a>
@@ -141,17 +143,18 @@ export function ContactSection({
 
                 {/* WhatsApp */}
                 {whatsappNumber && (
-                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors cursor-pointer group">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-green-600 flex items-center justify-center">
+                  <div className="flex gap-4 mb-6 p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
                       <Smartphone className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-300 mb-1">WhatsApp</p>
+                      <p className="text-sm text-gray-600 mb-1">WhatsApp</p>
                       <a
                         href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-white font-medium group-hover:text-green-300 transition-colors truncate block"
+                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80"
+                        style={{ color: 'var(--primary)' }}
                       >
                         Message us
                       </a>
@@ -163,17 +166,17 @@ export function ContactSection({
               {/* Social Media */}
               {(instagramUrl || facebookUrl || twitterUrl || linkedinUrl || youtubeUrl) && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 text-blue-400">Follow Us</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900" style={{ color: "var(--primary)" }}>Follow Us</h3>
                   <div className="space-y-3">
                     {instagramUrl && (
                       <a
                         href={instagramUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                       >
-                        <Instagram className="h-5 w-5 text-pink-500 group-hover:text-pink-400" />
-                        <span className="text-slate-300 group-hover:text-white transition-colors">Instagram</span>
+                        <Instagram className="h-5 w-5 text-pink-500 group-hover:text-pink-600" />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Instagram</span>
                       </a>
                     )}
                     {facebookUrl && (
@@ -181,10 +184,10 @@ export function ContactSection({
                         href={facebookUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                       >
-                        <Facebook className="h-5 w-5 text-blue-600 group-hover:text-blue-400" />
-                        <span className="text-slate-300 group-hover:text-white transition-colors">Facebook</span>
+                        <Facebook className="h-5 w-5 text-blue-600 group-hover:text-blue-700" />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Facebook</span>
                       </a>
                     )}
                     {twitterUrl && (
@@ -192,10 +195,10 @@ export function ContactSection({
                         href={twitterUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                       >
-                        <Twitter className="h-5 w-5 text-sky-400 group-hover:text-sky-300" />
-                        <span className="text-slate-300 group-hover:text-white transition-colors">Twitter</span>
+                        <Twitter className="h-5 w-5 text-sky-500 group-hover:text-sky-600" />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">Twitter</span>
                       </a>
                     )}
                     {linkedinUrl && (
@@ -203,10 +206,10 @@ export function ContactSection({
                         href={linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                       >
-                        <Linkedin className="h-5 w-5 text-blue-700 group-hover:text-blue-500" />
-                        <span className="text-slate-300 group-hover:text-white transition-colors">LinkedIn</span>
+                        <Linkedin className="h-5 w-5 text-blue-700 group-hover:text-blue-800" />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">LinkedIn</span>
                       </a>
                     )}
                     {youtubeUrl && (
@@ -214,10 +217,10 @@ export function ContactSection({
                         href={youtubeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors group border border-gray-200"
                       >
-                        <Youtube className="h-5 w-5 text-red-600 group-hover:text-red-500" />
-                        <span className="text-slate-300 group-hover:text-white transition-colors">YouTube</span>
+                        <Youtube className="h-5 w-5 text-red-600 group-hover:text-red-700" />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">YouTube</span>
                       </a>
                     )}
                   </div>
@@ -228,17 +231,17 @@ export function ContactSection({
             {/* Contact Form */}
             {contactEmail && (
               <div className="lg:col-span-2">
-                <div className="bg-slate-700/30 backdrop-blur-sm border border-slate-600 rounded-xl p-8">
-                  <h3 className="text-xl font-semibold mb-6 text-blue-400">Send us a Message</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-8">
+                  <h3 className="text-xl font-semibold mb-6 text-gray-900" style={{ color: "var(--primary)" }}>Send us a Message</h3>
 
                   {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                    <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
                       {error}
                     </div>
                   )}
 
                   {success && (
-                    <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                    <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
                       Thank you! Your message has been sent successfully.
                     </div>
                   )}
@@ -246,7 +249,7 @@ export function ContactSection({
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Name */}
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                         Name *
                       </label>
                       <input
@@ -255,13 +258,14 @@ export function ContactSection({
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Your name"
-                        className="w-full px-4 py-2 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50"
+                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
                       />
                     </div>
 
                     {/* Email */}
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email *
                       </label>
                       <input
@@ -270,21 +274,23 @@ export function ContactSection({
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="your@email.com"
-                        className="w-full px-4 py-2 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50"
+                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
                       />
                     </div>
 
                     {/* Query Type */}
                     {queryTypes.length > 0 && (
                       <div>
-                        <label htmlFor="queryType" className="block text-sm font-medium text-slate-300 mb-2">
+                        <label htmlFor="queryType" className="block text-sm font-medium text-gray-700 mb-2">
                           Inquiry Type
                         </label>
                         <select
                           id="queryType"
                           value={formData.queryType}
                           onChange={(e) => setFormData({ ...formData, queryType: e.target.value })}
-                          className="w-full px-4 py-2 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                          className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50"
+                          style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
                         >
                           <option value="">Select inquiry type</option>
                           {queryTypes.map((type: string) => (
@@ -299,7 +305,7 @@ export function ContactSection({
 
                     {/* Subject */}
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-slate-300 mb-2">
+                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
                         Subject
                       </label>
                       <input
@@ -308,13 +314,14 @@ export function ContactSection({
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         placeholder="Message subject"
-                        className="w-full px-4 py-2 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50"
+                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
                       />
                     </div>
 
                     {/* Message */}
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-slate-300 mb-2">
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                         Message *
                       </label>
                       <textarea
@@ -323,7 +330,8 @@ export function ContactSection({
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Your message..."
                         rows={5}
-                        className="w-full px-4 py-2 bg-slate-600/50 border border-slate-500 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all resize-none focus:ring-2 focus:ring-opacity-50"
+                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
                       />
                     </div>
 
@@ -331,7 +339,10 @@ export function ContactSection({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90"
+                      style={{
+                        backgroundColor: "var(--primary)",
+                      }}
                     >
                       <Send className="h-5 w-5" />
                       {loading ? "Sending..." : "Send Message"}
