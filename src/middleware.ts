@@ -47,16 +47,21 @@ async function getStoreByDomain(domain: string): Promise<string | null> {
 
     const normalizedDomain = normalizeDomainForLookup(domain);
 
-    // Query the stores table for this domain
+    // Query the stores table for this domain - use maybeSingle() instead of single()
     const { data, error } = await supabase
       .from("stores")
       .select("subdomainSlug")
-      .or(`domain.eq.${normalizedDomain},domain.eq.www.${normalizedDomain}`)
+      .eq("domain", normalizedDomain)
       .eq("domainStatus", "Live")
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
-      console.log(`No store found for domain: ${domain}`, error?.message);
+    if (error) {
+      console.log(`Error querying store by domain: ${domain}`, error.message);
+      return null;
+    }
+
+    if (!data) {
+      console.log(`No store found for domain: ${domain}`);
       return null;
     }
 
