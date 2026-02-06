@@ -25,10 +25,13 @@ export default async function StorefrontLayout({
   const { username } = await params;
   const onCustomDomain = await isCustomDomain();
 
-  // Fetch store with theme
+  // Fetch store with theme and products
   const store = await prisma.store.findUnique({
     where: { subdomainSlug: username },
-    include: { theme: true },
+    include: { 
+      theme: true,
+      products: { orderBy: { createdAt: "desc" } },
+    },
   });
 
   if (!store) {
@@ -38,6 +41,15 @@ export default async function StorefrontLayout({
   // Determine correct paths based on domain type
   const aboutPath = onCustomDomain ? "/about" : `/stores/${username}/about`;
   const homePath = onCustomDomain ? "/" : `/stores/${username}`;
+  const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
+
+  // Convert Decimal prices to numbers for client component
+  const plainProducts = store.products.map(p => ({
+    id: p.id,
+    name: p.name,
+    imageUrl: p.imageUrl,
+    price: Number(p.price),
+  }));
 
   // Helper function to ensure hex codes have # prefix
   const formatHex = (hex: string | null | undefined) => {
@@ -91,7 +103,15 @@ export default async function StorefrontLayout({
       <div className="storefront flex flex-col min-h-screen">
         <CartProvider>
           <CheckoutSuccessHandler />
-          <StorefrontNavbar storeName={store.storeName} slug={username} storeId={store.id} aboutPath={aboutPath} homePath={homePath} />
+          <StorefrontNavbar 
+            storeName={store.storeName} 
+            slug={username} 
+            storeId={store.id} 
+            aboutPath={aboutPath} 
+            homePath={homePath}
+            products={plainProducts}
+            productPath={productPath}
+          />
           <main className="flex-1">{children}</main>
           <StorefrontFooter storeName={store.storeName} slug={username} aboutPath={aboutPath} />
         </CartProvider>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, ArrowRight, Star, TrendingUp, Award, Zap, Package, Clock, Shield } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
+import { ProductSearch } from "@/components/storefront/product-search";
 
 // Check if we're on a custom domain
 async function isCustomDomain() {
@@ -262,6 +263,19 @@ export default async function StorefrontHomePage({
             <p className="text-gray-600 max-w-xl mx-auto">
               Explore our complete collection of premium items
             </p>
+          </div>
+
+          {/* Product Search */}
+          <div className="mb-8 max-w-2xl mx-auto">
+            <ProductSearch 
+              products={products.map(p => ({
+                id: p.id,
+                name: p.name,
+                imageUrl: p.imageUrl,
+                price: Number(p.price),
+              }))} 
+              productPath={productPath}
+            />
           </div>
 
           {products && products.length > 0 ? (

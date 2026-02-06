@@ -4,6 +4,14 @@ import Link from "next/link";
 import { Store, Menu, Search, Heart, User, Info } from "lucide-react";
 import { useState } from "react";
 import { CartButton } from "./cart-button";
+import { NavbarSearch } from "./navbar-search";
+
+interface Product {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  price: number;
+}
 
 interface StorefrontNavbarProps {
   storeName: string;
@@ -11,9 +19,11 @@ interface StorefrontNavbarProps {
   storeId: string;
   aboutPath: string;
   homePath: string;
+  products: Product[];
+  productPath: string;
 }
 
-export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath }: StorefrontNavbarProps) {
+export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath, products, productPath }: StorefrontNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -55,14 +65,12 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
           </div>
 
           {/* Search Bar & Actions */}
-          <div className="flex items-center gap-3">
-            {/* Search - Hidden on mobile, visible on md+ */}
-            <div className="hidden sm:flex items-center bg-gray-100 rounded-full px-4 py-2.5 hover:bg-gray-200 transition-colors">
-              <Search className="h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-transparent ml-2 text-sm outline-none w-32 placeholder:text-gray-400 font-medium"
+          <div className="flex items-center gap-4">
+            {/* Search - Visible on all screens */}
+            <div>
+              <NavbarSearch 
+                products={products}
+                productPath={productPath}
               />
             </div>
 
