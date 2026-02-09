@@ -128,6 +128,7 @@ export async function createCheckoutSession({
   customerEmail,
   successUrl,
   cancelUrl,
+  shippingInfo,
 }: {
   storeId: string;
   stripeConnectId: string;
@@ -137,11 +138,45 @@ export async function createCheckoutSession({
     unitAmount: number; // in cents
     quantity: number;
     productId: string;
+    variantId?: string | null;
   }>;
   customerEmail?: string;
   successUrl: string;
   cancelUrl: string;
+  shippingInfo?: {
+    country: string;
+    firstName: string;
+    lastName: string;
+    company: string;
+    address: string;
+    apartment: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    phone: string;
+  };
 }) {
+  const sessionMetadata: any = {
+    storeId,
+    items: JSON.stringify(
+      lineItems.map((item) => ({
+        productId: item.productId,
+        variantId: item.variantId || null,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitAmount,
+      }))
+    ),
+  };
+
+  // Add shipping info to metadata if provided
+  if (shippingInfo) {
+    sessionMetadata.shippingInfo = JSON.stringify(shippingInfo);
+    console.log("[Stripe] Adding shipping info to metadata:", shippingInfo);
+  }
+
+  console.log("[Stripe] Session metadata:", sessionMetadata);
+
   const session = await stripe.checkout.sessions.create(
     {
       payment_method_types: ["card"],
@@ -161,17 +196,7 @@ export async function createCheckoutSession({
         },
         quantity: item.quantity,
       })),
-      metadata: {
-        storeId,
-        items: JSON.stringify(
-          lineItems.map((item) => ({
-            productId: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.unitAmount,
-          }))
-        ),
-      },
+      metadata: sessionMetadata,
       success_url: successUrl,
       cancel_url: cancelUrl,
       // No application_fee_amount since we're not charging platform fees

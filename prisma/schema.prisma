@@ -193,6 +193,17 @@ model Order {
   currency           String      @default("usd")
   status             OrderStatus @default(Pending)
   paymentStatus      PaymentStatus @default(Pending)
+  // Shipping Information
+  shippingFirstName  String?
+  shippingLastName   String?
+  shippingCompany    String?
+  shippingAddress    String?
+  shippingApartment  String?
+  shippingCity       String?
+  shippingState      String?
+  shippingZipCode    String?
+  shippingCountry    String?
+  shippingPhone      String?
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 

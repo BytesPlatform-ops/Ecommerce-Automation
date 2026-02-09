@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShoppingCart, X, Trash2, Minus, Plus, Loader2 } from "lucide-react";
+import { ShoppingCart, X, Trash2, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "./cart-context";
+import { useRouter, usePathname } from "next/navigation";
 
 export function CartButton() {
   const { items, getItemCount, getTotal, updateQuantity, removeItem, clearCart, isCartOpen, setIsCartOpen } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Only render drawer after hydration
   useEffect(() => {
@@ -19,44 +20,15 @@ export function CartButton() {
   const itemCount = getItemCount();
   const total = getTotal();
 
-  async function handleCheckout() {
+  function handleCheckout() {
     if (items.length === 0) return;
 
-    setIsCheckingOut(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          storeId: items[0].storeId,
-          items: items.map((item) => ({
-            productId: item.productId,
-            variantId: item.variantId || null,
-            quantity: item.quantity,
-          })),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session");
-      }
-
-      if (data.url) {
-        {/* Clear cart before redirecting */}
-        clearCart();
-        setIsCartOpen(false);
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      setError(err instanceof Error ? err.message : "Checkout failed");
-    } finally {
-      setIsCheckingOut(false);
-    }
+    // Navigate to shipping page instead of directly to checkout
+    setIsCartOpen(false);
+    const username = pathname.split("/")[2]; // Get username from pathname
+    const shippingUrl = `/stores/${username}/shipping?storeId=${items[0].storeId}`;
+    console.log("Navigating to:", shippingUrl);
+    router.push(shippingUrl);
   }
 
   return (
@@ -177,34 +149,22 @@ export function CartButton() {
               {/* Footer */}
               {items.length > 0 && (
                 <div className="border-t p-3 sm:p-4 space-y-3 sm:space-y-4">
-                  {error && (
-                    <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg text-xs sm:text-sm text-red-600">
-                      {error}
-                    </div>
-                  )}
-
                   <div className="flex justify-between items-center">
                     <span className="text-base sm:text-lg font-semibold">Total</span>
                     <span className="text-xl sm:text-2xl font-bold">${total.toFixed(2)}</span>
                   </div>
 
                   <button
+                    type="button"
                     onClick={handleCheckout}
-                    disabled={isCheckingOut}
-                    className="w-full py-3 sm:py-4 rounded-xl font-semibold text-white text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 sm:py-4 rounded-xl font-semibold text-white text-sm sm:text-base flex items-center justify-center gap-2"
                     style={{ backgroundColor: "var(--primary)" }}
                   >
-                    {isCheckingOut ? (
-                      <>
-                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Proceed to Checkout"
-                    )}
+                    Proceed to Checkout
                   </button>
 
                   <button
+                    type="button"
                     onClick={clearCart}
                     className="w-full py-2 text-xs sm:text-sm text-gray-500 hover:text-gray-700"
                   >

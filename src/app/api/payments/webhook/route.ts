@@ -89,13 +89,16 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   // Extract metadata
   const storeId = session.metadata?.storeId;
   const itemsJson = session.metadata?.items;
+  const shippingInfoJson = session.metadata?.shippingInfo;
 
   console.log("[Webhook] checkout.session.completed", {
     sessionId: session.id,
     storeId,
     amount: session.amount_total,
     paymentStatus: session.payment_status,
-    hasItemsMetadata: !!itemsJson
+    hasItemsMetadata: !!itemsJson,
+    hasShippingInfo: !!shippingInfoJson,
+    metadata: session.metadata
   });
 
   if (!storeId || !itemsJson) {
@@ -104,6 +107,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   }
 
   const parsedItems = JSON.parse(itemsJson);
+  console.log("[Webhook] Parsed items:", parsedItems);
+  
   const items = parsedItems as Array<{
     productId: string;
     variantId: string | null;
@@ -112,34 +117,61 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     unitPrice: number;
   }>;
 
+  // Parse shipping info if available
+  let shippingInfo = null;
+  if (shippingInfoJson) {
+    try {
+      shippingInfo = JSON.parse(shippingInfoJson);
+      console.log("[Webhook] Parsed shipping info:", shippingInfo);
+    } catch (error) {
+      console.error("[Webhook] Failed to parse shipping info:", error);
+    }
+  }
+
   // Always create order with Pending status
   // It will be updated to Completed when payment_intent.succeeded webhook fires
   const initialStatus = "Pending";
 
+  const orderData = {
+    storeId,
+    stripePaymentId: session.payment_intent as string,
+    stripeSessionId: session.id,
+    customerEmail: session.customer_email || session.customer_details?.email || "unknown@email.com",
+    customerName: session.customer_details?.name || undefined,
+    total: session.amount_total || 0,
+    currency: session.currency || "usd",
+    items: items.map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId || null,
+      productName: item.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    initialStatus,
+    shippingInfo: shippingInfo ? {
+      shippingFirstName: shippingInfo.firstName,
+      shippingLastName: shippingInfo.lastName,
+      shippingCompany: shippingInfo.company,
+      shippingAddress: shippingInfo.address,
+      shippingApartment: shippingInfo.apartment,
+      shippingCity: shippingInfo.city,
+      shippingState: shippingInfo.state,
+      shippingZipCode: shippingInfo.zipCode,
+      shippingCountry: shippingInfo.country,
+      shippingPhone: shippingInfo.phone,
+    } : undefined,
+  };
+
+  console.log("[Webhook] Creating order with data:", JSON.stringify(orderData, null, 2));
+
   // Create the order
   try {
-    await createOrder({
-      storeId,
-      stripePaymentId: session.payment_intent as string,
-      stripeSessionId: session.id,
-      customerEmail: session.customer_email || session.customer_details?.email || "unknown@email.com",
-      customerName: session.customer_details?.name || undefined,
-      total: session.amount_total || 0,
-      currency: session.currency || "usd",
-      items: items.map((item) => ({
-        productId: item.productId,
-        variantId: item.variantId || null,
-        productName: item.name,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-      })),
-      initialStatus,
-    });
-
-    console.log("[Webhook] Order created successfully for session:", session.id, "with status: Pending");
+    const order = await createOrder(orderData);
+    console.log("[Webhook] Order created successfully:", order.id, "with status: Pending");
   } catch (error) {
     console.error("[Webhook] Failed to create order", {
       error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
       sessionId: session.id,
       storeId
     });

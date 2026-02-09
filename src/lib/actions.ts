@@ -555,6 +555,18 @@ export async function createOrder(data: {
     unitPrice: number;
   }>;
   initialStatus?: "Pending" | "Completed";
+  shippingInfo?: {
+    shippingFirstName?: string;
+    shippingLastName?: string;
+    shippingCompany?: string;
+    shippingAddress?: string;
+    shippingApartment?: string;
+    shippingCity?: string;
+    shippingState?: string;
+    shippingZipCode?: string;
+    shippingCountry?: string;
+    shippingPhone?: string;
+  };
 }) {
   try {
     const order = await prisma.order.create({
@@ -567,6 +579,17 @@ export async function createOrder(data: {
         total: data.total / 100, // Convert from cents to dollars
         currency: data.currency,
         status: data.initialStatus === "Completed" ? OrderStatus.Completed : OrderStatus.Pending,
+        // Add shipping information
+        shippingFirstName: data.shippingInfo?.shippingFirstName,
+        shippingLastName: data.shippingInfo?.shippingLastName,
+        shippingCompany: data.shippingInfo?.shippingCompany,
+        shippingAddress: data.shippingInfo?.shippingAddress,
+        shippingApartment: data.shippingInfo?.shippingApartment,
+        shippingCity: data.shippingInfo?.shippingCity,
+        shippingState: data.shippingInfo?.shippingState,
+        shippingZipCode: data.shippingInfo?.shippingZipCode,
+        shippingCountry: data.shippingInfo?.shippingCountry,
+        shippingPhone: data.shippingInfo?.shippingPhone,
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,

@@ -5,18 +5,36 @@ import { createCheckoutSession } from "@/lib/stripe";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log("[Checkout API] Received request body:", JSON.stringify(body, null, 2));
+    
     const {
       storeId,
       items,
       customerEmail,
+      shippingInfo,
     }: {
       storeId: string;
       items: Array<{
         productId: string;
+        variantId?: string | null;
         quantity: number;
       }>;
       customerEmail?: string;
+      shippingInfo?: {
+        country: string;
+        firstName: string;
+        lastName: string;
+        company: string;
+        address: string;
+        apartment: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        phone: string;
+      };
     } = body;
+
+    console.log("[Checkout API] Parsed shipping info:", shippingInfo);
 
     if (!storeId || !items || items.length === 0) {
       return NextResponse.json(
@@ -75,6 +93,7 @@ export async function POST(request: NextRequest) {
         unitAmount: Math.round(Number(product.price) * 100), // Convert to cents
         quantity: item.quantity,
         productId: product.id,
+        variantId: item.variantId || null,
       };
     });
 
@@ -92,7 +111,11 @@ export async function POST(request: NextRequest) {
       customerEmail,
       successUrl,
       cancelUrl,
+      shippingInfo,
     });
+
+    console.log("[Checkout API] Stripe session created:", session.id);
+    console.log("[Checkout API] Session URL:", session.url);
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
