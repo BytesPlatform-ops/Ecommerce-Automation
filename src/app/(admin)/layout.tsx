@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard } from "lucide-react";
+import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar-toggle";
 
 export default async function AdminLayout({
   children,
@@ -27,8 +28,8 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200/80 flex flex-col shadow-xl shadow-gray-200/50">
+      {/* Sidebar with Mobile Toggle */}
+      <MobileSidebarToggle>
         {/* Logo & Store Info */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center gap-3 mb-4">
@@ -136,10 +137,10 @@ export default async function AdminLayout({
             </button>
           </form>
         </div>
-      </aside>
+      </MobileSidebarToggle>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-16 lg:pt-8 lg:p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           {children}
         </div>
