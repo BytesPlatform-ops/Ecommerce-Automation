@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { sessionId, storeId }: { sessionId: string; storeId: string } = body;
 
+    console.log("[Session Verify] Received request:", { sessionId, storeId });
+
     if (!sessionId || !storeId) {
+      console.log("[Session Verify] Missing sessionId or storeId");
       return NextResponse.json(
         { error: "Missing sessionId or storeId" },
         { status: 400 }
@@ -67,6 +70,9 @@ export async function POST(request: NextRequest) {
 
     // Extract metadata
     const itemsJson = session.metadata?.items;
+    const shippingInfoJson = session.metadata?.shippingInfo;
+
+    console.log("[Session Verify] Session metadata:", session.metadata);
 
     if (!itemsJson) {
       return NextResponse.json(
@@ -77,11 +83,22 @@ export async function POST(request: NextRequest) {
 
     const items = JSON.parse(itemsJson) as Array<{
       productId: string;
-      variantId?: string;
+      variantId?: string | null;
       name: string;
       quantity: number;
       unitPrice: number;
     }>;
+
+    // Parse shipping info if available
+    let shippingInfo = null;
+    if (shippingInfoJson) {
+      try {
+        shippingInfo = JSON.parse(shippingInfoJson);
+        console.log("[Session Verify] Parsed shipping info:", shippingInfo);
+      } catch (error) {
+        console.error("[Session Verify] Failed to parse shipping info:", error);
+      }
+    }
 
     // Create the order
     const order = await createOrder({
@@ -100,6 +117,18 @@ export async function POST(request: NextRequest) {
         unitPrice: item.unitPrice,
       })),
       initialStatus: "Completed", // Payment already succeeded
+      shippingInfo: shippingInfo ? {
+        shippingFirstName: shippingInfo.firstName,
+        shippingLastName: shippingInfo.lastName,
+        shippingCompany: shippingInfo.company,
+        shippingAddress: shippingInfo.address,
+        shippingApartment: shippingInfo.apartment,
+        shippingCity: shippingInfo.city,
+        shippingState: shippingInfo.state,
+        shippingZipCode: shippingInfo.zipCode,
+        shippingCountry: shippingInfo.country,
+        shippingPhone: shippingInfo.phone,
+      } : undefined,
     });
 
     console.log("[Session Verify] Order created:", order.id);

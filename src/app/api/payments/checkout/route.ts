@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Determine URLs for success and cancel
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
     const storeUrl = `${baseUrl}/stores/${store.subdomainSlug}`;
-    const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}&store_id=${storeId}`;
     const cancelUrl = `${storeUrl}?checkout=cancelled`;
 
     // Create checkout session
