@@ -81,31 +81,31 @@ export function ContactSection({
   }
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-24 bg-white">
+    <section className="py-6 sm:py-10 md:py-16 lg:py-24 bg-white">
       <div className="container mx-auto px-3 sm:px-4 md:px-6">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12 sm:mb-14 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-gray-900">Get in Touch</h2>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 px-2">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-gray-900">Get in Touch</h2>
+            <p className="text-xs sm:text-sm md:text-base text-gray-600 px-2">
               We'd love to hear from you! Reach out through any of our contact channels.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-12">
+          <div className="grid lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8 mb-6 sm:mb-10">
             {/* Contact Information */}
-            <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+            <div className="lg:col-span-1 space-y-3 sm:space-y-4">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-gray-900" style={{ color: "var(--primary)" }}>Contact Information</h3>
+                <h3 className="text-sm sm:text-base font-semibold mb-3 sm:mb-4 text-gray-900" style={{ color: "var(--primary)" }}>Contact Information</h3>
 
                 {/* Email */}
                 {contactEmail && (
-                  <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
-                      <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Email</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">Email</p>
                       <a
                         href={`mailto:${contactEmail}`}
                         className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80 text-xs sm:text-sm break-all"
@@ -119,12 +119,12 @@ export function ContactSection({
 
                 {/* Phone */}
                 {contactPhone && (
-                  <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
-                      <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
+                      <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">Phone</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">Phone</p>
                       <a
                         href={`tel:${contactPhone}`}
                         className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80 text-xs sm:text-sm"
@@ -138,12 +138,12 @@ export function ContactSection({
 
                 {/* WhatsApp */}
                 {whatsappNumber && (
-                  <div className="flex gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center text-white" style={{ backgroundColor: "var(--primary)" }}>
-                      <Smartphone className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
+                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
+                      <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1">WhatsApp</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">WhatsApp</p>
                       <a
                         href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
                         target="_blank"
