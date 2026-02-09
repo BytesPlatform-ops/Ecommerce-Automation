@@ -46,28 +46,36 @@ async function getStoreByDomain(domain: string): Promise<string | null> {
     );
 
     const normalizedDomain = normalizeDomainForLookup(domain);
+    console.log(`[Domain Lookup] Looking up domain: "${normalizedDomain}" (original: "${domain}")`);
 
-    // Query the stores table for this domain - use maybeSingle() instead of single()
-    const { data, error } = await supabase
+    // First, query WITHOUT status filter to check if domain exists at all
+    const { data: anyStore, error: anyError } = await supabase
       .from("stores")
-      .select("subdomainSlug")
+      .select("subdomainSlug, domain, domainStatus")
       .eq("domain", normalizedDomain)
-      .eq("domainStatus", "Live")
       .maybeSingle();
 
-    if (error) {
-      console.log(`Error querying store by domain: ${domain}`, error.message);
+    if (anyError) {
+      console.log(`[Domain Lookup] Error querying store: ${anyError.message}`, anyError);
       return null;
     }
 
-    if (!data) {
-      console.log(`No store found for domain: ${domain}`);
+    if (!anyStore) {
+      console.log(`[Domain Lookup] No store found with domain: "${normalizedDomain}"`);
       return null;
     }
 
-    return data.subdomainSlug;
+    console.log(`[Domain Lookup] Found store with domain "${anyStore.domain}", status: "${anyStore.domainStatus}"`);
+
+    // Check if domain status is Live
+    if (anyStore.domainStatus !== "Live") {
+      console.log(`[Domain Lookup] Store found but status is "${anyStore.domainStatus}", not "Live"`);
+      return null;
+    }
+
+    return anyStore.subdomainSlug;
   } catch (error) {
-    console.error("Error looking up store by domain:", error);
+    console.error("[Domain Lookup] Exception looking up store by domain:", error);
     return null;
   }
 }
@@ -118,11 +126,17 @@ export async function middleware(request: NextRequest) {
     }
 
     // Determine the platform domain to redirect to
+    // Check if we're in production (Render sets RENDER=true, or check NODE_ENV)
+    const isProduction = process.env.RENDER === "true" || 
+                         process.env.NODE_ENV === "production" ||
+                         !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost");
+    
     let platformDomain = "localhost:3000"; // Default for development
-    if (hostname.includes("render") || process.env.VERCEL) {
-      // In production, use the environment variable or infer from Render
+    if (isProduction) {
       platformDomain = process.env.NEXT_PUBLIC_PLATFORM_URL || "ecommerce-automation-wt2l.onrender.com";
     }
+    
+    console.log(`[Custom Domain] Redirecting ${hostname}${pathname} to ${platformDomain}${redirectPath}`);
 
     // Redirect to platform domain with the store path
     const protocol = platformDomain.includes("localhost") ? "http" : "https";
@@ -131,7 +145,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Store not found for this domain - show a 404 page
-  console.log(`No store found for custom domain: ${hostname}`);
+  console.log(`[Custom Domain] No store found for hostname: ${hostname} - showing 404`);
   
   // Redirect to main platform with an error, or show 404
   // For now, just let it continue (will likely show 404)
