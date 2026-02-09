@@ -130,7 +130,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
   // Always create order with Pending status
   // It will be updated to Completed when payment_intent.succeeded webhook fires
-  const initialStatus = "Pending";
+  const initialStatus: "Pending" | "Completed" = "Pending";
 
   const orderData = {
     storeId,
