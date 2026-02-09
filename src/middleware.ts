@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-import { createClient } from "@supabase/supabase-js";
 
 // Platform domains - these are YOUR main domains where the landing page lives
 const PLATFORM_DOMAINS = [
@@ -13,6 +12,23 @@ const PLATFORM_DOMAINS = [
   // "mystorefactory.com",
   // "www.mystorefactory.com",
 ];
+
+// Get the platform URL for internal API calls
+function getPlatformUrl(): string {
+  // Check for explicit platform URL first
+  if (process.env.NEXT_PUBLIC_PLATFORM_URL) {
+    const url = process.env.NEXT_PUBLIC_PLATFORM_URL;
+    return url.startsWith("http") ? url : `https://${url}`;
+  }
+  
+  // Check if we're in production (Render environment)
+  if (process.env.RENDER === "true" || process.env.NODE_ENV === "production") {
+    return "https://ecommerce-automation-wt2l.onrender.com";
+  }
+  
+  // Default to localhost for development
+  return "http://localhost:3000";
+}
 
 // Check if this is a platform domain
 function isPlatformDomain(hostname: string): boolean {
@@ -36,44 +52,42 @@ function normalizeDomainForLookup(domain: string): string {
   return normalized;
 }
 
-// Lookup store by custom domain using Supabase (Edge compatible)
+// Lookup store by custom domain using internal API (Prisma - bypasses RLS)
 async function getStoreByDomain(domain: string): Promise<string | null> {
   try {
-    // Create a Supabase client for Edge runtime
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
     const normalizedDomain = normalizeDomainForLookup(domain);
     console.log(`[Domain Lookup] Looking up domain: "${normalizedDomain}" (original: "${domain}")`);
 
-    // First, query WITHOUT status filter to check if domain exists at all
-    const { data: anyStore, error: anyError } = await supabase
-      .from("stores")
-      .select("subdomainSlug, domain, domainStatus")
-      .eq("domain", normalizedDomain)
-      .maybeSingle();
+    // Call the internal API endpoint which uses Prisma (bypasses RLS issues)
+    const platformUrl = getPlatformUrl();
+    const apiUrl = `${platformUrl}/api/stores/by-domain?domain=${encodeURIComponent(normalizedDomain)}`;
+    
+    console.log(`[Domain Lookup] Calling API: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // Short timeout to avoid blocking
+      signal: AbortSignal.timeout(5000),
+    });
 
-    if (anyError) {
-      console.log(`[Domain Lookup] Error querying store: ${anyError.message}`, anyError);
+    if (!response.ok) {
+      console.log(`[Domain Lookup] API returned ${response.status} for domain: "${normalizedDomain}"`);
       return null;
     }
 
-    if (!anyStore) {
+    const data = await response.json();
+    
+    if (!data.store) {
       console.log(`[Domain Lookup] No store found with domain: "${normalizedDomain}"`);
       return null;
     }
 
-    console.log(`[Domain Lookup] Found store with domain "${anyStore.domain}", status: "${anyStore.domainStatus}"`);
-
-    // Check if domain status is Live
-    if (anyStore.domainStatus !== "Live") {
-      console.log(`[Domain Lookup] Store found but status is "${anyStore.domainStatus}", not "Live"`);
-      return null;
-    }
-
-    return anyStore.subdomainSlug;
+    console.log(`[Domain Lookup] Found store: slug="${data.store.subdomainSlug}", status="${data.store.domainStatus}"`);
+    
+    return data.store.subdomainSlug;
   } catch (error) {
     console.error("[Domain Lookup] Exception looking up store by domain:", error);
     return null;

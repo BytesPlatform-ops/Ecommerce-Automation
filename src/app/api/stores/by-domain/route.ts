@@ -16,16 +16,16 @@ export async function GET(request: NextRequest) {
 
     // Normalize the domain (remove www., protocol, etc.)
     const normalizedDomain = normalizeDomain(domain);
+    console.log(`[API by-domain] Looking up: "${normalizedDomain}" (original: "${domain}")`);
 
-    // Look up the store by domain
-    const store = await prisma.store.findFirst({
+    // First, check if any store has this domain (regardless of status)
+    const anyStore = await prisma.store.findFirst({
       where: {
         OR: [
           { domain: normalizedDomain },
           { domain: `www.${normalizedDomain}` },
-          { domain: domain }, // Also try exact match
+          { domain: domain },
         ],
-        domainStatus: "Live", // Only return stores with verified domains
       },
       select: {
         id: true,
@@ -36,16 +36,28 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    if (!store) {
+    if (!anyStore) {
+      console.log(`[API by-domain] No store found with domain: "${normalizedDomain}"`);
       return NextResponse.json(
         { error: "Store not found for this domain" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ store });
+    console.log(`[API by-domain] Found store: slug="${anyStore.subdomainSlug}", domain="${anyStore.domain}", status="${anyStore.domainStatus}"`);
+
+    // Check if domain is live
+    if (anyStore.domainStatus !== "Live") {
+      console.log(`[API by-domain] Store exists but status is "${anyStore.domainStatus}", not "Live"`);
+      return NextResponse.json(
+        { error: `Domain exists but status is ${anyStore.domainStatus}`, status: anyStore.domainStatus },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ store: anyStore });
   } catch (error) {
-    console.error("Error looking up store by domain:", error);
+    console.error("[API by-domain] Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
