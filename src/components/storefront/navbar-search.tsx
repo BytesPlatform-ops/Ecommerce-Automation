@@ -15,9 +15,10 @@ interface Product {
 interface NavbarSearchProps {
   products: Product[];
   productPath: string;
+  fullWidth?: boolean;
 }
 
-export function NavbarSearch({ products, productPath }: NavbarSearchProps) {
+export function NavbarSearch({ products, productPath, fullWidth = false }: NavbarSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -55,9 +56,9 @@ export function NavbarSearch({ products, productPath }: NavbarSearchProps) {
   };
 
   return (
-    <div ref={searchRef} className="relative w-44 sm:w-56 lg:w-64">
+    <div ref={searchRef} className={`relative ${fullWidth ? 'w-full' : 'w-56 lg:w-64'}`}>
       <div className="relative">
-        <div className="absolute left-3 top-3">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
           <Search className="h-4 w-4 text-gray-400" />
         </div>
         <input

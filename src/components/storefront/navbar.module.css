@@ -1,0 +1,33 @@
+/* Desktop search - shown on md (768px) and above */
+.desktopSearch {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktopSearch {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+
+/* Mobile search - shown below md (768px) */
+.mobileSearch {
+  display: block;
+  padding-bottom: 0.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .mobileSearch {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobileSearch {
+    display: none;
+  }
+}

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Store, Menu, Search, Heart, User, Info } from "lucide-react";
+import { Store, Menu, Heart, User, Info } from "lucide-react";
 import { useState } from "react";
 import { CartButton } from "./cart-button";
 import { NavbarSearch } from "./navbar-search";
+import styles from "./navbar.module.css";
 
 interface Product {
   id: string;
@@ -28,8 +29,8 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
 
   return (
     <nav className="border-b border-gray-100 bg-white/95 backdrop-blur-md sticky top-0 z-50 shadow-sm hover:shadow-md transition-shadow">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6">
-        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 overflow-visible">
+        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20 overflow-visible">
           {/* Logo */}
           <Link
             href={homePath}
@@ -70,7 +71,7 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
           {/* Search Bar & Actions */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {/* Search - Desktop only */}
-            <div className="hidden md:block">
+            <div className={styles.desktopSearch}>
               <NavbarSearch 
                 products={products}
                 productPath={productPath}
@@ -117,16 +118,13 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
           </div>
         </div>
 
-        {/* Mobile Search */}
-        <div className="md:hidden pb-3 sm:pb-4">
-          <div className="flex items-center bg-gray-100 rounded-full px-3 sm:px-4 py-2">
-            <Search className="h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent ml-2 text-xs sm:text-sm outline-none w-full placeholder:text-gray-400"
-            />
-          </div>
+        {/* Mobile Search - Full width on small screens */}
+        <div className={styles.mobileSearch}>
+          <NavbarSearch 
+            products={products}
+            productPath={productPath}
+            fullWidth={true}
+          />
         </div>
       </div>
     </nav>
