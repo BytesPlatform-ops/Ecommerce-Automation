@@ -124,38 +124,25 @@ export async function middleware(request: NextRequest) {
   const storeSlug = await getStoreByDomain(hostname);
 
   if (storeSlug) {
-    // Build the redirect path
-    // If user visits example.com/about, redirect to platform/stores/username/about
-    // If user visits example.com/, redirect to platform/stores/username
-    let redirectPath = `/stores/${storeSlug}`;
+    // Build the rewrite path
+    // If user visits example.com/about, rewrite to /stores/username/about
+    // If user visits example.com/, rewrite to /stores/username
+    let rewritePath = `/stores/${storeSlug}`;
     
     // Append the current path (but not if it's just "/")
     if (pathname && pathname !== "/") {
-      redirectPath += pathname;
+      rewritePath += pathname;
     }
 
     // Append query string if present
     if (url.search) {
-      redirectPath += url.search;
+      rewritePath += url.search;
     }
 
-    // Determine the platform domain to redirect to
-    // Check if we're in production (Render sets RENDER=true, or check NODE_ENV)
-    const isProduction = process.env.RENDER === "true" || 
-                         process.env.NODE_ENV === "production" ||
-                         !process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost");
-    
-    let platformDomain = "localhost:3000"; // Default for development
-    if (isProduction) {
-      platformDomain = process.env.NEXT_PUBLIC_PLATFORM_URL || "ecommerce-automation-wt2l.onrender.com";
-    }
-    
-    console.log(`[Custom Domain] Redirecting ${hostname}${pathname} to ${platformDomain}${redirectPath}`);
+    console.log(`[Custom Domain] Rewriting ${hostname}${pathname} to ${rewritePath}`);
 
-    // Redirect to platform domain with the store path
-    const protocol = platformDomain.includes("localhost") ? "http" : "https";
-    const redirectUrl = new URL(`${protocol}://${platformDomain}${redirectPath}`);
-    return NextResponse.redirect(redirectUrl);
+    // Rewrite the request (keeps original domain in browser, serves from /stores/[username] path)
+    return NextResponse.rewrite(new URL(rewritePath, request.url));
   }
 
   // Store not found for this domain - show a 404 page
