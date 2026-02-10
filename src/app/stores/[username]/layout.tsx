@@ -44,6 +44,7 @@ export default async function StorefrontLayout({
   const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
   const faqPath = onCustomDomain ? "/faq" : `/stores/${username}/faq`;
   const privacyPath = onCustomDomain ? "/privacy" : `/stores/${username}/privacy`;
+  const contactPath = onCustomDomain ? "/contact" : `/stores/${username}/contact`;
 
   const faqCount = await prisma.storeFaq.count({
     where: { storeId: store.id, isPublished: true },
@@ -116,9 +117,11 @@ export default async function StorefrontLayout({
           <CheckoutSuccessHandler />
           <StorefrontNavbar 
             storeName={store.storeName} 
+            storeLogoUrl={store.storeLogoUrl}
             slug={username} 
             storeId={store.id} 
             aboutPath={aboutPath} 
+            contactPath={contactPath}
             homePath={homePath}
             products={plainProducts}
             productPath={productPath}
@@ -128,6 +131,7 @@ export default async function StorefrontLayout({
             storeName={store.storeName} 
             slug={username} 
             aboutPath={aboutPath}
+            contactPath={contactPath}
             faqPath={faqPath}
             showFaq={faqCount > 0}
             privacyPath={privacyPath}

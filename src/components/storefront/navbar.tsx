@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { CartButton } from "./cart-button";
@@ -16,15 +17,17 @@ interface Product {
 
 interface StorefrontNavbarProps {
   storeName: string;
+  storeLogoUrl?: string | null;
   slug: string;
   storeId: string;
   aboutPath: string;
+  contactPath: string;
   homePath: string;
   products: Product[];
   productPath: string;
 }
 
-export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath, products, productPath }: StorefrontNavbarProps) {
+export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, aboutPath, contactPath, homePath, products, productPath }: StorefrontNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -36,10 +39,22 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
             {/* Logo */}
             <Link
               href={homePath}
-              className="font-serif text-lg sm:text-xl tracking-tight hover:opacity-70 transition-opacity duration-300 flex-shrink-0"
+              className="flex items-center gap-3 hover:opacity-70 transition-opacity duration-300 flex-shrink-0"
               style={{ color: "var(--primary)" }}
             >
-              {storeName}
+              {storeLogoUrl && (
+                <span className="relative h-8 w-8 sm:h-9 sm:w-9">
+                  <Image
+                    src={storeLogoUrl}
+                    alt={`${storeName} logo`}
+                    fill
+                    className="object-contain"
+                  />
+                </span>
+              )}
+              <span className="font-serif text-lg sm:text-xl tracking-tight">
+                {storeName}
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -55,6 +70,12 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
                 className="text-overline link-underline text-muted-foreground hover:text-foreground transition-colors duration-300"
               >
                 About
+              </Link>
+              <Link
+                href={contactPath}
+                className="text-overline link-underline text-muted-foreground hover:text-foreground transition-colors duration-300"
+              >
+                Contact
               </Link>
             </div>
 
@@ -125,6 +146,13 @@ export function StorefrontNavbar({ storeName, slug, storeId, aboutPath, homePath
               className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity"
             >
               About
+            </Link>
+            <Link
+              href={contactPath}
+              onClick={() => setIsMenuOpen(false)}
+              className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity"
+            >
+              Contact
             </Link>
           </div>
         </div>

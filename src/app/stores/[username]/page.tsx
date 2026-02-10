@@ -38,8 +38,7 @@ export default async function StorefrontHomePage({
     notFound();
   }
 
-  const storeWithHero = store as any;
-  const heroImageUrl = storeWithHero.heroImageUrl;
+  const heroImageUrl = store.heroImageUrl;
 
   const products = store.products;
   const featuredProducts = products.slice(0, 4);

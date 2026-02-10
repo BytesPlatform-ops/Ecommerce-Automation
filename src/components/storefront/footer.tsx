@@ -4,6 +4,7 @@ interface StorefrontFooterProps {
   storeName: string;
   slug: string;
   aboutPath: string;
+  contactPath: string;
   faqPath?: string;
   showFaq?: boolean;
   privacyPath?: string;
@@ -19,6 +20,7 @@ export function StorefrontFooter({
   storeName, 
   slug, 
   aboutPath,
+  contactPath,
   faqPath,
   showFaq,
   privacyPath,
@@ -118,7 +120,7 @@ export function StorefrontFooter({
                 </li>
               )}
               <li>
-                <a href="#contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <a href={contactPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Contact
                 </a>
               </li>

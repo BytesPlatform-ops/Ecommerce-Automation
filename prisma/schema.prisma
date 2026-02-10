@@ -115,6 +115,7 @@ model Store {
   storeName              String
   aboutText              String?
   heroImageUrl           String?
+  storeLogoUrl           String?
   themeId                String?
   theme                  Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)
   domain                 String?             @unique

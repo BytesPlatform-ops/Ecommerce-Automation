@@ -14,7 +14,8 @@ interface SettingsFormProps {
 export function SettingsForm({ store }: SettingsFormProps) {
   const [storeName, setStoreName] = useState(store.storeName);
   const [aboutText, setAboutText] = useState(store.aboutText || "");
-  const [heroImageUrl, setHeroImageUrl] = useState((store as any).heroImageUrl || "");
+  const [heroImageUrl, setHeroImageUrl] = useState(store.heroImageUrl || "");
+  const [storeLogoUrl, setStoreLogoUrl] = useState(store.storeLogoUrl || "");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,6 +58,40 @@ export function SettingsForm({ store }: SettingsFormProps) {
     }
   };
 
+  const handleLogoUpload = async (imageUrl: string) => {
+    setStoreLogoUrl(imageUrl);
+    setImageSaved(false);
+
+    try {
+      await updateStore(store.id, {
+        storeName: store.storeName,
+        aboutText: store.aboutText || undefined,
+        storeLogoUrl: imageUrl,
+      });
+      setImageSaved(true);
+      router.refresh();
+      setTimeout(() => setImageSaved(false), 2000);
+    } catch (err) {
+      setError(`Failed to save logo: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    setStoreLogoUrl("");
+    try {
+      await updateStore(store.id, {
+        storeName: store.storeName,
+        aboutText: store.aboutText || undefined,
+        storeLogoUrl: "",
+      });
+      setImageSaved(true);
+      router.refresh();
+      setTimeout(() => setImageSaved(false), 2000);
+    } catch (err) {
+      setError(`Failed to remove logo: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -74,6 +109,7 @@ export function SettingsForm({ store }: SettingsFormProps) {
         storeName: storeName.trim(),
         aboutText: aboutText.trim() || undefined,
         heroImageUrl: heroImageUrl || undefined,
+        storeLogoUrl: storeLogoUrl || undefined,
       });
 
       setSuccess(true);
@@ -158,6 +194,63 @@ export function SettingsForm({ store }: SettingsFormProps) {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
           placeholder="Tell customers about your store..."
         />
+      </div>
+
+      {/* Store Logo */}
+      <div>
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--primary)' }}>
+          Store Logo
+        </label>
+
+        {storeLogoUrl && (
+          <div className="mb-4 flex items-center gap-4">
+            <div className="relative h-16 w-16 rounded-md border border-gray-300 bg-white overflow-hidden">
+              <img
+                src={storeLogoUrl}
+                alt="Store Logo Preview"
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  console.error("Failed to load logo:", storeLogoUrl);
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = "none";
+                }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => handleRemoveLogo()}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors"
+              aria-label="Remove logo"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+          <div className="flex flex-col items-center gap-4">
+            <Upload className="h-6 w-6 text-gray-400" />
+            <p className="text-sm text-gray-600 text-center">Drag and drop or click to select</p>
+            <UploadButton
+              endpoint="imageUploader"
+              onClientUploadComplete={(res) => {
+                console.log("Logo upload response:", res);
+                if (res?.[0]) {
+                  const uploadedUrl = res[0].url;
+                  console.log("Uploaded logo URL:", uploadedUrl);
+                  handleLogoUpload(uploadedUrl);
+                }
+              }}
+              onUploadError={(error: Error) => {
+                console.error("Logo upload error:", error);
+                setError(`Upload error: ${error.message}`);
+              }}
+            />
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          Recommended size: 256x256px or larger
+        </p>
       </div>
 
       {/* Hero Section Image */}

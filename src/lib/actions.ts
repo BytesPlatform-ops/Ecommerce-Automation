@@ -201,6 +201,7 @@ export async function updateStore(
     aboutText?: string; 
     themeId?: string; 
     heroImageUrl?: string | null;
+    storeLogoUrl?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
     instagramUrl?: string | null;
@@ -236,6 +237,10 @@ export async function updateStore(
 
   if (data.heroImageUrl !== undefined) {
     updateData.heroImageUrl = data.heroImageUrl;
+  }
+
+  if (data.storeLogoUrl !== undefined) {
+    updateData.storeLogoUrl = data.storeLogoUrl;
   }
 
   if (data.contactEmail !== undefined) {
