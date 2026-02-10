@@ -42,6 +42,11 @@ export default async function StorefrontLayout({
   const aboutPath = onCustomDomain ? "/about" : `/stores/${username}/about`;
   const homePath = onCustomDomain ? "/" : `/stores/${username}`;
   const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
+  const faqPath = onCustomDomain ? "/faq" : `/stores/${username}/faq`;
+
+  const faqCount = await prisma.storeFaq.count({
+    where: { storeId: store.id, isPublished: true },
+  });
 
   // Convert Decimal prices to numbers for client component
   const plainProducts = store.products.map(p => ({
@@ -117,6 +122,8 @@ export default async function StorefrontLayout({
             storeName={store.storeName} 
             slug={username} 
             aboutPath={aboutPath}
+            faqPath={faqPath}
+            showFaq={faqCount > 0}
             instagramUrl={(store as any).instagramUrl}
             facebookUrl={(store as any).facebookUrl}
             twitterUrl={(store as any).twitterUrl}

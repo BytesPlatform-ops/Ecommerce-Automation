@@ -19,6 +19,11 @@ export default async function SettingsPage() {
     redirect("/onboarding");
   }
 
+  const faqs = await prisma.storeFaq.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+  });
+
   // Prepare store data for domain settings component
   const domainStore = {
     id: store.id,
@@ -27,5 +32,5 @@ export default async function SettingsPage() {
     certificateGeneratedAt: store.certificateGeneratedAt,
   };
 
-  return <SettingsPageContent store={store} domainStore={domainStore} />;
+  return <SettingsPageContent store={store} domainStore={domainStore} faqs={faqs} />;
 }

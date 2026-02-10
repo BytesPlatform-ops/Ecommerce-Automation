@@ -254,6 +254,158 @@ export async function updateStore(
   });
 }
 
+export async function createStoreFaq(
+  storeId: string,
+  data: {
+    question: string;
+    answer: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  const lastFaq = await prisma.storeFaq.findFirst({
+    where: { storeId },
+    orderBy: { sortOrder: "desc" },
+  });
+
+  const faq = await prisma.storeFaq.create({
+    data: {
+      storeId,
+      question: data.question.trim(),
+      answer: data.answer.trim(),
+      isPublished: data.isPublished ?? true,
+      sortOrder: lastFaq ? lastFaq.sortOrder + 1 : 0,
+    },
+  });
+
+  return faq;
+}
+
+export async function updateStoreFaq(
+  faqId: string,
+  data: {
+    question?: string;
+    answer?: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const faq = await prisma.storeFaq.findFirst({
+    where: { id: faqId },
+    include: { store: true },
+  });
+
+  if (!faq || faq.store.ownerId !== user.id) {
+    throw new Error("FAQ not found or unauthorized");
+  }
+
+  const updateData: {
+    question?: string;
+    answer?: string;
+    isPublished?: boolean;
+  } = {};
+
+  if (data.question !== undefined) {
+    updateData.question = data.question.trim();
+  }
+
+  if (data.answer !== undefined) {
+    updateData.answer = data.answer.trim();
+  }
+
+  if (data.isPublished !== undefined) {
+    updateData.isPublished = data.isPublished;
+  }
+
+  return await prisma.storeFaq.update({
+    where: { id: faqId },
+    data: updateData,
+  });
+}
+
+export async function deleteStoreFaq(faqId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const faq = await prisma.storeFaq.findFirst({
+    where: { id: faqId },
+    include: { store: true },
+  });
+
+  if (!faq || faq.store.ownerId !== user.id) {
+    throw new Error("FAQ not found or unauthorized");
+  }
+
+  return await prisma.storeFaq.delete({
+    where: { id: faqId },
+  });
+}
+
+export async function reorderStoreFaqs(storeId: string, orderedIds: string[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  if (orderedIds.length === 0) {
+    return { success: true };
+  }
+
+  const faqs = await prisma.storeFaq.findMany({
+    where: { id: { in: orderedIds }, storeId },
+    select: { id: true },
+  });
+
+  if (faqs.length !== orderedIds.length) {
+    throw new Error("One or more FAQs could not be reordered");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.storeFaq.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  return { success: true };
+}
+
 export async function getProduct(productId: string) {
   return await prisma.product.findUnique({
     where: { id: productId },

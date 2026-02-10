@@ -4,6 +4,8 @@ interface StorefrontFooterProps {
   storeName: string;
   slug: string;
   aboutPath: string;
+  faqPath?: string;
+  showFaq?: boolean;
   instagramUrl?: string;
   facebookUrl?: string;
   twitterUrl?: string;
@@ -15,6 +17,8 @@ export function StorefrontFooter({
   storeName, 
   slug, 
   aboutPath,
+  faqPath,
+  showFaq,
   instagramUrl,
   facebookUrl,
   twitterUrl,
@@ -136,11 +140,13 @@ export function StorefrontFooter({
                   Returns & Exchanges
                 </a>
               </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  FAQ
-                </a>
-              </li>
+              {showFaq && faqPath && (
+                <li>
+                  <a href={faqPath} className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
+                    FAQ
+                  </a>
+                </li>
+              )}
               <li>
                 <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
                   Privacy Policy

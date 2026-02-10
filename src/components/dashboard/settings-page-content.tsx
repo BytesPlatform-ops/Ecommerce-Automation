@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Store } from "@/types/database";
+import { Store, StoreFaq } from "@/types/database";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
-import { Store as StoreIcon, Globe, Phone } from "lucide-react";
+import { FaqSettings } from "@/components/dashboard/faq-settings";
+import { Store as StoreIcon, Globe, Phone, HelpCircle } from "lucide-react";
 import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
   store: Store;
+  faqs: StoreFaq[];
   domainStore: {
     id: string;
     domain: string | null;
@@ -37,9 +39,15 @@ const tabs = [
     icon: Phone,
     description: "Add contact details and social media links",
   },
+  {
+    id: "faq",
+    label: "FAQ",
+    icon: HelpCircle,
+    description: "Manage frequently asked questions for your store",
+  },
 ];
 
-export function SettingsPageContent({ store, domainStore }: SettingsPageContentProps) {
+export function SettingsPageContent({ store, domainStore, faqs }: SettingsPageContentProps) {
   const [activeTab, setActiveTab] = useState("store");
 
   return (
@@ -104,6 +112,7 @@ export function SettingsPageContent({ store, domainStore }: SettingsPageContentP
           {activeTab === "store" && <SettingsForm store={store} />}
           {activeTab === "domain" && <DomainSettings store={domainStore} />}
           {activeTab === "contact" && <ContactSettings store={store} />}
+          {activeTab === "faq" && <FaqSettings storeId={store.id} faqs={faqs} />}
         </div>
       </div>
     </div>

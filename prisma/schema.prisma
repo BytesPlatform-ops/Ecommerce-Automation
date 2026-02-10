@@ -139,10 +139,27 @@ model Store {
 
   products Product[]
   orders   Order[]
+  faqs     StoreFaq[]
 
   @@index([ownerId])
   @@index([themeId])
   @@map("stores")
+}
+
+model StoreFaq {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  question    String   @db.Text
+  answer      String   @db.Text
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([storeId, sortOrder])
+  @@map("store_faqs")
 }
 
 model Product {
