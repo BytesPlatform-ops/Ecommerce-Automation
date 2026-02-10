@@ -113,7 +113,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
         {/* Contact Email */}
         <div className="mb-4">
-          <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="contactEmail" className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>
             Contact Email
           </label>
           <input
@@ -131,7 +131,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
         {/* Contact Phone */}
         <div>
-          <label htmlFor="contactPhone" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="contactPhone" className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>
             Phone Number
           </label>
           <input
@@ -151,7 +151,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
           <MessageSquare className="h-5 w-5" />
           WhatsApp
         </h3>
-        <label htmlFor="whatsappNumber" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="whatsappNumber" className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>
           WhatsApp Number
         </label>
         <input
@@ -177,7 +177,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
         <div className="space-y-4">
           {/* Instagram */}
           <div>
-            <label htmlFor="instagramUrl" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label htmlFor="instagramUrl" className="block text-sm font-medium mb-1 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <Instagram className="h-4 w-4 text-pink-600" />
               Instagram
             </label>
@@ -193,7 +193,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
           {/* Facebook */}
           <div>
-            <label htmlFor="facebookUrl" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label htmlFor="facebookUrl" className="block text-sm font-medium mb-1 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <Facebook className="h-4 w-4 text-blue-600" />
               Facebook
             </label>
@@ -209,7 +209,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
           {/* Twitter */}
           <div>
-            <label htmlFor="twitterUrl" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label htmlFor="twitterUrl" className="block text-sm font-medium mb-1 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <Twitter className="h-4 w-4 text-blue-400" />
               Twitter / X
             </label>
@@ -225,7 +225,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
           {/* LinkedIn */}
           <div>
-            <label htmlFor="linkedinUrl" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label htmlFor="linkedinUrl" className="block text-sm font-medium mb-1 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <Linkedin className="h-4 w-4 text-blue-700" />
               LinkedIn
             </label>
@@ -241,7 +241,7 @@ export function ContactSettings({ store }: ContactSettingsProps) {
 
           {/* YouTube */}
           <div>
-            <label htmlFor="youtubeUrl" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+            <label htmlFor="youtubeUrl" className="block text-sm font-medium mb-1 flex items-center gap-2" style={{ color: 'var(--primary)' }}>
               <Youtube className="h-4 w-4 text-red-600" />
               YouTube
             </label>
@@ -286,7 +286,8 @@ export function ContactSettings({ store }: ContactSettingsProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        className="w-full text-white py-2 rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+        style={{ backgroundColor: 'var(--primary)' }}
       >
         {loading ? "Saving..." : "Save Contact Settings"}
       </button>

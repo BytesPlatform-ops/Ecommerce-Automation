@@ -24,6 +24,11 @@ export default async function SettingsPage() {
     orderBy: { sortOrder: "asc" },
   });
 
+  const privacySections = await prisma.storePrivacySection.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+  });
+
   // Prepare store data for domain settings component
   const domainStore = {
     id: store.id,
@@ -32,5 +37,12 @@ export default async function SettingsPage() {
     certificateGeneratedAt: store.certificateGeneratedAt,
   };
 
-  return <SettingsPageContent store={store} domainStore={domainStore} faqs={faqs} />;
+  return (
+    <SettingsPageContent
+      store={store}
+      domainStore={domainStore}
+      faqs={faqs}
+      privacySections={privacySections}
+    />
+  );
 }

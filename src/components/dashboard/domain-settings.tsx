@@ -196,7 +196,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
           <Globe className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Custom Domain</h3>
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--primary)' }}>Custom Domain</h3>
           <p className="text-sm text-gray-500">
             Connect your own domain to your store
           </p>
@@ -223,7 +223,8 @@ export function DomainSettings({ store }: DomainSettingsProps) {
         <div>
           <label
             htmlFor="domain"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium mb-1"
+            style={{ color: 'var(--primary)' }}
           >
             Domain Name
           </label>
@@ -239,7 +240,8 @@ export function DomainSettings({ store }: DomainSettingsProps) {
             <button
               type="submit"
               disabled={saving || (!domain && !store.domain)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-white rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ backgroundColor: 'var(--primary)' }}
             >
               {saving ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -303,7 +305,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
           {/* DNS Records Instructions - Show only if not Live */}
           {currentStatus !== DOMAIN_STATUS.LIVE && (
             <div className="space-y-4">
-              <h4 className="text-sm font-medium text-gray-900">
+              <h4 className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
                 DNS Records to Add
               </h4>
               <p className="text-sm text-gray-500">
@@ -314,7 +316,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
               {/* A Record */}
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
                     A Record
                   </span>
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
@@ -368,7 +370,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
               {/* CNAME Record */}
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
                     CNAME Record
                   </span>
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">

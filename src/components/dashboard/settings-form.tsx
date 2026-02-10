@@ -113,7 +113,8 @@ export function SettingsForm({ store }: SettingsFormProps) {
       <div>
         <label
           htmlFor="storeName"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--primary)' }}
         >
           Store Name
         </label>
@@ -129,7 +130,7 @@ export function SettingsForm({ store }: SettingsFormProps) {
 
       {/* Store URL (Read-only) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>
           Store URL
         </label>
         <div className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-600">
@@ -144,7 +145,8 @@ export function SettingsForm({ store }: SettingsFormProps) {
       <div>
         <label
           htmlFor="aboutText"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--primary)' }}
         >
           About Your Store
         </label>
@@ -160,7 +162,7 @@ export function SettingsForm({ store }: SettingsFormProps) {
 
       {/* Hero Section Image */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--primary)' }}>
           Hero Section Image
         </label>
         
@@ -216,7 +218,8 @@ export function SettingsForm({ store }: SettingsFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full text-white py-2 rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{ backgroundColor: 'var(--primary)' }}
       >
         {loading ? "Saving..." : "Save Settings"}
       </button>

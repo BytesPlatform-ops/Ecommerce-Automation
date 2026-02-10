@@ -1,4 +1,4 @@
-import { Store, Heart, Facebook, Twitter, Instagram, Mail, Phone, MapPin, Linkedin, Youtube } from "lucide-react";
+import { Heart, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 
 interface StorefrontFooterProps {
   storeName: string;
@@ -6,6 +6,8 @@ interface StorefrontFooterProps {
   aboutPath: string;
   faqPath?: string;
   showFaq?: boolean;
+  privacyPath?: string;
+  showPrivacy?: boolean;
   instagramUrl?: string;
   facebookUrl?: string;
   twitterUrl?: string;
@@ -19,108 +21,74 @@ export function StorefrontFooter({
   aboutPath,
   faqPath,
   showFaq,
+  privacyPath,
+  showPrivacy,
   instagramUrl,
   facebookUrl,
   twitterUrl,
   linkedinUrl,
   youtubeUrl,
 }: StorefrontFooterProps) {
+  const hasSocials = instagramUrl || facebookUrl || twitterUrl || linkedinUrl || youtubeUrl;
+
   return (
-    <footer className="bg-gray-900 text-gray-100 border-t border-gray-800 mt-8 sm:mt-12 md:mt-16 lg:mt-20">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-10 md:py-16">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-6 sm:mb-10">
+    <footer className="border-t border-border bg-background mt-24">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-8 mb-16">
           {/* Brand */}
-          <div>
-            <div className="flex items-center gap-2 sm:gap-3 mb-2.5 sm:mb-4">
-              <div 
-                className="h-7 w-7 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: "var(--primary)" }}
-              >
-                <Store className="h-3.5 w-3.5 sm:h-5 sm:w-5 text-white" />
-              </div>
-              <span className="font-bold text-sm sm:text-lg text-white">{storeName}</span>
-            </div>
-            <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
-              Quality products curated with care. Your trusted source for premium items.
+          <div className="sm:col-span-2 lg:col-span-1">
+            <h3 className="font-serif text-lg tracking-tight mb-4">{storeName}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+              Curated with intention. Every product selected for quality, design, and lasting value.
             </p>
-            {(facebookUrl || twitterUrl || instagramUrl || linkedinUrl || youtubeUrl) && (
-              <div className="flex sm:gap-3">
+            {hasSocials && (
+              <div className="flex gap-4 mt-6">
+                {instagramUrl && (
+                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Instagram className="h-4 w-4" strokeWidth={1.5} />
+                  </a>
+                )}
                 {facebookUrl && (
-                  <a 
-                    href={facebookUrl} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Facebook className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Facebook className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {twitterUrl && (
-                  <a 
-                    href={twitterUrl} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Twitter className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
-                  </a>
-                )}
-                {instagramUrl && (
-                  <a 
-                    href={instagramUrl} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Instagram className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Twitter className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {linkedinUrl && (
-                  <a 
-                    href={linkedinUrl} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Linkedin className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Linkedin className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {youtubeUrl && (
-                  <a 
-                    href={youtubeUrl} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    <Youtube className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                  <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    <Youtube className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
               </div>
             )}
           </div>
 
-          {/* Quick Links */}
+          {/* Navigation */}
           <div>
-            <h4 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Quick Links</h4>
-            <ul className="space-y-1.5 sm:space-y-2">
+            <p className="text-overline mb-4">Navigation</p>
+            <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Home
                 </a>
               </li>
               <li>
-                <a href="#products" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  Shop All Products
+                <a href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  Shop
                 </a>
               </li>
               <li>
-                <a href={aboutPath} className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  Contact
+                <a href={aboutPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  About
                 </a>
               </li>
             </ul>
@@ -128,86 +96,68 @@ export function StorefrontFooter({
 
           {/* Support */}
           <div>
-            <h4 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Support</h4>
-            <ul className="space-y-1.5 sm:space-y-2">
+            <p className="text-overline mb-4">Support</p>
+            <ul className="space-y-3">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  Shipping Info
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  Returns & Exchanges
+                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  Shipping & Returns
                 </a>
               </li>
               {showFaq && faqPath && (
                 <li>
-                  <a href={faqPath} className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
+                  <a href={faqPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                     FAQ
                   </a>
                 </li>
               )}
+              {showPrivacy && privacyPath && (
+                <li>
+                  <a href={privacyPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    Privacy Policy
+                  </a>
+                </li>
+              )}
               <li>
-                <a href="#" className="text-gray-400 hover:text-white text-xs sm:text-sm transition-colors">
-                  Privacy Policy
+                <a href="#contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  Contact
                 </a>
               </li>
             </ul>
           </div>
 
           {/* Newsletter */}
-          <div className="col-span-2 sm:col-span-1">
-            <h4 className="font-bold text-white mb-2.5 sm:mb-4 text-sm sm:text-base">Stay Updated</h4>
-            <p className="text-gray-400 text-xs sm:text-sm mb-2.5 sm:mb-3">
-              Subscribe to get special offers and updates about new products.
+          <div>
+            <p className="text-overline mb-4">Stay Updated</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              New arrivals and exclusive offers, delivered to your inbox.
             </p>
-            <div className="flex gap-1.5 mb-3 sm:mb-4 flex-col sm:flex-row">
+            <div className="flex gap-0">
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gray-800 border border-gray-700 rounded-lg text-xs sm:text-sm text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                style={{ ["--tw-ring-color" as string]: "var(--primary)" }}
+                placeholder="your@email.com"
+                className="flex-1 px-3 py-2.5 bg-background border border-border border-r-0 text-sm placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200 min-w-0"
               />
-              <button 
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-white font-medium text-xs sm:text-sm transition-all hover:shadow-md whitespace-nowrap"
+              <button
+                className="btn-luxury btn-primary-luxury !py-2.5 !px-4 !text-[11px] shrink-0"
                 style={{ backgroundColor: "var(--primary)" }}
               >
-                Subscribe
+                Join
               </button>
-            </div>
-
-            {/* Contact Info */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <div className="flex items-start sm:items-center gap-2 text-gray-400 text-xs">
-                <Mail className="h-3 w-3 flex-shrink-0 mt-0.5 sm:mt-0" />
-                <a href="mailto:info@store.com" className="hover:text-white transition-colors break-all">info@store.com</a>
-              </div>
-              <div className="flex items-start sm:items-center gap-2 text-gray-400 text-xs">
-                <Phone className="h-3 w-3 flex-shrink-0 mt-0.5 sm:mt-0" />
-                <a href="tel:+1234567890" className="hover:text-white transition-colors">+1 (234) 567-890</a>
-              </div>
-              <div className="flex items-start sm:items-center gap-2 text-gray-400 text-xs">
-                <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5 sm:mt-0" />
-                <span>123 Store Street, City, Country</span>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 pt-4 sm:pt-6 flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-gray-500 text-xs sm:text-sm">
-            © {new Date().getFullYear()} {storeName}. All rights reserved.
+        {/* Bottom */}
+        <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} {storeName}
           </p>
-          <p className="text-gray-500 text-xs sm:text-sm flex items-center gap-1 flex-wrap">
-            <span>Made with</span>
-            <Heart className="h-3 w-3 text-red-500 fill-red-500 flex-shrink-0" />
-            <span>using</span>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            Powered by
             <a
               href="/"
               target="_blank"
-              className="inline-flex items-center font-semibold hover:underline transition-colors"
-              style={{ color: "var(--primary)" }}
+              className="text-foreground hover:opacity-70 transition-opacity duration-300 font-medium"
             >
               Chameleon
             </a>

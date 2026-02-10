@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Mail, Phone, Smartphone, Send } from "lucide-react";
 
 interface ContactSectionProps {
+  storeId: string;
   storeName: string;
   contactEmail?: string;
   contactPhone?: string;
@@ -17,6 +18,7 @@ interface ContactSectionProps {
 }
 
 export function ContactSection({
+  storeId,
   storeName,
   contactEmail,
   contactPhone,
@@ -48,24 +50,39 @@ export function ContactSection({
     setSuccess(false);
 
     try {
-      // For now, we'll just show a success message
-      // In a real app, you'd send this data to an email service like Resend, SendGrid, etc.
-      // and store it in a database
       if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
         setError("Please fill in all required fields");
         setLoading(false);
         return;
       }
 
-      // Simulate sending email
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          storeId,
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          queryType: formData.queryType.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || "Failed to send message. Please try again.");
+      }
 
       setSuccess(true);
       setFormData({ name: "", email: "", subject: "", message: "", queryType: "" });
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError("Failed to send message. Please try again.");
+      const message = err instanceof Error ? err.message : "Failed to send message. Please try again.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -81,148 +98,136 @@ export function ContactSection({
   }
 
   return (
-    <section className="py-6 sm:py-10 md:py-16 lg:py-24 bg-white">
-      <div className="container mx-auto px-3 sm:px-4 md:px-6">
-        <div className="max-w-5xl mx-auto">
+    <section className="py-16 sm:py-24 bg-background">
+      <div className="max-w-[1200px] mx-auto px-6">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2 sm:mb-3 text-gray-900">Get in Touch</h2>
-            <p className="text-xs sm:text-sm md:text-base text-gray-600 px-2">
-              We'd love to hear from you! Reach out through any of our contact channels.
+          <div className="text-center mb-12 sm:mb-16">
+            <p className="text-overline mb-3">Contact</p>
+            <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-3">Get in Touch</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              We&apos;d love to hear from you. Reach out through any of our contact channels.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8 mb-6 sm:mb-10">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Contact Information */}
-            <div className="lg:col-span-1 space-y-3 sm:space-y-4">
-              <div>
-                <h3 className="text-sm sm:text-base font-semibold mb-3 sm:mb-4 text-gray-900" style={{ color: "var(--primary)" }}>Contact Information</h3>
+            <div className="lg:col-span-1 space-y-4">
+              <h3 className="text-overline mb-6">Contact Information</h3>
 
-                {/* Email */}
-                {contactEmail && (
-                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
-                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">Email</p>
-                      <a
-                        href={`mailto:${contactEmail}`}
-                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80 text-xs sm:text-sm break-all"
-                        style={{ color: 'var(--primary)' }}
-                      >
-                        {contactEmail}
-                      </a>
-                    </div>
+              {/* Email */}
+              {contactEmail && (
+                <div className="flex gap-3 py-4 border-b border-border group">
+                  <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">Email</p>
+                    <a
+                      href={`mailto:${contactEmail}`}
+                      className="text-sm text-foreground hover:opacity-70 transition-opacity duration-200 break-all"
+                    >
+                      {contactEmail}
+                    </a>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Phone */}
-                {contactPhone && (
-                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
-                      <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">Phone</p>
-                      <a
-                        href={`tel:${contactPhone}`}
-                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80 text-xs sm:text-sm"
-                        style={{ color: 'var(--primary)' }}
-                      >
-                        {contactPhone}
-                      </a>
-                    </div>
+              {/* Phone */}
+              {contactPhone && (
+                <div className="flex gap-3 py-4 border-b border-border group">
+                  <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">Phone</p>
+                    <a
+                      href={`tel:${contactPhone}`}
+                      className="text-sm text-foreground hover:opacity-70 transition-opacity duration-200"
+                    >
+                      {contactPhone}
+                    </a>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* WhatsApp */}
-                {whatsappNumber && (
-                  <div className="flex gap-2.5 sm:gap-3 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group border border-gray-200">
-                    <div className="flex-shrink-0 h-7 w-7 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center text-white text-sm" style={{ backgroundColor: "var(--primary)" }}>
-                      <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-gray-600 mb-0.5">WhatsApp</p>
-                      <a
-                        href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-900 font-medium transition-colors truncate block hover:opacity-80 text-xs sm:text-sm"
-                        style={{ color: 'var(--primary)' }}
-                      >
-                        Message us
-                      </a>
-                    </div>
+              {/* WhatsApp */}
+              {whatsappNumber && (
+                <div className="flex gap-3 py-4 border-b border-border group">
+                  <Smartphone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1">WhatsApp</p>
+                    <a
+                      href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-foreground hover:opacity-70 transition-opacity duration-200"
+                    >
+                      Message us
+                    </a>
                   </div>
-                )}
-              </div>
-
+                </div>
+              )}
             </div>
 
             {/* Contact Form */}
             {contactEmail && (
               <div className="lg:col-span-2">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl p-4 sm:p-6 md:p-8">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-900" style={{ color: "var(--primary)" }}>Send us a Message</h3>
+                <div className="border border-border p-6 sm:p-8">
+                  <h3 className="text-overline mb-6">Send a Message</h3>
 
                   {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                    <div className="mb-4 p-3 border border-red-200 bg-red-50 text-red-700 text-xs">
                       {error}
                     </div>
                   )}
 
                   {success && (
-                    <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm">
+                    <div className="mb-4 p-3 border border-green-200 bg-green-50 text-green-700 text-xs">
                       Thank you! Your message has been sent successfully.
                     </div>
                   )}
 
-                  <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                    {/* Name */}
-                    <div>
-                      <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                        Name *
-                      </label>
-                      <input
-                        id="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Your name"
-                        className="w-full px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50 text-xs sm:text-sm"
-                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
-                      />
-                    </div>
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="grid sm:grid-cols-2 gap-5">
+                      {/* Name */}
+                      <div>
+                        <label htmlFor="name" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                          Name *
+                        </label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Your name"
+                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                        />
+                      </div>
 
-                    {/* Email */}
-                    <div>
-                      <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                        Email *
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="your@email.com"
-                        className="w-full px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50 text-xs sm:text-sm"
-                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
-                      />
+                      {/* Email */}
+                      <div>
+                        <label htmlFor="email" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                          Email *
+                        </label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                        />
+                      </div>
                     </div>
 
                     {/* Query Type */}
                     {queryTypes.length > 0 && (
                       <div>
-                        <label htmlFor="queryType" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                        <label htmlFor="queryType" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                           Inquiry Type
                         </label>
                         <select
                           id="queryType"
                           value={formData.queryType}
                           onChange={(e) => setFormData({ ...formData, queryType: e.target.value })}
-                          className="w-full px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50 text-xs sm:text-sm"
-                          style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
+                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
                         >
                           <option value="">Select inquiry type</option>
                           {queryTypes.map((type: string) => (
@@ -237,7 +242,7 @@ export function ContactSection({
 
                     {/* Subject */}
                     <div>
-                      <label htmlFor="subject" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <label htmlFor="subject" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                         Subject
                       </label>
                       <input
@@ -246,14 +251,13 @@ export function ContactSection({
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         placeholder="Message subject"
-                        className="w-full px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all focus:ring-2 focus:ring-opacity-50 text-xs sm:text-sm"
-                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
+                        className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
                       />
                     </div>
 
                     {/* Message */}
                     <div>
-                      <label htmlFor="message" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                      <label htmlFor="message" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                         Message *
                       </label>
                       <textarea
@@ -262,21 +266,18 @@ export function ContactSection({
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Your message..."
                         rows={4}
-                        className="w-full px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none transition-all resize-none focus:ring-2 focus:ring-opacity-50 text-xs sm:text-sm"
-                        style={{ '--tw-ring-color': 'var(--primary)' } as React.CSSProperties}
+                        className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200 resize-none"
                       />
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Submit */}
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full text-white font-semibold py-2 sm:py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:opacity-90 text-sm sm:text-base"
-                      style={{
-                        backgroundColor: "var(--primary)",
-                      }}
+                      className="btn-luxury btn-primary-luxury w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      style={{ backgroundColor: "var(--primary)" }}
                     >
-                      <Send className="h-4 w-4" />
+                      <Send className="h-3.5 w-3.5" strokeWidth={1.5} />
                       {loading ? "Sending..." : "Send Message"}
                     </button>
                   </form>

@@ -109,13 +109,13 @@ export function ProductVariantSelector({
   if (variants.length === 0) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Variant Selector */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-3">
+        <label className="text-overline mb-4 block" style={{ color: "var(--primary)" }}>
           {variantTypeLabel}
         </label>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+        <div className="flex flex-wrap gap-2">
           {variants.map((variant) => {
             const isSelected = variant.id === selectedVariantId;
             const isOutOfStock = variant.stock === 0;
@@ -127,23 +127,14 @@ export function ProductVariantSelector({
                 onClick={() => !isOutOfStock && setSelectedVariantId(variant.id)}
                 disabled={isOutOfStock}
                 className={`
-                  px-4 py-3 rounded-xl font-medium text-sm transition-all border-2
+                  px-5 py-2.5 text-sm tracking-wide transition-all duration-200 border
                   ${
                     isSelected
-                      ? "border-current shadow-md scale-105"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "bg-foreground text-background border-foreground"
+                      : "bg-background text-foreground border-border hover:border-foreground"
                   }
-                  ${isOutOfStock ? "opacity-40 cursor-not-allowed line-through" : ""}
+                  ${isOutOfStock ? "opacity-30 cursor-not-allowed line-through" : ""}
                 `}
-                style={
-                  isSelected
-                    ? {
-                        backgroundColor: "var(--primary)",
-                        color: "white",
-                        borderColor: "var(--primary)",
-                      }
-                    : {}
-                }
               >
                 {formatVariant(variant)}
               </button>
@@ -151,15 +142,13 @@ export function ProductVariantSelector({
           })}
         </div>
         
-        {/* Stock info for selected variant */}
+        {/* Stock info */}
         {selectedVariant && (
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-xs text-muted-foreground mt-3">
             {selectedVariant.stock > 0 ? (
-              <span className="text-green-600 font-medium">
-                {selectedVariant.stock} units available
-              </span>
+              <span>{selectedVariant.stock} in stock</span>
             ) : (
-              <span className="text-red-600 font-medium">Out of stock</span>
+              <span className="text-red-600">Out of stock</span>
             )}
           </p>
         )}
@@ -167,36 +156,36 @@ export function ProductVariantSelector({
 
       {/* Quantity and Add to Cart */}
       <div className="flex flex-col sm:flex-row gap-4">
-        {/* Quantity Selector */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-gray-700">Quantity:</span>
-          <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
+        {/* Quantity */}
+        <div className="flex items-center gap-4">
+          <span className="text-overline">Qty</span>
+          <div className="flex items-center border border-border">
             <button
               type="button"
               onClick={handleDecrease}
-              className="px-4 py-2 hover:bg-gray-100 transition-colors font-bold text-gray-600"
+              className="px-3.5 py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground"
             >
               −
             </button>
-            <span className="px-6 py-2 font-semibold text-gray-900 min-w-[3rem] text-center">
+            <span className="px-4 py-2.5 text-sm text-foreground min-w-[3rem] text-center border-x border-border">
               {quantity}
             </span>
             <button
               type="button"
               onClick={handleIncrease}
               disabled={!selectedVariant || quantity >= selectedVariant.stock}
-              className="px-4 py-2 hover:bg-gray-100 transition-colors font-bold text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-3.5 py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             >
               +
             </button>
           </div>
         </div>
 
-        {/* Add to Cart Button */}
+        {/* Add to Cart */}
         <button
           onClick={handleAddToCart}
           disabled={!selectedVariant || selectedVariant.stock === 0}
-          className="flex-1 px-8 py-4 rounded-xl font-bold text-lg text-white transition-all hover:shadow-2xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+          className="flex-1 btn-luxury btn-primary-luxury disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ backgroundColor: "var(--primary)" }}
         >
           Add to Cart

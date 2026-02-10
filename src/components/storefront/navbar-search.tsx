@@ -56,10 +56,10 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
   };
 
   return (
-    <div ref={searchRef} className={`relative ${fullWidth ? 'w-full' : 'w-56 lg:w-64'}`}>
+    <div ref={searchRef} className={`relative ${fullWidth ? 'w-full' : 'w-52 lg:w-60'}`}>
       <div className="relative">
-        <div className="absolute left-3 top-3 pointer-events-none">
-          <Search className="h-4 w-4 text-gray-400" />
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <Search className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
         </div>
         <input
           ref={inputRef}
@@ -68,20 +68,20 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.trim() && setIsOpen(true)}
-          className="w-full pl-9 pr-9 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="w-full pl-9 pr-9 py-2 bg-muted border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200"
         />
         {searchQuery && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" strokeWidth={1.5} />
           </button>
         )}
       </div>
 
       {isOpen && filteredProducts.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-96 overflow-y-auto animate-fade-in">
           {filteredProducts.slice(0, 8).map((product) => (
             <Link
               key={product.id}
@@ -90,9 +90,9 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
                 setSearchQuery('');
                 setIsOpen(false);
               }}
-              className="flex items-center gap-3 p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+              className="flex items-center gap-3 p-3 hover:bg-muted border-b border-border-subtle last:border-b-0 transition-colors duration-200"
             >
-              <div className="relative w-12 h-12 flex-shrink-0 rounded-md bg-gray-100 overflow-hidden">
+              <div className="relative w-10 h-12 flex-shrink-0 bg-muted overflow-hidden">
                 {product.imageUrl ? (
                   <Image
                     src={product.imageUrl}
@@ -101,16 +101,16 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                    <span className="text-xs text-gray-400">No img</span>
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    <span className="text-[10px] text-muted-foreground">No img</span>
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm text-gray-900 truncate">
+                <h3 className="text-sm text-foreground truncate">
                   {product.name}
                 </h3>
-                <p className="text-xs font-medium text-blue-600">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   ${Number(product.price).toFixed(2)}
                 </p>
               </div>
@@ -120,8 +120,8 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
       )}
 
       {isOpen && searchQuery.trim() && filteredProducts.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-4 text-center">
-          <p className="text-sm text-gray-500">No products found</p>
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 p-6 text-center animate-fade-in">
+          <p className="text-sm text-muted-foreground">No products found</p>
         </div>
       )}
     </div>

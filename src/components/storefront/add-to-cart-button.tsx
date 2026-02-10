@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCart } from "./cart-context";
 
 interface AddToCartButtonProps {
@@ -37,34 +37,29 @@ export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButton
   }
 
   return (
-    <div className="space-y-3">
-      {/* Add to Cart Button */}
+    <div className="space-y-2">
       <button
         onClick={handleAddToCart}
-        className={`w-full flex items-center justify-center gap-2 sm:gap-3 text-white px-3 sm:px-8 py-2 sm:py-4 rounded-xl font-semibold text-xs sm:text-lg transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] shadow-md ${
-          isAdded ? "bg-green-600" : ""
+        className={`w-full btn-luxury transition-all duration-300 ${
+          isAdded 
+            ? "bg-foreground text-background" 
+            : "btn-primary-luxury"
         }`}
         style={isAdded ? {} : { backgroundColor: "var(--primary)" }}
       >
         {isAdded ? (
           <>
-            <Check className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Added to Cart!</span>
-            <span className="sm:hidden">Added!</span>
+            <Check className="h-4 w-4" strokeWidth={1.5} />
+            Added
           </>
         ) : (
-          <>
-            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Add to Cart</span>
-            <span className="sm:hidden">Add</span>
-          </>
+          "Add to Cart"
         )}
       </button>
 
-      {/* Show if already in cart */}
       {existingItem && !isAdded && (
-        <p className="text-xs sm:text-sm text-gray-500 text-center">
-          Already {existingItem.quantity} in cart
+        <p className="text-xs text-muted-foreground text-center">
+          {existingItem.quantity} in cart
         </p>
       )}
     </div>

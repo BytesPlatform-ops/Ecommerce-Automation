@@ -199,11 +199,11 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
         </div>
       )}
 
-      <div className="border border-gray-200 rounded-xl p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Add a new FAQ</h3>
+      <div className="border-l-4 border-gray-200 rounded-xl p-4" style={{ borderLeftColor: 'var(--primary)', backgroundColor: 'rgba(0,0,0,0.01)' }}>
+        <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--primary)' }}>Add a new FAQ</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>Question</label>
             <input
               type="text"
               value={newQuestion}
@@ -213,7 +213,7 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>Answer</label>
             <textarea
               value={newAnswer}
               onChange={(event) => setNewAnswer(event.target.value)}
@@ -226,7 +226,8 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
             type="button"
             onClick={handleAdd}
             disabled={loadingAdd}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-colors hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: 'var(--primary)' }}
           >
             <Plus className="h-4 w-4" />
             {loadingAdd ? "Adding..." : "Add FAQ"}
@@ -242,9 +243,9 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
         )}
 
         {items.map((faq, index) => (
-          <div key={faq.id} className="border border-gray-200 rounded-xl p-4 space-y-3">
+          <div key={faq.id} className="border-l-4 border-gray-200 rounded-xl p-4 space-y-3" style={{ borderLeftColor: 'var(--primary)' }}>
             <div className="flex flex-wrap items-center gap-2 justify-between">
-              <span className="text-sm font-semibold text-gray-700">FAQ #{index + 1}</span>
+              <span className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>FAQ #{index + 1}</span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -276,7 +277,7 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--primary)' }}>Question</label>
               <input
                 type="text"
                 value={faq.question}
@@ -287,7 +288,7 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
+              <label className="block text-sm font-medium mb-1\" style={{ color: 'var(--primary)' }}>Answer</label>
               <textarea
                 value={faq.answer}
                 onChange={(event) =>
@@ -315,7 +316,8 @@ export function FaqSettings({ storeId, faqs }: FaqSettingsProps) {
                 type="button"
                 onClick={() => handleSave(faq.id)}
                 disabled={savingId === faq.id}
-                className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: 'var(--primary)' }}
               >
                 {savingId === faq.id ? "Saving..." : "Save"}
               </button>

@@ -43,9 +43,14 @@ export default async function StorefrontLayout({
   const homePath = onCustomDomain ? "/" : `/stores/${username}`;
   const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
   const faqPath = onCustomDomain ? "/faq" : `/stores/${username}/faq`;
+  const privacyPath = onCustomDomain ? "/privacy" : `/stores/${username}/privacy`;
 
   const faqCount = await prisma.storeFaq.count({
     where: { storeId: store.id, isPublished: true },
+  });
+
+  const privacyCount = await prisma.storePrivacySection.count({
+    where: { storeId: store.id },
   });
 
   // Convert Decimal prices to numbers for client component
@@ -71,8 +76,8 @@ export default async function StorefrontLayout({
       } as React.CSSProperties)
     : {};
 
-  const primaryColor = formatHex(store.theme?.primaryHex) || "#3b82f6";
-  const secondaryColor = formatHex(store.theme?.secondaryHex) || "#8b5cf6";
+  const primaryColor = formatHex(store.theme?.primaryHex) || "#1A1A1A";
+  const secondaryColor = formatHex(store.theme?.secondaryHex) || "#737373";
 
   return (
     <div
@@ -83,17 +88,18 @@ export default async function StorefrontLayout({
         :root {
           --primary: ${primaryColor};
           --secondary: ${secondaryColor};
-          --font-family: ${store.theme?.fontFamily || "Inter, sans-serif"};
+          --font-family: ${store.theme?.fontFamily || "var(--font-inter), sans-serif"};
         }
         .storefront {
           font-family: var(--font-family);
-          background-color: #ffffff;
+          background-color: var(--background);
+          color: var(--foreground);
         }
         .storefront .btn-primary {
           background-color: var(--primary);
         }
         .storefront .btn-primary:hover {
-          filter: brightness(0.9);
+          opacity: 0.85;
         }
         .storefront .text-primary {
           color: var(--primary);
@@ -124,6 +130,8 @@ export default async function StorefrontLayout({
             aboutPath={aboutPath}
             faqPath={faqPath}
             showFaq={faqCount > 0}
+            privacyPath={privacyPath}
+            showPrivacy={privacyCount > 0}
             instagramUrl={(store as any).instagramUrl}
             facebookUrl={(store as any).facebookUrl}
             twitterUrl={(store as any).twitterUrl}

@@ -140,10 +140,26 @@ model Store {
   products Product[]
   orders   Order[]
   faqs     StoreFaq[]
+  privacySections StorePrivacySection[]
 
   @@index([ownerId])
   @@index([themeId])
   @@map("stores")
+}
+
+model StorePrivacySection {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  heading   String   @db.Text
+  content   String   @db.Text
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([storeId, sortOrder])
+  @@map("store_privacy_sections")
 }
 
 model StoreFaq {

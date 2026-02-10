@@ -406,6 +406,148 @@ export async function reorderStoreFaqs(storeId: string, orderedIds: string[]) {
   return { success: true };
 }
 
+export async function createStorePrivacySection(
+  storeId: string,
+  data: {
+    heading: string;
+    content: string;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  const lastSection = await prisma.storePrivacySection.findFirst({
+    where: { storeId },
+    orderBy: { sortOrder: "desc" },
+  });
+
+  return await prisma.storePrivacySection.create({
+    data: {
+      storeId,
+      heading: data.heading.trim(),
+      content: data.content.trim(),
+      sortOrder: lastSection ? lastSection.sortOrder + 1 : 0,
+    },
+  });
+}
+
+export async function updateStorePrivacySection(
+  sectionId: string,
+  data: {
+    heading?: string;
+    content?: string;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const section = await prisma.storePrivacySection.findFirst({
+    where: { id: sectionId },
+    include: { store: true },
+  });
+
+  if (!section || section.store.ownerId !== user.id) {
+    throw new Error("Privacy section not found or unauthorized");
+  }
+
+  const updateData: { heading?: string; content?: string } = {};
+
+  if (data.heading !== undefined) {
+    updateData.heading = data.heading.trim();
+  }
+
+  if (data.content !== undefined) {
+    updateData.content = data.content.trim();
+  }
+
+  return await prisma.storePrivacySection.update({
+    where: { id: sectionId },
+    data: updateData,
+  });
+}
+
+export async function deleteStorePrivacySection(sectionId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const section = await prisma.storePrivacySection.findFirst({
+    where: { id: sectionId },
+    include: { store: true },
+  });
+
+  if (!section || section.store.ownerId !== user.id) {
+    throw new Error("Privacy section not found or unauthorized");
+  }
+
+  return await prisma.storePrivacySection.delete({
+    where: { id: sectionId },
+  });
+}
+
+export async function reorderStorePrivacySections(
+  storeId: string,
+  orderedIds: string[]
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  if (orderedIds.length === 0) {
+    return { success: true };
+  }
+
+  const sections = await prisma.storePrivacySection.findMany({
+    where: { id: { in: orderedIds }, storeId },
+    select: { id: true },
+  });
+
+  if (sections.length !== orderedIds.length) {
+    throw new Error("One or more privacy sections could not be reordered");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.storePrivacySection.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  return { success: true };
+}
+
 export async function getProduct(productId: string) {
   return await prisma.product.findUnique({
     where: { id: productId },

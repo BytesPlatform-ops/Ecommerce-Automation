@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Store, StoreFaq } from "@/types/database";
+import { Store, StoreFaq, StorePrivacySection } from "@/types/database";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
 import { FaqSettings } from "@/components/dashboard/faq-settings";
-import { Store as StoreIcon, Globe, Phone, HelpCircle } from "lucide-react";
+import { PrivacyPolicySettings } from "@/components/dashboard/privacy-policy-settings";
+import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield } from "lucide-react";
 import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
   store: Store;
   faqs: StoreFaq[];
+  privacySections: StorePrivacySection[];
   domainStore: {
     id: string;
     domain: string | null;
@@ -45,9 +47,20 @@ const tabs = [
     icon: HelpCircle,
     description: "Manage frequently asked questions for your store",
   },
+  {
+    id: "privacy",
+    label: "Privacy Policy",
+    icon: Shield,
+    description: "Create the privacy policy shown on your storefront",
+  },
 ];
 
-export function SettingsPageContent({ store, domainStore, faqs }: SettingsPageContentProps) {
+export function SettingsPageContent({
+  store,
+  domainStore,
+  faqs,
+  privacySections,
+}: SettingsPageContentProps) {
   const [activeTab, setActiveTab] = useState("store");
 
   return (
@@ -113,6 +126,9 @@ export function SettingsPageContent({ store, domainStore, faqs }: SettingsPageCo
           {activeTab === "domain" && <DomainSettings store={domainStore} />}
           {activeTab === "contact" && <ContactSettings store={store} />}
           {activeTab === "faq" && <FaqSettings storeId={store.id} faqs={faqs} />}
+          {activeTab === "privacy" && (
+            <PrivacyPolicySettings storeId={store.id} sections={privacySections} />
+          )}
         </div>
       </div>
     </div>

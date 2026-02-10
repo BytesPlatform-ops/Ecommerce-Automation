@@ -1,26 +1,25 @@
 import Link from "next/link";
-import { Store, Zap, Palette, Globe } from "lucide-react";
+import { Zap, Palette, Globe } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="container mx-auto px-4 py-6">
+      <nav className="max-w-[1200px] mx-auto px-6 py-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Store className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold text-gray-900">Chameleon</span>
-          </div>
-          <div className="flex items-center gap-4">
+          <Link href="/" className="font-serif text-xl tracking-tight">
+            Chameleon
+          </Link>
+          <div className="flex items-center gap-6">
             <Link
               href="/login"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="btn-luxury btn-primary-luxury !py-2 !px-5 !text-xs"
             >
               Get Started
             </Link>
@@ -29,87 +28,84 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="container mx-auto px-4 py-20">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Create Your Store in{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              60 Seconds
-            </span>
+      <main className="max-w-[1200px] mx-auto px-6 py-24 sm:py-32">
+        <div className="text-center max-w-3xl mx-auto animate-fade-in-up">
+          <p className="text-overline mb-6" style={{ color: "var(--primary, #1A1A1A)" }}>E-Commerce Platform</p>
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-foreground mb-6 leading-[1.1] tracking-tight">
+            Create Your Store
+            <br />
+            in 60 Seconds
           </h1>
-          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            A multi-tenant SaaS platform that lets you build a beautiful,
-            customized e-commerce storefront instantly. Just add your products
-            and choose a theme.
+          <p className="text-base sm:text-lg text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed">
+            A multi-tenant platform that lets you build a beautiful, customized
+            e-commerce storefront instantly. Add products, choose a theme, start
+            selling.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
-              className="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-colors font-semibold text-lg shadow-lg shadow-blue-600/25"
+              className="btn-luxury btn-primary-luxury"
             >
               Start Building Free
             </Link>
             <Link
               href="/stores/demo"
-              className="text-gray-700 px-8 py-4 rounded-xl hover:bg-gray-100 transition-colors font-semibold text-lg"
+              className="btn-luxury btn-outline-luxury"
             >
-              View Demo Store →
+              View Demo Store
             </Link>
           </div>
         </div>
 
         {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 mt-32 max-w-5xl mx-auto">
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <div className="h-14 w-14 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-              <Zap className="h-7 w-7 text-blue-600" />
+        <div className="grid md:grid-cols-3 gap-8 mt-32 max-w-4xl mx-auto stagger-children">
+          <div className="border border-border p-8 text-center">
+            <div className="h-10 w-10 mx-auto mb-6 flex items-center justify-center">
+              <Zap className="h-5 w-5 text-foreground" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              Lightning Fast Setup
+            <h3 className="text-sm font-medium text-foreground mb-3 uppercase tracking-wider">
+              Lightning Fast
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Go from zero to a fully functional store in under a minute. No
-              coding required, no complex configurations.
+              coding required.
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <div className="h-14 w-14 bg-purple-100 rounded-xl flex items-center justify-center mb-6">
-              <Palette className="h-7 w-7 text-purple-600" />
+          <div className="border border-border p-8 text-center">
+            <div className="h-10 w-10 mx-auto mb-6 flex items-center justify-center">
+              <Palette className="h-5 w-5 text-foreground" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-sm font-medium text-foreground mb-3 uppercase tracking-wider">
               Beautiful Themes
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Choose from professionally designed themes that make your store
-              stand out. Switch themes instantly.
+              stand out.
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <div className="h-14 w-14 bg-green-100 rounded-xl flex items-center justify-center mb-6">
-              <Globe className="h-7 w-7 text-green-600" />
+          <div className="border border-border p-8 text-center">
+            <div className="h-10 w-10 mx-auto mb-6 flex items-center justify-center">
+              <Globe className="h-5 w-5 text-foreground" strokeWidth={1.5} />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+            <h3 className="text-sm font-medium text-foreground mb-3 uppercase tracking-wider">
               Your Unique URL
             </h3>
-            <p className="text-gray-600">
-              Get your own custom store URL instantly. Share it anywhere and
-              start selling to customers worldwide.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Get your own custom store URL instantly. Share it and start
+              selling worldwide.
             </p>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="container mx-auto px-4 py-12 mt-20 border-t border-gray-200">
+      <footer className="max-w-[1200px] mx-auto px-6 py-12 mt-20 border-t border-border">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-gray-400" />
-            <span className="text-gray-600 font-medium">Chameleon</span>
-          </div>
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} Chameleon. Built with Next.js & Supabase.
+          <span className="font-serif text-sm text-muted-foreground">Chameleon</span>
+          <p className="text-muted-foreground text-xs">
+            &copy; {new Date().getFullYear()} Chameleon. Built with Next.js &amp; Supabase.
           </p>
         </div>
       </footer>

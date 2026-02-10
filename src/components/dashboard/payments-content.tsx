@@ -436,7 +436,7 @@ export default function PaymentsContent({
               />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold" style={{ color: 'var(--primary)' }}>
                 Stripe Account
               </h2>
               <div className="flex items-center gap-2 mt-2">
@@ -505,7 +505,7 @@ export default function PaymentsContent({
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Charges
                 </p>
                 <p
@@ -517,7 +517,7 @@ export default function PaymentsContent({
                 </p>
               </div>
               <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Payouts
                 </p>
                 <p
@@ -531,7 +531,7 @@ export default function PaymentsContent({
               {accountDetails.balance && (
                 <>
                   <div className="bg-white rounded-lg p-4 border border-gray-100">
-                    <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                       Available
                     </p>
                     <p className="text-lg font-bold mt-2 text-green-700">
@@ -545,7 +545,7 @@ export default function PaymentsContent({
                   </div>
                   <div className="bg-white rounded-lg p-4 border border-gray-100">
                     <div className="flex items-center gap-2">
-                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                      <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                         Processing
                       </p>
                       <div className="group relative">
@@ -598,7 +598,7 @@ export default function PaymentsContent({
                 <div className="p-2.5 bg-amber-200 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-amber-700" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Pending Orders
                 </p>
               </div>
@@ -616,7 +616,7 @@ export default function PaymentsContent({
                 <div className="p-2.5 bg-orange-200 rounded-lg">
                   <DollarSign className="h-5 w-5 text-orange-700" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Pending Amount
                 </p>
               </div>
@@ -635,7 +635,7 @@ export default function PaymentsContent({
                   <Zap className="h-5 w-5 text-blue-700" />
                 </div>
                 <div className="group relative">
-                  <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide cursor-help">
+                  <p className="text-sm font-semibold uppercase tracking-wide cursor-help" style={{ color: 'var(--primary)' }}>
                     Processing
                   </p>
                   <div className="hidden group-hover:block absolute left-0 top-full mt-1 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-10">
@@ -659,7 +659,7 @@ export default function PaymentsContent({
                 <div className="p-2.5 bg-green-200 rounded-lg">
                   <TrendingUp className="h-5 w-5 text-green-700" />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                   Order Status
                 </p>
               </div>
@@ -706,7 +706,7 @@ export default function PaymentsContent({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-linear-to-br from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Total Revenue
               </p>
               <div className="p-3 bg-green-200/50 rounded-lg">
@@ -721,7 +721,7 @@ export default function PaymentsContent({
 
           <div className="bg-linear-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Total Orders
               </p>
               <div className="p-3 bg-blue-200/50 rounded-lg">
@@ -736,7 +736,7 @@ export default function PaymentsContent({
 
           <div className="bg-linear-to-br from-purple-50 to-purple-100/50 border border-purple-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Last 7 Days
               </p>
               <div className="p-3 bg-purple-200/50 rounded-lg">
@@ -751,7 +751,7 @@ export default function PaymentsContent({
 
           <div className="bg-linear-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Last 30 Days
               </p>
               <div className="p-3 bg-indigo-200/50 rounded-lg">
@@ -861,7 +861,7 @@ export default function PaymentsContent({
           {dailyRevenue.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Revenue Timeline</h3>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--primary)' }}>Revenue Timeline</h3>
                 <p className="text-sm text-gray-600 mt-1">
                   Daily revenue across selected period
                 </p>
@@ -908,7 +908,7 @@ export default function PaymentsContent({
           {getTopProducts().length > 0 && (
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Top Products</h3>
+                <h3 className="text-lg font-bold" style={{ color: 'var(--primary)' }}>Top Products</h3>
                 <p className="text-sm text-gray-600 mt-1">
                   Best performing products by revenue
                 </p>
@@ -954,7 +954,7 @@ export default function PaymentsContent({
         <div className="p-6 border-b border-gray-200 bg-linear-to-r from-white to-gray-50">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Transactions</h2>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--primary)' }}>Transactions</h2>
               <p className="text-sm text-gray-600 mt-1">
                 View and manage your customer orders
               </p>
