@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createCheckoutSession } from "@/lib/stripe";
+import { validateAddress } from "@/lib/address-validation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +42,36 @@ export async function POST(request: NextRequest) {
         { error: "Missing required fields: storeId, items" },
         { status: 400 }
       );
+    }
+
+    // Validate shipping information if provided
+    if (shippingInfo) {
+      const addressValidation = validateAddress(
+        shippingInfo.firstName,
+        shippingInfo.lastName,
+        shippingInfo.address,
+        shippingInfo.city,
+        shippingInfo.state,
+        shippingInfo.zipCode,
+        shippingInfo.phone,
+        shippingInfo.country
+      );
+
+      if (!addressValidation.isValid) {
+        console.log("[Checkout API] Address validation failed:", addressValidation.errors);
+        return NextResponse.json(
+          { 
+            error: "Invalid shipping address",
+            details: addressValidation.errors.join("; ")
+          },
+          { status: 400 }
+        );
+      }
+
+      if (addressValidation.warnings.length > 0) {
+        console.log("[Checkout API] Address warnings:", addressValidation.warnings);
+        // Log warnings but allow checkout to proceed
+      }
     }
 
     // Get the store and verify it has Stripe connected
