@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Shield, Truck, RotateCcw, Check } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 import { ProductVariantSelector } from "@/components/storefront/product-variant-selector";
+import { ProductImageGallery } from "@/components/storefront/product-image-gallery";
 
 export default async function ProductDetailPage({
   params,
@@ -26,12 +27,23 @@ export default async function ProductDetailPage({
       variants: {
         orderBy: { createdAt: 'asc' },
       },
+      images: {
+        orderBy: { sortOrder: "asc" },
+      },
     },
   });
 
   if (!product) {
     notFound();
   }
+
+  const imageUrls = product.images.length > 0
+    ? product.images.map((image) => image.url)
+    : product.imageUrl
+    ? [product.imageUrl]
+    : [];
+
+  const mainImageUrl = imageUrls[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,22 +60,7 @@ export default async function ProductDetailPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-start">
           {/* Product Image */}
           <div>
-            <div className="aspect-[3/4] relative bg-muted overflow-hidden mb-4">
-              {product.imageUrl ? (
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover hover:scale-[1.03] transition-transform duration-600"
-                  style={{ transitionTimingFunction: "var(--ease-luxury)" }}
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-sm text-muted-foreground">No image</span>
-                </div>
-              )}
-            </div>
+            <ProductImageGallery name={product.name} imageUrls={imageUrls} />
 
             {/* Product trust badges — inline */}
             <div className="flex gap-3">
@@ -101,7 +98,7 @@ export default async function ProductDetailPage({
                     id: product.id,
                     name: product.name,
                     price: Number(product.price),
-                    imageUrl: product.imageUrl,
+                    imageUrl: mainImageUrl || null,
                   }}
                   storeId={product.store.id}
                   storeSlug={username}
@@ -112,7 +109,7 @@ export default async function ProductDetailPage({
                     id: product.id,
                     name: product.name,
                     price: Number(product.price),
-                    imageUrl: product.imageUrl,
+                    imageUrl: mainImageUrl || null,
                   }}
                   storeId={product.store.id}
                   storeSlug={username}

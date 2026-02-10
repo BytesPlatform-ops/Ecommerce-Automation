@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct } from "@/lib/actions";
-import { Product } from "@/types/database";
+import { Product, ProductImage } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
 import { X, Plus, Trash2 } from "lucide-react";
 
 interface ProductFormProps {
   storeId: string;
-  product?: Product | (Omit<Product, 'price'> & { price: string });
+  product?: (Product | (Omit<Product, 'price'> & { price: string })) & {
+    images?: ProductImage[];
+  };
 }
 
 type SizeType = "VOLUME" | "WEIGHT" | "APPAREL_ALPHA" | "APPAREL_NUMERIC" | "FOOTWEAR" | "DIMENSION" | "COUNT" | "STORAGE";
@@ -82,7 +84,15 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price?.toString() || "");
-  const [imageUrl, setImageUrl] = useState(product?.imageUrl || "");
+  const [imageUrls, setImageUrls] = useState<string[]>(() => {
+    if (product?.images && product.images.length > 0) {
+      return [...product.images]
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((image) => image.url);
+    }
+
+    return product?.imageUrl ? [product.imageUrl] : [];
+  });
   const [variants, setVariants] = useState<Variant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -145,7 +155,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           name: name.trim(),
           description: description.trim() || undefined,
           price: priceNum,
-          imageUrl: imageUrl || undefined,
+          imageUrls,
           variants: variants.map(v => ({
             id: v.id,
             sizeType: v.sizeType as SizeType,
@@ -159,7 +169,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           name: name.trim(),
           description: description.trim() || undefined,
           price: priceNum,
-          imageUrl: imageUrl || undefined,
+          imageUrls,
           variants: variants.map(v => ({
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
@@ -257,43 +267,53 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
       {/* Image Upload */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Product Image
+          Product Images
         </label>
+        <p className="text-xs text-gray-500 mb-3">The first image is used as the primary image.</p>
 
-        {imageUrl ? (
-          <div className="relative inline-block group">
-            <div className="rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm">
-              <Image
-                src={imageUrl}
-                alt="Product preview"
-                width={240}
-                height={240}
-                className="object-cover"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setImageUrl("")}
-              className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 shadow-lg hover:scale-110 transition-all"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition-all">
-            <UploadButton
-              endpoint="productImage"
-              onClientUploadComplete={(res) => {
-                if (res?.[0]) {
-                  setImageUrl(res[0].url);
-                }
-              }}
-              onUploadError={(error: Error) => {
-                setError(`Upload failed: ${error.message}`);
-              }}
-            />
+        {imageUrls.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+            {imageUrls.map((url, index) => (
+              <div key={`${url}-${index}`} className="relative group">
+                <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                  <Image
+                    src={url}
+                    alt={`Product image ${index + 1}`}
+                    width={240}
+                    height={240}
+                    className="object-cover"
+                  />
+                </div>
+                {index === 0 && (
+                  <span className="absolute left-2 top-2 text-[10px] font-semibold uppercase tracking-wide bg-white/90 text-gray-700 px-2 py-1 rounded-full shadow">
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== index))}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 shadow-lg hover:scale-110 transition-all"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
+
+        <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition-all">
+          <UploadButton
+            endpoint="productImage"
+            onClientUploadComplete={(res) => {
+              if (res && res.length > 0) {
+                setImageUrls((prev) => [...prev, ...res.map((item) => item.url)]);
+              }
+            }}
+            onUploadError={(error: Error) => {
+              setError(`Upload failed: ${error.message}`);
+            }}
+          />
+        </div>
       </div>
 
       {/* Product Variants */}

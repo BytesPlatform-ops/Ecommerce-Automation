@@ -29,6 +29,9 @@ export default async function EditProductPage({
       id,
       storeId: store.id,
     },
+    include: {
+      images: { orderBy: { sortOrder: "asc" } },
+    },
   });
 
   if (!product) {

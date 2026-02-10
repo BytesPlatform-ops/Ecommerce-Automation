@@ -18,6 +18,7 @@ export async function createProduct(
     description?: string;
     price: number; 
     imageUrl?: string;
+    imageUrls?: string[];
     variants?: Array<{
       sizeType: string;
       value?: string;
@@ -42,13 +43,21 @@ export async function createProduct(
     throw new Error("Store not found or unauthorized");
   }
 
+  const primaryImageUrl = data.imageUrls?.[0] ?? data.imageUrl ?? null;
+
   const product = await prisma.product.create({
     data: {
       storeId,
       name: data.name,
       description: data.description || null,
       price: data.price,
-      imageUrl: data.imageUrl || null,
+      imageUrl: primaryImageUrl,
+      images: data.imageUrls && data.imageUrls.length > 0 ? {
+        create: data.imageUrls.map((url, index) => ({
+          url,
+          sortOrder: index,
+        })),
+      } : undefined,
       variants: data.variants && data.variants.length > 0 ? {
         create: data.variants.map(v => ({
           sizeType: v.sizeType,
@@ -76,6 +85,7 @@ export async function updateProduct(
     description?: string;
     price: number; 
     imageUrl?: string;
+    imageUrls?: string[];
     variants?: Array<{
       id?: string;
       sizeType: string;
@@ -105,10 +115,20 @@ export async function updateProduct(
     throw new Error("Product not found or unauthorized");
   }
 
+  const primaryImageUrl = data.imageUrls
+    ? (data.imageUrls[0] ?? null)
+    : (data.imageUrl ?? undefined);
+
   // Handle variant updates (delete old ones and create new ones for simplicity)
   if (data.variants !== undefined) {
     // Delete existing variants
     await prisma.productVariant.deleteMany({
+      where: { productId },
+    });
+  }
+
+  if (data.imageUrls !== undefined) {
+    await prisma.productImage.deleteMany({
       where: { productId },
     });
   }
@@ -119,7 +139,13 @@ export async function updateProduct(
       name: data.name,
       description: data.description ?? undefined,
       price: data.price,
-      imageUrl: data.imageUrl ?? undefined,
+      imageUrl: primaryImageUrl,
+      images: data.imageUrls && data.imageUrls.length > 0 ? {
+        create: data.imageUrls.map((url, index) => ({
+          url,
+          sortOrder: index,
+        })),
+      } : undefined,
       variants: data.variants && data.variants.length > 0 ? {
         create: data.variants.map(v => ({
           sizeType: v.sizeType,
