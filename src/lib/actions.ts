@@ -201,6 +201,8 @@ export async function updateStore(
     aboutText?: string; 
     themeId?: string; 
     heroImageUrl?: string | null;
+    heroHeadline?: string | null;
+    heroDescription?: string | null;
     storeLogoUrl?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
@@ -237,6 +239,14 @@ export async function updateStore(
 
   if (data.heroImageUrl !== undefined) {
     updateData.heroImageUrl = data.heroImageUrl;
+  }
+
+  if (data.heroHeadline !== undefined) {
+    updateData.heroHeadline = data.heroHeadline;
+  }
+
+  if (data.heroDescription !== undefined) {
+    updateData.heroDescription = data.heroDescription;
   }
 
   if (data.storeLogoUrl !== undefined) {

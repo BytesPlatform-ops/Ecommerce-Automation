@@ -29,7 +29,10 @@ export default async function StorefrontHomePage({
   const store = await prisma.store.findUnique({
     where: { subdomainSlug: username },
     include: { 
-      products: { orderBy: { createdAt: "desc" } },
+      products: {
+        orderBy: { createdAt: "desc" },
+        include: { images: { orderBy: { sortOrder: "asc" } } },
+      },
       theme: true,
     },
   });
@@ -39,6 +42,18 @@ export default async function StorefrontHomePage({
   }
 
   const heroImageUrl = store.heroImageUrl;
+  const defaultHeroHeadline = "Curated for\nthe discerning";
+  const defaultHeroDescription =
+    "Discover our collection of thoughtfully selected products, crafted with quality and care.";
+  const heroHeadline =
+    store.heroHeadline && store.heroHeadline.trim().length > 0
+      ? store.heroHeadline
+      : defaultHeroHeadline;
+  const heroDescription =
+    store.heroDescription && store.heroDescription.trim().length > 0
+      ? store.heroDescription
+      : defaultHeroDescription;
+  const heroHeadlineLines = heroHeadline.split("\n");
 
   const products = store.products;
   const featuredProducts = products.slice(0, 4);
@@ -65,12 +80,15 @@ export default async function StorefrontHomePage({
               <div className="max-w-2xl">
                 <p className="text-overline !text-white/70 mb-4 sm:mb-6">Welcome to {store.storeName}</p>
                 <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-6 tracking-tight">
-                  Curated for
-                  <br />
-                  the discerning
+                  {heroHeadlineLines.map((line, index) => (
+                    <span key={`${line}-${index}`}>
+                      {line}
+                      {index < heroHeadlineLines.length - 1 && <br />}
+                    </span>
+                  ))}
                 </h1>
                 <p className="text-base sm:text-lg text-white/80 mb-8 sm:mb-10 leading-relaxed max-w-lg font-light">
-                  Discover our collection of thoughtfully selected products, crafted with quality and care.
+                  {heroDescription}
                 </p>
                 <a 
                   href="#products"
@@ -88,12 +106,15 @@ export default async function StorefrontHomePage({
               <div className="max-w-2xl">
                 <p className="text-overline mb-4 sm:mb-6">Welcome to {store.storeName}</p>
                 <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.1] mb-6 tracking-tight">
-                  Curated for
-                  <br />
-                  the discerning
+                  {heroHeadlineLines.map((line, index) => (
+                    <span key={`${line}-${index}`}>
+                      {line}
+                      {index < heroHeadlineLines.length - 1 && <br />}
+                    </span>
+                  ))}
                 </h1>
                 <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 leading-relaxed max-w-lg">
-                  Discover our collection of thoughtfully selected products, crafted with quality and care.
+                  {heroDescription}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a 
@@ -159,47 +180,62 @@ export default async function StorefrontHomePage({
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
-              {featuredProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="product-card group border border-border bg-background overflow-hidden"
-                >
-                  <Link href={`${productPath}/${product.id}`} className="block">
-                    <div className="aspect-[3/4] relative bg-muted overflow-hidden">
-                      {product.imageUrl ? (
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          fill
-                          className="object-cover product-image"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">No image</span>
-                        </div>
-                      )}
+              {featuredProducts.map((product) => {
+                const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
+                const secondaryImageUrl = product.images?.[1]?.url;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="product-card group border border-border bg-background overflow-hidden"
+                  >
+                    <Link href={`${productPath}/${product.id}`} className="block">
+                      <div className="aspect-[3/4] relative bg-muted overflow-hidden">
+                        {primaryImageUrl ? (
+                          <>
+                            <Image
+                              src={primaryImageUrl}
+                              alt={product.name}
+                              fill
+                              className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
+                            />
+                            {secondaryImageUrl && (
+                              <Image
+                                src={secondaryImageUrl}
+                                alt={`${product.name} alternate view`}
+                                fill
+                                className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">No image</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4 sm:p-5">
+                        <h3 className="text-sm sm:text-base text-foreground mb-1.5 line-clamp-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          ${Number(product.price).toFixed(2)}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                      <AddToCartButton 
+                        product={{
+                          ...product,
+                          price: Number(product.price),
+                        }}
+                        storeId={store.id}
+                        storeSlug={username}
+                      />
                     </div>
-                    <div className="p-4 sm:p-5">
-                      <h3 className="text-sm sm:text-base text-foreground mb-1.5 line-clamp-1">
-                        {product.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        ${Number(product.price).toFixed(2)}
-                      </p>
-                    </div>
-                  </Link>
-                  <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-                    <AddToCartButton 
-                      product={{
-                        ...product,
-                        price: Number(product.price),
-                      }}
-                      storeId={store.id}
-                      storeSlug={username}
-                    />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -233,47 +269,62 @@ export default async function StorefrontHomePage({
 
           {products.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="product-card group border border-border bg-background overflow-hidden"
-                >
-                  <Link href={`${productPath}/${product.id}`} className="block">
-                    <div className="aspect-[3/4] relative bg-muted overflow-hidden">
-                      {product.imageUrl ? (
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          fill
-                          className="object-cover product-image"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">No image</span>
-                        </div>
-                      )}
+              {products.map((product) => {
+                const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
+                const secondaryImageUrl = product.images?.[1]?.url;
+
+                return (
+                  <div
+                    key={product.id}
+                    className="product-card group border border-border bg-background overflow-hidden"
+                  >
+                    <Link href={`${productPath}/${product.id}`} className="block">
+                      <div className="aspect-[3/4] relative bg-muted overflow-hidden">
+                        {primaryImageUrl ? (
+                          <>
+                            <Image
+                              src={primaryImageUrl}
+                              alt={product.name}
+                              fill
+                              className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
+                            />
+                            {secondaryImageUrl && (
+                              <Image
+                                src={secondaryImageUrl}
+                                alt={`${product.name} alternate view`}
+                                fill
+                                className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-xs text-muted-foreground">No image</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3 sm:p-4">
+                        <h3 className="text-sm text-foreground mb-1 line-clamp-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          ${Number(product.price).toFixed(2)}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                      <AddToCartButton 
+                        product={{
+                          ...product,
+                          price: Number(product.price),
+                        }}
+                        storeId={store.id}
+                        storeSlug={username}
+                      />
                     </div>
-                    <div className="p-3 sm:p-4">
-                      <h3 className="text-sm text-foreground mb-1 line-clamp-1">
-                        {product.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        ${Number(product.price).toFixed(2)}
-                      </p>
-                    </div>
-                  </Link>
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <AddToCartButton 
-                      product={{
-                        ...product,
-                        price: Number(product.price),
-                      }}
-                      storeId={store.id}
-                      storeSlug={username}
-                    />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-20 border border-border">

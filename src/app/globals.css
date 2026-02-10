@@ -42,11 +42,19 @@
   --breakpoint-2xl: 1536px;
 }
 
-/* ─── Base ─── */
+/* Prevent layout shifts and scroll jumping */
+html {
+  scroll-padding-top: 0;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   scroll-behavior: smooth;
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -293,9 +301,10 @@ input[type="radio"] {
   }
 }
 
-/* Prevent layout shifts */
+/* Prevent layout shifts and scroll jumping */
 html {
-  scroll-padding-top: 80px;
+  scroll-padding-top: 0;
+  overflow-anchor: none;
 }
 
 /* Smooth page transitions */

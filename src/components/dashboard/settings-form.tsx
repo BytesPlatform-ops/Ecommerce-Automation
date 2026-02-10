@@ -14,6 +14,13 @@ interface SettingsFormProps {
 export function SettingsForm({ store }: SettingsFormProps) {
   const [storeName, setStoreName] = useState(store.storeName);
   const [aboutText, setAboutText] = useState(store.aboutText || "");
+  const [heroHeadline, setHeroHeadline] = useState(
+    store.heroHeadline || "Curated for\nthe discerning"
+  );
+  const [heroDescription, setHeroDescription] = useState(
+    store.heroDescription ||
+      "Discover our collection of thoughtfully selected products, crafted with quality and care."
+  );
   const [heroImageUrl, setHeroImageUrl] = useState(store.heroImageUrl || "");
   const [storeLogoUrl, setStoreLogoUrl] = useState(store.storeLogoUrl || "");
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +115,8 @@ export function SettingsForm({ store }: SettingsFormProps) {
       await updateStore(store.id, {
         storeName: storeName.trim(),
         aboutText: aboutText.trim() || undefined,
+        heroHeadline: heroHeadline.trim() ? heroHeadline.trim() : null,
+        heroDescription: heroDescription.trim() ? heroDescription.trim() : null,
         heroImageUrl: heroImageUrl || undefined,
         storeLogoUrl: storeLogoUrl || undefined,
       });
@@ -193,6 +202,47 @@ export function SettingsForm({ store }: SettingsFormProps) {
           rows={5}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
           placeholder="Tell customers about your store..."
+        />
+      </div>
+
+      {/* Hero Headline */}
+      <div>
+        <label
+          htmlFor="heroHeadline"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--primary)' }}
+        >
+          Hero Headline
+        </label>
+        <textarea
+          id="heroHeadline"
+          value={heroHeadline}
+          onChange={(e) => setHeroHeadline(e.target.value)}
+          rows={3}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+          placeholder="Curated for\nthe discerning"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Use line breaks to control where the headline wraps.
+        </p>
+      </div>
+
+      {/* Hero Description */}
+      <div>
+        <label
+          htmlFor="heroDescription"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--primary)' }}
+        >
+          Hero Description
+        </label>
+        <textarea
+          id="heroDescription"
+          value={heroDescription}
+          onChange={(e) => setHeroDescription(e.target.value)}
+          rows={4}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+          placeholder="Discover our collection of thoughtfully selected products, crafted with quality and care."
         />
       </div>
 

@@ -49,12 +49,13 @@ export function CartButton() {
         <>
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 animate-fade-in"
+            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40"
             onClick={() => setIsCartOpen(false)}
+            style={{ overflowAnchor: 'none' }}
           />
 
           {/* Drawer */}
-          <div className="fixed top-0 right-0 h-full w-full sm:max-w-[420px] bg-background border-l border-border z-50 animate-slide-in-right">
+          <div className="fixed top-0 right-0 h-full w-full sm:max-w-[420px] bg-background border-l border-border z-50" style={{ overflowAnchor: 'none' }}>
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-border">

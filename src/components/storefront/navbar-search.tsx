@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
@@ -24,6 +24,21 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollYRef = useRef(0);
+
+  // Store scroll position before state changes that might trigger scroll
+  useLayoutEffect(() => {
+    scrollYRef.current = window.scrollY;
+    
+    // Restore scroll position after render
+    const timer = requestAnimationFrame(() => {
+      if (window.scrollY !== scrollYRef.current) {
+        window.scrollTo(0, scrollYRef.current);
+      }
+    });
+
+    return () => cancelAnimationFrame(timer);
+  }, [isOpen, filteredProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,10 +71,10 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
   };
 
   return (
-    <div ref={searchRef} className={`relative ${fullWidth ? 'w-full' : 'w-52 lg:w-60'}`}>
+    <div ref={searchRef} className={`relative ${fullWidth ? 'w-full' : 'w-52 lg:w-60'}`} style={{ overflowAnchor: 'none' }}>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-          <Search className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+          <Search className="h-4 w-4 text-muted-foreground -mt-0.5" strokeWidth={1.5} />
         </div>
         <input
           ref={inputRef}
@@ -68,6 +83,7 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.trim() && setIsOpen(true)}
+          style={{ overflowAnchor: 'none' }}
           className="w-full pl-9 pr-9 py-2 bg-muted border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200"
         />
         {searchQuery && (
@@ -81,7 +97,7 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
       </div>
 
       {isOpen && filteredProducts.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-96 overflow-y-auto animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-96 overflow-y-auto" style={{ overflowAnchor: 'none', scrollbarGutter: 'stable', pointerEvents: 'auto' }}>
           {filteredProducts.slice(0, 8).map((product) => (
             <Link
               key={product.id}
@@ -120,7 +136,7 @@ export function NavbarSearch({ products, productPath, fullWidth = false }: Navba
       )}
 
       {isOpen && searchQuery.trim() && filteredProducts.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 p-6 text-center animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 p-6 text-center" style={{ overflowAnchor: 'none', scrollbarGutter: 'stable' }}>
           <p className="text-sm text-muted-foreground">No products found</p>
         </div>
       )}

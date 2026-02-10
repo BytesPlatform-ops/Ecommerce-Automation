@@ -33,9 +33,10 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
 
   return (
     <>
-      <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50" style={{ borderBottomColor: "var(--primary)" }}>
+      <div className="relative">
+        <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50" style={{ borderBottomColor: "var(--primary)", overflowAnchor: "none" }}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 sm:h-[72px]">
+          <div className="flex items-center justify-between h-16 sm:h-[72px] min-h-16 sm:min-h-[72px]">
             {/* Logo */}
             <Link
               href={homePath}
@@ -92,10 +93,10 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
               {/* Mobile Search Toggle */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="md:hidden p-2 hover:bg-muted rounded-sm transition-colors duration-200"
+                className="md:hidden p-2 hover:bg-muted rounded-sm transition-colors duration-200 flex items-center justify-center"
                 aria-label="Search"
               >
-                <Search className="h-[18px] w-[18px] text-foreground" strokeWidth={1.5} />
+                <Search className="h-[18px] w-[18px] text-foreground relative -top-[1px]" strokeWidth={1.5} />
               </button>
 
               {/* Cart */}
@@ -115,23 +116,24 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
               </button>
             </div>
           </div>
-
-          {/* Mobile Search */}
-          {isSearchOpen && (
-            <div className="md:hidden pb-4 animate-fade-in">
-              <NavbarSearch 
-                products={products}
-                productPath={productPath}
-                fullWidth={true}
-              />
-            </div>
-          )}
         </div>
       </nav>
 
+        {/* Mobile Search - Positioned absolutely so it appears as part of navbar */}
+        {isSearchOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border px-4 sm:px-6 py-4 z-40" style={{ overflowAnchor: 'none' }}>
+            <NavbarSearch 
+              products={products}
+              productPath={productPath}
+              fullWidth={true}
+            />
+          </div>
+        )}
+      </div>
+
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-background animate-fade-in">
+        <div className="md:hidden fixed inset-0 z-40 bg-background" style={{ overflowAnchor: 'none' }}>
           <div className="flex flex-col items-center justify-center h-full gap-8">
             <Link
               href={homePath}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
@@ -22,6 +22,20 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const scrollYRef = useRef(0);
+
+  // Prevent scroll jumping when dropdown renders/unrenders
+  useLayoutEffect(() => {
+    scrollYRef.current = window.scrollY;
+    
+    const timer = requestAnimationFrame(() => {
+      if (window.scrollY !== scrollYRef.current) {
+        window.scrollTo(0, scrollYRef.current);
+      }
+    });
+
+    return () => cancelAnimationFrame(timer);
+  }, [isOpen, filteredProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,10 +68,10 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full">
+    <div ref={searchRef} className="relative w-full" style={{ overflowAnchor: 'none', scrollbarGutter: 'stable' }}>
       <div className="relative">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-          <Search className="h-4 w-4" strokeWidth={1.5} />
+        <div className="absolute inset-y-0 left-3.5 flex items-center text-muted-foreground">
+          <Search className="h-4 w-4 -mt-0.5" strokeWidth={1.5} />
         </div>
         <input
           type="text"
@@ -65,6 +79,7 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.trim() && setIsOpen(true)}
+          style={{ overflowAnchor: 'none' }}
           className="w-full pl-10 pr-9 py-3 bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
         />
         {searchQuery && (
@@ -78,7 +93,7 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
       </div>
 
       {isOpen && filteredProducts.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-80 overflow-y-auto animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-80 overflow-y-auto" style={{ overflowAnchor: 'none', scrollbarGutter: 'stable' }}>
           {filteredProducts.map((product) => (
             <Link
               key={product.id}
@@ -117,7 +132,7 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
       )}
 
       {isOpen && searchQuery.trim() && filteredProducts.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 p-4 text-center animate-fade-in">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 p-4 text-center" style={{ overflowAnchor: 'none', scrollbarGutter: 'stable' }}>
           <p className="text-sm text-muted-foreground">No products found matching &ldquo;{searchQuery}&rdquo;</p>
         </div>
       )}
