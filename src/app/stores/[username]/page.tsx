@@ -59,6 +59,20 @@ export default async function StorefrontHomePage({
       : defaultHeroDescription;
   const heroHeadlineLines = heroHeadline.split("\n");
 
+  // Determine alignment classes and width constraints based on heroTextAlign
+  const getAlignmentClasses = () => {
+    switch (store.heroTextAlign) {
+      case "Center":
+        return { wrapper: "text-center flex flex-col items-center", textWidth: "max-w-3xl" };
+      case "Right":
+        return { wrapper: "text-right flex flex-col items-end", textWidth: "max-w-2xl" };
+      default:
+        return { wrapper: "text-left", textWidth: "max-w-2xl" };
+    }
+  };
+
+  const alignmentClasses = getAlignmentClasses();
+
   const products = store.products;
   const featuredProducts = products.slice(0, 4);
   const latestProducts = products.slice(0, 12);
@@ -71,7 +85,7 @@ export default async function StorefrontHomePage({
       {/* ─── Hero Section ─── */}
       <section className="relative overflow-hidden">
         {heroImageUrl ? (
-          <div className="relative h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center">
+          <div className={`relative h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
             <Image
               src={heroImageUrl}
               alt={store.storeName}
@@ -80,8 +94,8 @@ export default async function StorefrontHomePage({
               priority
             />
             <div className="absolute inset-0 bg-black/30" />
-            <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
-              <div className="max-w-2xl">
+            <div className={`relative px-4 sm:px-6 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
+              <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
                 <p className="text-overline !text-white/70 mb-4 sm:mb-6">Welcome to {store.storeName}</p>
                 <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-6 tracking-tight">
                   {heroHeadlineLines.map((line, index) => (
@@ -91,7 +105,7 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-white/80 mb-8 sm:mb-10 leading-relaxed max-w-lg font-light">
+                <p className="text-base sm:text-lg text-white/80 mb-8 sm:mb-10 leading-relaxed font-light">
                   {heroDescription}
                 </p>
                 <a 
@@ -105,9 +119,9 @@ export default async function StorefrontHomePage({
             </div>
           </div>
         ) : (
-          <div className="h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center border-b border-border">
-            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
-              <div className="max-w-2xl">
+          <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center border-b border-border ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
+            <div className={`px-4 sm:px-6 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
+              <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
                 <p className="text-overline mb-4 sm:mb-6">Welcome to {store.storeName}</p>
                 <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.1] mb-6 tracking-tight">
                   {heroHeadlineLines.map((line, index) => (
@@ -117,10 +131,10 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 leading-relaxed max-w-lg">
+                <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 leading-relaxed">
                   {heroDescription}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className={`flex ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : "flex-col sm:flex-row"} gap-3`}>
                   <a 
                     href="#products"
                     className="btn-luxury btn-primary-luxury"

@@ -8,6 +8,7 @@ import {
   ProductImage,
   ProductVariant,
   DomainStatus,
+  HeroTextAlign,
   SizeType,
   Unit,
 } from "@prisma/client";
@@ -22,6 +23,7 @@ export type {
   ProductImage,
   ProductVariant,
   DomainStatus,
+  HeroTextAlign,
   SizeType,
   Unit,
 };

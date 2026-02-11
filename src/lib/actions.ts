@@ -203,6 +203,7 @@ export async function updateStore(
     heroImageUrl?: string | null;
     heroHeadline?: string | null;
     heroDescription?: string | null;
+    heroTextAlign?: string;
     storeLogoUrl?: string | null;
     contactEmail?: string | null;
     contactPhone?: string | null;
@@ -247,6 +248,10 @@ export async function updateStore(
 
   if (data.heroDescription !== undefined) {
     updateData.heroDescription = data.heroDescription;
+  }
+
+  if (data.heroTextAlign !== undefined) {
+    updateData.heroTextAlign = data.heroTextAlign;
   }
 
   if (data.storeLogoUrl !== undefined) {

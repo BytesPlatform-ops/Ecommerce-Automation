@@ -39,6 +39,12 @@ enum PaymentStatus {
   Refunded
 }
 
+enum HeroTextAlign {
+  Left
+  Center
+  Right
+}
+
 enum SizeType {
   VOLUME
   WEIGHT
@@ -117,6 +123,7 @@ model Store {
   heroImageUrl           String?
   heroHeadline           String?
   heroDescription        String?
+  heroTextAlign          HeroTextAlign       @default(Left)
   storeLogoUrl           String?
   themeId                String?
   theme                  Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)

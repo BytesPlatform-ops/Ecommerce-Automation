@@ -84,8 +84,9 @@ export function ProductSearch({ products, productPath }: ProductSearchProps) {
         />
         {searchQuery && (
           <button
+            type="button"
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors duration-200"
+            className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground transition-colors duration-200 pointer-events-auto"
           >
             <X className="h-4 w-4" strokeWidth={1.5} />
           </button>

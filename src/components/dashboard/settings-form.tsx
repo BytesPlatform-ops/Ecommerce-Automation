@@ -21,6 +21,9 @@ export function SettingsForm({ store }: SettingsFormProps) {
     store.heroDescription ||
       "Discover our collection of thoughtfully selected products, crafted with quality and care."
   );
+  const [heroTextAlign, setHeroTextAlign] = useState<"Left" | "Center" | "Right">(
+    (store.heroTextAlign as "Left" | "Center" | "Right") || "Left"
+  );
   const [heroImageUrl, setHeroImageUrl] = useState(store.heroImageUrl || "");
   const [storeLogoUrl, setStoreLogoUrl] = useState(store.storeLogoUrl || "");
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +120,7 @@ export function SettingsForm({ store }: SettingsFormProps) {
         aboutText: aboutText.trim() || undefined,
         heroHeadline: heroHeadline.trim() ? heroHeadline.trim() : null,
         heroDescription: heroDescription.trim() ? heroDescription.trim() : null,
+        heroTextAlign: heroTextAlign,
         heroImageUrl: heroImageUrl || undefined,
         storeLogoUrl: storeLogoUrl || undefined,
       });
@@ -244,6 +248,30 @@ export function SettingsForm({ store }: SettingsFormProps) {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
           placeholder="Discover our collection of thoughtfully selected products, crafted with quality and care."
         />
+      </div>
+
+      {/* Hero Text Alignment */}
+      <div>
+        <label
+          htmlFor="heroTextAlign"
+          className="block text-sm font-medium mb-1"
+          style={{ color: 'var(--primary)' }}
+        >
+          Hero Text Alignment
+        </label>
+        <select
+          id="heroTextAlign"
+          value={heroTextAlign}
+          onChange={(e) => setHeroTextAlign(e.target.value as "Left" | "Center" | "Right")}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+        >
+          <option value="Left">Left</option>
+          <option value="Center">Center</option>
+          <option value="Right">Right</option>
+        </select>
+        <p className="mt-1 text-xs text-gray-500">
+          Choose how to align your hero section headline and description.
+        </p>
       </div>
 
       {/* Store Logo */}
