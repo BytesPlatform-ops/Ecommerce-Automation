@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { constructWebhookEvent } from "@/lib/stripe";
 import { createOrder, updateOrderStatus } from "@/lib/actions";
+import { sendOrderConfirmationEmail, sendStoreNotificationEmail } from "@/lib/email";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -53,6 +55,9 @@ export async function POST(request: NextRequest) {
         try {
           await updateOrderStatus(paymentIntent.id, "Completed", "Paid");
           console.log("[Webhook] Order marked as Completed, payment status: Paid", paymentIntent.id);
+          
+          // Send confirmation email to customer
+          await handlePaymentSuccessEmail(paymentIntent.id);
         } catch (error) {
           console.error("[Webhook] Failed to update order status:", error);
         }
@@ -176,5 +181,92 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       storeId
     });
     throw error;
+  }
+}
+
+async function handlePaymentSuccessEmail(stripePaymentId: string) {
+  console.log(`[Email] Starting email send for payment ${stripePaymentId}`);
+  
+  try {
+    // Fetch the order with all details
+    const order = await prisma.order.findUnique({
+      where: { stripePaymentId },
+      include: {
+        items: {
+          include: {
+            product: true,
+            variant: true,
+          },
+        },
+        store: true,
+      },
+    });
+
+    if (!order) {
+      console.error(`[Email] Order not found for payment ${stripePaymentId}`);
+      // Try to find by checking all orders (for debugging)
+      const allOrders = await prisma.order.findMany({
+        where: { stripePaymentId },
+      });
+      console.log(`[Email] Debug - Found ${allOrders.length} orders for payment ID`);
+      return;
+    }
+
+    console.log(`[Email] Found order ${order.id} for payment ${stripePaymentId}`);
+    console.log(`[Email] Customer email: ${order.customerEmail}`);
+    console.log(`[Email] Store contact email: ${order.store.contactEmail}`);
+    console.log(`[Email] Items count: ${order.items.length}`);
+
+    // Format order items for email
+    const emailItems = order.items.map((item) => ({
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toFixed(2),
+      variantInfo: item.variantInfo,
+    }));
+
+    console.log(`[Email] Email items prepared: ${JSON.stringify(emailItems)}`);
+
+    // Send customer confirmation email
+    console.log(`[Email] Attempting to send customer email to ${order.customerEmail}`);
+    const customerEmailResult = await sendOrderConfirmationEmail({
+      orderId: order.id,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      items: emailItems,
+      total: order.total.toFixed(2),
+      currency: order.currency,
+      storeName: order.store.storeName,
+    });
+
+    console.log("[Email] Customer email result:", customerEmailResult);
+
+    // Send store notification email if store has contact email configured
+    if (order.store.contactEmail) {
+      console.log(`[Email] Attempting to send store email to ${order.store.contactEmail}`);
+      const storeEmailResult = await sendStoreNotificationEmail(
+        order.store.contactEmail,
+        {
+          orderId: order.id,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          items: emailItems,
+          total: order.total.toFixed(2),
+          currency: order.currency,
+          storeName: order.store.storeName,
+        }
+      );
+
+      console.log("[Email] Store notification result:", storeEmailResult);
+    } else {
+      console.log(`[Email] Store contact email not configured for store ${order.storeId}`);
+    }
+  } catch (error) {
+    console.error("[Email] Failed to send payment success emails:", error);
+    if (error instanceof Error) {
+      console.error("[Email] Error message:", error.message);
+      console.error("[Email] Error stack:", error.stack);
+    }
+    // Don't throw - log the error but continue webhook processing
   }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, MapPin, User, Building2, Phone, Package, ArrowLeft, ShoppingBag, AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
+import { Loader2, MapPin, User, Building2, Phone, Package, ArrowLeft, ShoppingBag, AlertCircle, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { validateAddress, validateAddressField, type AddressValidationResult } from "@/lib/address-validation";
 
@@ -26,6 +26,139 @@ interface FieldErrors {
 interface FieldWarnings {
   [key: string]: string | null;
 }
+
+// Cities by country for autcomplete
+const CITIES_BY_COUNTRY: Record<string, string[]> = {
+  "United States": [
+    "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
+    "Austin", "Jacksonville", "Fort Worth", "Columbus", "Charlotte", "Las Vegas", "Memphis", "Boston", "Seattle", "Denver",
+    "Miami", "Atlanta", "Portland", "Detroit", "Minneapolis", "Nashville", "Baltimore", "Milwaukee", "Albuquerque", "Tucson",
+    "Fresno", "Long Beach", "Kansas City", "Oakland", "Tulsa", "Arlington", "New Orleans", "Bakersfield", "Tampa", "Aurora",
+    "Anaheim", "Santa Ana", "St. Louis", "Riverside", "Corpus Christi", "Lexington", "Henderson", "Plano", "Stockton", "Cincinnati"
+  ],
+  "Canada": [
+    "Toronto", "Montreal", "Vancouver", "Calgary", "Edmonton", "Ottawa", "Winnipeg", "Quebec City", "Hamilton", "Kitchener",
+    "London", "St. Catharines", "Halifax", "Windsor", "Saskatoon", "Barrie", "Kingston", "Thunder Bay", "Sudbury", "Sherbrooke"
+  ],
+  "United Kingdom": [
+    "London", "Manchester", "Birmingham", "Leeds", "Glasgow", "Edinburgh", "Liverpool", "Bristol", "York", "Oxford",
+    "Cambridge", "Bath", "Canterbury", "Windsor", "Chester", "Nottingham", "Sheffield", "Bradford", "Hull", "Derby"
+  ],
+  "Australia": [
+    "Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Canberra", "Newcastle", "Wollongong", "Logan City",
+    "Hobart", "Fremantle", "Geelong", "Townsville", "Cairns", "Toowoomba", "Darwin", "Launceston", "Albury", "Ballarat"
+  ],
+  "Germany": [
+    "Berlin", "Munich", "Cologne", "Frankfurt", "Hamburg", "Dusseldorf", "Dortmund", "Essen", "Leipzig", "Dresden",
+    "Hannover", "Nuremberg", "Duisburg", "Bochum", "Wuppertal", "Bielefeld", "Bonn", "Mannheim", "Karlsruhe", "Stuttgart"
+  ],
+  "France": [
+    "Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille",
+    "Reims", "Le Havre", "Saint-Etienne", "Toulon", "Grenoble", "Angers", "Villeurbanne", "Nimes", "Aix-en-Provence", "Brest"
+  ],
+  "Spain": [
+    "Madrid", "Barcelona", "Valencia", "Seville", "Bilbao", "Malaga", "Murcia", "Palma", "Las Palmas", "Alicante",
+    "Cordoba", "Valladolid", "Zaragoza", "Gijon", "Toledo", "Salamanca", "Pamplona", "Almeria", "Avila", "Burgos"
+  ],
+  "Italy": [
+    "Rome", "Milan", "Naples", "Turin", "Palermo", "Genoa", "Bologna", "Florence", "Bari", "Catania",
+    "Venice", "Verona", "Messina", "Padua", "Trieste", "Brescia", "Parma", "Pisa", "Reggio Calabria", "Ancona"
+  ],
+  "Netherlands": [
+    "Amsterdam", "Rotterdam", "The Hague", "Utrecht", "Eindhoven", "Groningen", "Almere", "Breda", "Nijmegen", "Enschede",
+    "Haarlem", "Arnhem", "Zaanstad", "Apeldoorn", "Tilburg", "Dordrecht", "Leiden", "Maastricht", "Zwolle", "Deventer"
+  ],
+  "Belgium": [
+    "Brussels", "Antwerp", "Ghent", "Charleroi", "Liege", "Bruges", "Namur", "Leuven", "Mons", "Tournai",
+    "Ostend", "Mechelen", "Hasselt", "Verviers", "Waterloo", "Kortrijk", "Arlon", "Seraing", "Nivelles", "Waremme"
+  ],
+  "Switzerland": [
+    "Zurich", "Bern", "Basel", "Lausanne", "Geneva", "Biel", "St. Gallen", "Lucerne", "Uri", "Winterthur",
+    "Lugano", "Fribourg", "Sion", "Neuchatel", "Schaffhausen", "Thun", "Solothurn", "Liestal", "Glarus", "Zug"
+  ],
+  "Austria": [
+    "Vienna", "Graz", "Linz", "Salzburg", "Innsbruck", "Klagenfurt", "Villach", "Wels", "St. Polten", "Steyr",
+    "Eisenstadt", "Feldkirch", "Bregenz", "Dornbirn", "Hallein", "Wörgl", "Kapfenberg", "Leoben", "Traun", "Amstetten"
+  ],
+  "Sweden": [
+    "Stockholm", "Gothenburg", "Malmo", "Uppsala", "Vasteras", "Orebro", "Linkoping", "Helsingborg", "Jonkoping", "Norrkoping",
+    "Lund", "Umea", "Gavle", "Sundsvall", "Halmstad", "Vasterviki", "Visby", "Sodertalje", "Trollhattan", "Uddevalla"
+  ],
+  "Norway": [
+    "Oslo", "Bergen", "Trondheim", "Stavanger", "Drammen", "Fredrikstad", "Lillehammer", "Gjovik", "Sandefjord", "Tonsberg",
+    "Sarpsborg", "Kristiansand", "Arendal", "Skien", "Porsgrunn", "Hamar", "Elverum", "Steinkjer", "Bodø", "Tromso"
+  ],
+  "Denmark": [
+    "Copenhagen", "Aarhus", "Odense", "Aalborg", "Esbjerg", "Randers", "Kolding", "Horsens", "Vejle", "Silkeborg",
+    "Herning", "Hellerup", "Birkerod", "Farum", "Roskilde", "Lolland", "Naestved", "Koge", "Helsingor", "Svendborg"
+  ],
+  "Finland": [
+    "Helsinki", "Espoo", "Tampere", "Vantaa", "Turku", "Oulu", "Jyvaskyla", "Lahti", "Kuopio", "Pori",
+    "Vaasa", "Salo", "Lappeenranta", "Kouvola", "Joensuu", "Hyvinkaa", "Rovaniemi", "Rauma", "Raisio", "Turku"
+  ],
+  "Portugal": [
+    "Lisbon", "Porto", "Braga", "Covilha", "Aveiro", "Funchal", "Guarda", "Covilha", "Leiria", "Castelo Branco",
+    "Viseu", "Evora", "Beja", "Portalegre", "Faro", "Ponta Delgada", "Angra do Heroísmo", "Santarem", "Caldas da Rainha", "Nazare"
+  ],
+  "Japan": [
+    "Tokyo", "Yokohama", "Osaka", "Kobe", "Kyoto", "Kawasaki", "Saitama", "Hiroshima", "Yonago", "Fukuoka",
+    "Kita-Kyushu", "Sapporo", "Sendai", "Nagoya", "Okinawa", "Nagasaki", "Okayama", "Shizuoka", "Matsuyama", "Kagoshima"
+  ],
+  "China": [
+    "Beijing", "Shanghai", "Chongqing", "Guangzhou", "Shenzhen", "Chengdu", "Wuhan", "Xi'an", "Hangzhou", "Nanjing",
+    "Tianjin", "Shenyang", "Jinan", "Qingdao", "Changchun", "Suzhou", "Harbin", "Zhengzhou", "Taiyuan", "Lanzhou"
+  ],
+  "South Korea": [
+    "Seoul", "Busan", "Incheon", "Daegu", "Daejeon", "Gwangju", "Ulsan", "Suuwon", "Seongnam", "Goyang",
+    "Ansan", "Bucheon", "Gimhae", "Changwon", "Jeonju", "Pohang", "Jeju", "Icheon", "Gwacheon", "Anyang"
+  ],
+  "India": [
+    "Delhi", "Mumbai", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Lucknow",
+    "Chandigarh", "Surat", "Indore", "Kanpur", "Nagpur", "Thane", "Bhopal", "Visakhapatnam", "Pimpri", "Patna"
+  ],
+  "Thailand": [
+    "Bangkok", "Phuket", "Chiang Mai", "Pattaya", "Chiang Rai", "Koh Samui", "Nakhon Ratchasima", "Udon Thani", "Rayong", "Sukhothai",
+    "Hua Hin", "Nakhon Si Thammarat", "Songkhla", "Phrae", "Yasothon", "Loei", "Chaiyaphum", "Sakon Nakhon", "Roi Et", "Khon Kaen"
+  ],
+  "Mexico": [
+    "Mexico City", "Guadalajara", "Ecatepec", "Monterrey", "Puebla", "Juarez", "Tijuana", "Leon", "Zapopan", "Querétaro",
+    "Cancun", "Acapulco", "Veracruz", "Merida", "Aguascalientes", "Culiacan", "Hermosillo", "Chihuahua", "Playa del Carmen", "Puerto Vallarta"
+  ],
+  "Brazil": [
+    "São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Manaus", "Curitiba", "Recife", "Goiânia",
+    "Belém", "Guarulhos", "Campinas", "São Gonçalo", "Maceió", "Duque de Caxias", "Santo André", "Ananindeua", "Osasco", "Sorocaba"
+  ],
+  "Saudi Arabia": [
+    "Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Ar Riyad", "Abha", "Tabuk", "Hufuf", "Khamis Mushait",
+    "Yanbu", "Jizan", "Sakaka", "Bisha", "Arar", "Qaisumah", "Haradh", "Jubail", "Khobar", "Dhahran"
+  ],
+  "South Africa": [
+    "Johannesburg", "Cape Town", "Durban", "Pretoria", "Port Elizabeth", "Bloemfontein", "Pietermaritzburg", "East London", "Polokwane", "Rustenburg",
+    "Benoni", "Vereeniging", "Botshabelo", "Mafikeng", "Mthatha", "Sasolburg", "Kempton Park", "Vanderbijlpark", "Springs", "Boksburg"
+  ],
+  "New Zealand": [
+    "Auckland", "Wellington", "Christchurch", "Dunedin", "Hamilton", "Whangarei", "Rotorua", "Invercargill", "Gisborne", "New Plymouth",
+    "Napier", "Hastings", "Nelson", "Palmerston North", "Whangarei", "Timaru", "Oamaru", "Runanga", "Leigh", "Kerikeri"
+  ],
+  "Singapore": [
+    "Singapore"
+  ],
+  "Greece": [
+    "Athens", "Thessaloniki", "Patras", "Larissa", "Volos", "Ioannina", "Trikala", "Katerini", "Kalamata", "Corinth"
+  ],
+  "Poland": [
+    "Warsaw", "Krakow", "Wroclaw", "Poznan", "Gdansk", "Lodz", "Szczecin", "Bydgoszcz", "Lublin", "Katowice",
+    "Radom", "Kielce", "Torun", "Gliwice", "Zabrze", "Bytom", "Rybnik", "Tychy", "Oswiecim", "Zakopane"
+  ],
+  "Czechia": [
+    "Prague", "Brno", "Ostrava", "Plzen", "Liberec", "Olomouc", "Usti nad Labem", "Jihlavá", "Ceske Budejovice", "Zlin",
+    "Kladno", "Havlickuv Brod", "Opava", "Cheb", "Trutnov", "Sumperk", "Frydek-Mistek", "Varnsdorf", "Chomutov", "Teplice"
+  ],
+  "Ireland": [
+    "Dublin", "Cork", "Limerick", "Galway", "Waterford", "Drogheda", "Dundalk", "Kilkenny", "Tralee", "Sligo",
+    "Wexford", "Carlow", "Naas", "Athlone", "Westport", "Ennis", "Letterkenny", "Tullamore", "Portlaoise", "Clonmel"
+  ],
+};
 
 // Country configurations
 const COUNTRY_CONFIGS: Record<
@@ -758,6 +891,9 @@ export default function ShippingPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [fieldWarnings, setFieldWarnings] = useState<FieldWarnings>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
 
   const [formData, setFormData] = useState<ShippingFormData>({
     country: "United States",
@@ -784,6 +920,19 @@ export default function ShippingPage() {
     }
   }, [router]);
 
+  // Load cities for selected country
+  useEffect(() => {
+    try {
+      // Get cities for the selected country
+      const cities = CITIES_BY_COUNTRY[formData.country] || [];
+      setAvailableCities(cities);
+      setCitySuggestions([]);
+    } catch (err) {
+      console.error("Error loading cities:", err);
+      setAvailableCities([]);
+    }
+  }, [formData.country]);
+
   const validateField = (fieldName: string, value: string) => {
     const validation = validateAddressField(
       fieldName,
@@ -805,6 +954,46 @@ export default function ShippingPage() {
     }
   };
 
+  const handleCityInputChange = (value: string) => {
+    // Update form data
+    setFormData((prev) => ({
+      ...prev,
+      city: value,
+    }));
+
+    // Filter cities based on input
+    if (value.trim() === "") {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+    } else {
+      const filtered = availableCities
+        .filter((city) =>
+          city.toLowerCase().startsWith(value.toLowerCase())
+        )
+        .slice(0, 5); // Show max 5 suggestions
+
+      setCitySuggestions(filtered);
+      setShowCitySuggestions(filtered.length > 0);
+    }
+
+    // Validate on change if field was touched
+    if (touchedFields.has("city")) {
+      validateField("city", value);
+    }
+  };
+
+  const selectCity = (cityName: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      city: cityName,
+    }));
+    setCitySuggestions([]);
+    setShowCitySuggestions(false);
+
+    // Validate the selected city
+    validateField("city", cityName);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
@@ -818,8 +1007,13 @@ export default function ShippingPage() {
         country: value,
         state: firstStateOption,
         zipCode: "", // Clear postal code when country changes
+        city: "", // Clear city when country changes
       });
       
+      // Clear suggestions and other state
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+
       // Clear field errors and warnings when country changes
       setFieldErrors({});
       setFieldWarnings({});
@@ -1152,25 +1346,55 @@ export default function ShippingPage() {
 
                 {/* City, State, ZIP code */}
                 <div className="grid grid-cols-6 gap-4">
-                  <div className="col-span-6 sm:col-span-2">
+                  <div className="col-span-6 sm:col-span-2 relative">
                     <label htmlFor="city" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                       City
                     </label>
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Las Vegas"
-                      className={`w-full px-4 py-3 bg-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
-                        isFieldInvalid("city")
-                          ? "border-red-400"
-                          : "border-border focus:border-foreground"
-                      }`}
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        autoComplete="off"
+                        value={formData.city}
+                        onChange={(e) => handleCityInputChange(e.target.value)}
+                        onBlur={(e) => {
+                          setTouchedFields((prev) => new Set([...prev, "city"]));
+                          validateField("city", formData.city);
+                          // Delay closing suggestions to allow click
+                          setTimeout(() => setShowCitySuggestions(false), 200);
+                        }}
+                        onFocus={() => {
+                          if (citySuggestions.length > 0) {
+                            setShowCitySuggestions(true);
+                          }
+                        }}
+                        placeholder="Las Vegas"
+                        className={`w-full px-4 py-3 bg-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
+                          isFieldInvalid("city")
+                            ? "border-red-400"
+                            : "border-border focus:border-foreground"
+                        }`}
+                        required
+                      />
+                      
+                      {/* City suggestions dropdown */}
+                      {showCitySuggestions && citySuggestions.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-background border border-border shadow-lg">
+                          {citySuggestions.map((city, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => selectCity(city)}
+                              onMouseDown={(e) => e.preventDefault()} // Prevent blur from firing on click
+                              className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors duration-150 border-b border-border last:border-b-0"
+                            >
+                              {city}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     {isFieldInvalid("city") && (
                       <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
