@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, X } from "lucide-react";
 
 /**
  * Handles checkout success callback
@@ -14,7 +14,6 @@ function CheckoutSuccessHandlerInner() {
   const [status, setStatus] = useState<"verifying" | "success" | "error" | null>(null);
   const [message, setMessage] = useState("");
   const [dismissed, setDismissed] = useState(false);
-  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const checkout = searchParams.get("checkout");
@@ -26,18 +25,16 @@ function CheckoutSuccessHandlerInner() {
     }
   }, [searchParams]);
 
-  // Countdown timer for auto-dismiss
+  // Auto-dismiss notification after 4 seconds
   useEffect(() => {
-    if (status === "success" && !dismissed && countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
+    if (status === "success" && !dismissed) {
+      const dismissTimer = setTimeout(() => {
+        setDismissed(true);
+      }, 4000);
 
-      return () => clearTimeout(timer);
-    } else if (status === "success" && !dismissed && countdown === 0) {
-      handleDismiss();
+      return () => clearTimeout(dismissTimer);
     }
-  }, [status, dismissed, countdown]);
+  }, [status, dismissed]);
 
   async function verifySession(sessionId: string, storeId: string) {
     setStatus("verifying");
@@ -55,7 +52,15 @@ function CheckoutSuccessHandlerInner() {
       if (response.ok && data.success) {
         setStatus("success");
         setMessage("Order confirmed! Thank you for your purchase.");
-        setCountdown(5);
+        
+        // Clean up URL after notification is dismissed
+        setTimeout(() => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("checkout");
+          url.searchParams.delete("session_id");
+          url.searchParams.delete("store_id");
+          router.replace(url.pathname);
+        }, 5000);
       } else {
         setStatus("error");
         setMessage(data.error || "Failed to verify order");
@@ -67,6 +72,8 @@ function CheckoutSuccessHandlerInner() {
     }
   }
 
+  if (!status || dismissed) return null;
+
   const handleDismiss = () => {
     setDismissed(true);
     const url = new URL(window.location.href);
@@ -76,18 +83,14 @@ function CheckoutSuccessHandlerInner() {
     router.replace(url.pathname);
   };
 
-  if (!status || dismissed) return null;
-
-  const isSuccess = status === "success";
-
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 pointer-events-none">
-      <div className={`pointer-events-auto p-4 rounded-lg shadow-lg border animate-in slide-in-from-top ${
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 max-w-md animate-in slide-in-from-top">
+      <div className={`p-4 rounded-lg shadow-lg border flex items-center justify-between ${
         status === "success" ? "bg-green-50 border-green-200" :
         status === "error" ? "bg-red-50 border-red-200" :
         "bg-blue-50 border-blue-200"
       }`}>
-        <div className="flex items-center gap-3 min-w-max">
+        <div className="flex items-center gap-3">
           {status === "verifying" && (
             <Loader2 className="h-5 w-5 animate-spin text-blue-600 flex-shrink-0" />
           )}
@@ -106,16 +109,14 @@ function CheckoutSuccessHandlerInner() {
           }`}>
             {message}
           </p>
-          {isSuccess && (
-            <span className={`ml-3 text-xs font-semibold px-2 py-1 rounded-full ${
-              countdown > 2 ? "bg-green-200 text-green-700" :
-              countdown > 0 ? "bg-yellow-200 text-yellow-700" :
-              "bg-gray-200 text-gray-700"
-            }`}>
-              {countdown}s
-            </span>
-          )}
         </div>
+        <button
+          onClick={handleDismiss}
+          className="ml-3 flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Close notification"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );
