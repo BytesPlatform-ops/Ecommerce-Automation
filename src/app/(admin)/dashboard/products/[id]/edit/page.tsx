@@ -31,6 +31,7 @@ export default async function EditProductPage({
     },
     include: {
       images: { orderBy: { sortOrder: "asc" } },
+      variants: { orderBy: { createdAt: "asc" } },
     },
   });
 
@@ -38,10 +39,14 @@ export default async function EditProductPage({
     notFound();
   }
 
-  // Convert Decimal price to string for client component
+  // Convert Decimal prices to string for client component
   const serializedProduct = {
     ...product,
     price: product.price.toString(),
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      price: variant.price ? variant.price.toString() : null,
+    })),
   };
 
   return (

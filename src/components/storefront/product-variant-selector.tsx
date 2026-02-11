@@ -9,6 +9,7 @@ type Variant = {
   sizeType: string | null;
   value: string | null;
   unit: string | null;
+  price: number | string | null;
   stock: number;
 };
 
@@ -62,6 +63,15 @@ function getVariantTypeLabel(sizeType: string | null): string {
   return labels[sizeType] || "Size";
 }
 
+// Helper function to get the effective price (variant price or product price)
+function getEffectivePrice(variantPrice: number | string | null, productPrice: number): number {
+  if (variantPrice !== null && variantPrice !== undefined && variantPrice !== "") {
+    const price = typeof variantPrice === "string" ? parseFloat(variantPrice) : variantPrice;
+    return isNaN(price) ? productPrice : price;
+  }
+  return productPrice;
+}
+
 export function ProductVariantSelector({
   variants,
   product,
@@ -77,6 +87,7 @@ export function ProductVariantSelector({
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const variantTypeLabel = getVariantTypeLabel(selectedVariant?.sizeType || null);
+  const effectivePrice = selectedVariant ? getEffectivePrice(selectedVariant.price, product.price) : product.price;
 
   const handleAddToCart = () => {
     if (!selectedVariant) return;
@@ -84,6 +95,7 @@ export function ProductVariantSelector({
     addToCart(
       {
         ...product,
+        price: effectivePrice,
         variantId: selectedVariant.id,
         variantInfo: formatVariant(selectedVariant),
       },
@@ -153,6 +165,23 @@ export function ProductVariantSelector({
           </p>
         )}
       </div>
+
+      {/* Price Display */}
+      {selectedVariant && (
+        <div>
+          <p 
+            className="text-xl sm:text-2xl font-medium"
+            style={{ color: "var(--primary)" }}
+          >
+            ${effectivePrice.toFixed(2)}
+          </p>
+          {selectedVariant.price && selectedVariant.price !== null && selectedVariant.price !== "" ? (
+            <p className="text-xs text-muted-foreground mt-1">
+              Variant-specific price
+            </p>
+          ) : null}
+        </div>
+      )}
 
       {/* Quantity and Add to Cart */}
       <div className="flex flex-col sm:flex-row gap-4">

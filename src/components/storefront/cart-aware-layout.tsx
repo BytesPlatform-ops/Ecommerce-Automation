@@ -15,11 +15,11 @@ export function CartAwareLayout({ children }: { children: React.ReactNode }) {
     if (!mounted) return;
 
     if (isCartOpen) {
-      // Prevent body scroll and overflow when cart is open
+      // Prevent body scroll
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
     } else {
-      // Re-enable body scroll when cart is closed
+      // Re-enable body scroll
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     }

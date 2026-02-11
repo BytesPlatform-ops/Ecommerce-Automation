@@ -93,7 +93,14 @@ export default async function ProductDetailPage({
             <div className="space-y-6 mb-8 pb-8 border-b border-border">
               {product.variants.length > 0 ? (
                 <ProductVariantSelector
-                  variants={product.variants}
+                  variants={product.variants.map(v => ({
+                    id: v.id,
+                    sizeType: v.sizeType,
+                    value: v.value,
+                    unit: v.unit,
+                    price: v.price ? Number(v.price) : null,
+                    stock: v.stock,
+                  }))}
                   product={{
                     id: product.id,
                     name: product.name,

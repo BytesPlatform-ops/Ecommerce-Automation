@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct, updateProduct } from "@/lib/actions";
 import { Product, ProductImage } from "@/types/database";
@@ -23,6 +23,7 @@ interface Variant {
   sizeType: SizeType | "";
   value: string;
   unit: Unit | "";
+  price?: string; // Optional variant-specific price
   stock: number;
 }
 
@@ -100,8 +101,23 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
 
   const isEditing = !!product;
 
+  // Initialize variants from product data when editing
+  useEffect(() => {
+    if (isEditing && product && 'variants' in product && product.variants) {
+      const variants = (product.variants as any[]).map((v: any) => ({
+        id: v.id,
+        sizeType: v.sizeType || "",
+        value: v.value || "",
+        unit: v.unit || "",
+        price: v.price ? v.price.toString() : "",
+        stock: v.stock || 0,
+      }));
+      setVariants(variants);
+    }
+  }, [isEditing, product]);
+
   const addVariant = () => {
-    setVariants([...variants, { sizeType: "", value: "", unit: "", stock: 0 }]);
+    setVariants([...variants, { sizeType: "", value: "", unit: "", price: "", stock: 0 }]);
   };
 
   const removeVariant = (index: number) => {
@@ -145,6 +161,14 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         setError("Stock cannot be negative");
         return;
       }
+      // Validate variant price if provided
+      if (variant.price) {
+        const variantPrice = parseFloat(variant.price);
+        if (isNaN(variantPrice) || variantPrice < 0) {
+          setError("Please enter a valid price for all variants or leave empty to use base price");
+          return;
+        }
+      }
     }
 
     setLoading(true);
@@ -161,6 +185,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
             unit: v.unit as Unit,
+            price: v.price ? parseFloat(v.price) : undefined,
             stock: v.stock,
           })),
         });
@@ -174,6 +199,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
             unit: v.unit as Unit,
+            price: v.price ? parseFloat(v.price) : undefined,
             stock: v.stock,
           })),
         });
@@ -338,99 +364,121 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         </div>
 
         {variants.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {variants.map((variant, index) => (
               <div
                 key={index}
-                className="grid grid-cols-12 gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl"
+                className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-4"
               >
-                {/* Size Type */}
-                <div className="col-span-3">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Type
-                  </label>
-                  <select
-                    value={variant.sizeType}
-                    onChange={(e) =>
-                      updateVariant(index, "sizeType", e.target.value)
-                    }
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
-                  >
-                    <option value="">Select type</option>
-                    <option value="VOLUME">Volume</option>
-                    <option value="WEIGHT">Weight</option>
-                    <option value="APPAREL_ALPHA">Apparel (S/M/L)</option>
-                    <option value="APPAREL_NUMERIC">Apparel (28/30/32)</option>
-                    <option value="FOOTWEAR">Footwear</option>
-                    <option value="DIMENSION">Dimension</option>
-                    <option value="COUNT">Count</option>
-                    <option value="STORAGE">Storage</option>
-                  </select>
-                </div>
-
-                {/* Value (optional) */}
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Value
-                  </label>
-                  <input
-                    type="text"
-                    value={variant.value}
-                    onChange={(e) =>
-                      updateVariant(index, "value", e.target.value)
-                    }
-                    placeholder="e.g. 500"
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
-                  />
-                </div>
-
-                {/* Unit */}
-                <div className="col-span-3">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Unit
-                  </label>
-                  <select
-                    value={variant.unit}
-                    onChange={(e) => updateVariant(index, "unit", e.target.value)}
-                    disabled={!variant.sizeType}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select unit</option>
-                    {variant.sizeType &&
-                      UNIT_OPTIONS[variant.sizeType as SizeType]?.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                {/* Stock */}
-                <div className="col-span-3">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Stock
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={variant.stock}
-                    onChange={(e) =>
-                      updateVariant(index, "stock", parseInt(e.target.value) || 0)
-                    }
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
-                  />
-                </div>
-
-                {/* Remove Button */}
-                <div className="col-span-1 flex items-end">
+                {/* Header with Type and Remove Button */}
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Type
+                    </label>
+                    <select
+                      value={variant.sizeType}
+                      onChange={(e) =>
+                        updateVariant(index, "sizeType", e.target.value)
+                      }
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                    >
+                      <option value="">Select type</option>
+                      <option value="VOLUME">Volume</option>
+                      <option value="WEIGHT">Weight</option>
+                      <option value="APPAREL_ALPHA">Apparel (S/M/L)</option>
+                      <option value="APPAREL_NUMERIC">Apparel (28/30/32)</option>
+                      <option value="FOOTWEAR">Footwear</option>
+                      <option value="DIMENSION">Dimension</option>
+                      <option value="COUNT">Count</option>
+                      <option value="STORAGE">Storage</option>
+                    </select>
+                  </div>
                   <button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     title="Remove variant"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
+                </div>
+
+                {/* Value and Unit Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Value
+                    </label>
+                    <input
+                      type="text"
+                      value={variant.value}
+                      onChange={(e) =>
+                        updateVariant(index, "value", e.target.value)
+                      }
+                      placeholder="e.g. 500"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Unit
+                    </label>
+                    <select
+                      value={variant.unit}
+                      onChange={(e) => updateVariant(index, "unit", e.target.value)}
+                      disabled={!variant.sizeType}
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select unit</option>
+                      {variant.sizeType &&
+                        UNIT_OPTIONS[variant.sizeType as SizeType]?.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Price and Stock Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Price (Optional)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-500 text-sm font-medium">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={variant.price || ""}
+                        onChange={(e) =>
+                          updateVariant(index, "price", e.target.value)
+                        }
+                        placeholder="Leave empty for base price"
+                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none placeholder:text-gray-400"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Variant-specific price</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                      Stock
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={variant.stock}
+                      onChange={(e) =>
+                        updateVariant(index, "stock", parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

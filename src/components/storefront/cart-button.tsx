@@ -49,16 +49,16 @@ export function CartButton() {
         <>
           {/* Overlay */}
           <div
-            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-[60]"
             onClick={() => setIsCartOpen(false)}
             style={{ overflowAnchor: 'none' }}
           />
 
           {/* Drawer */}
-          <div className="fixed top-0 right-0 h-full w-full sm:max-w-[420px] bg-background border-l border-border z-50" style={{ overflowAnchor: 'none' }}>
-            <div className="flex flex-col h-full">
+          <div className="fixed top-0 right-0 h-screen w-full sm:max-w-[420px] bg-white border-l border-gray-200 z-[70] shadow-xl" style={{ overflowAnchor: 'none' }}>
+            <div className="flex flex-col h-full" style={{ color: '#000000' }}>
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 shrink-0">
                 <h2 className="text-overline !text-foreground">Cart ({itemCount})</h2>
                 <button
                   type="button"
@@ -70,22 +70,22 @@ export function CartButton() {
               </div>
 
               {/* Items */}
-              <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
                 {items.length === 0 ? (
                   <div className="text-center py-16">
-                    <ShoppingBag className="h-8 w-8 mx-auto text-border mb-4" strokeWidth={1} />
-                    <p className="text-sm text-muted-foreground">Your cart is empty</p>
+                    <ShoppingBag className="h-8 w-8 mx-auto text-gray-300 mb-4" strokeWidth={1} />
+                    <p className="text-sm text-gray-600">Your cart is empty</p>
                   </div>
                 ) : (
                   <div className="space-y-0 divide-y divide-border">
                     {items.map((item) => (
                       <div key={item.productId} className="flex gap-4 py-5 first:pt-0">
                         {/* Image */}
-                        <div className="relative w-16 h-20 bg-muted overflow-hidden shrink-0">
+                        <div className="relative w-16 h-20 bg-gray-100 overflow-hidden shrink-0">
                           {item.imageUrl ? (
                             <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-[10px]">
                               No img
                             </div>
                           )}
@@ -93,28 +93,28 @@ export function CartButton() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm text-foreground truncate mb-1">{item.name}</h3>
+                          <h3 className="text-sm text-black truncate mb-1">{item.name}</h3>
                           {item.variantInfo && (
-                            <p className="text-xs text-muted-foreground mb-1">{item.variantInfo}</p>
+                            <p className="text-xs text-gray-600 mb-1">{item.variantInfo}</p>
                           )}
-                          <p className="text-sm text-muted-foreground font-medium">
+                          <p className="text-sm text-gray-600 font-medium">
                             ${item.price.toFixed(2)}
                           </p>
 
                           {/* Quantity */}
-                          <div className="flex items-center gap-0 mt-3 border border-border inline-flex">
+                          <div className="flex items-center gap-0 mt-3 border border-gray-300 inline-flex">
                             <button
                               onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                              className="px-2.5 py-1 hover:bg-muted transition-colors duration-200"
+                              className="px-2.5 py-1 hover:bg-gray-100 transition-colors duration-200"
                             >
                               <Minus className="h-3 w-3" strokeWidth={1.5} />
                             </button>
-                            <span className="px-3 py-1 text-xs text-foreground min-w-[2rem] text-center border-x border-border">
+                            <span className="px-3 py-1 text-xs text-black min-w-[2rem] text-center border-x border-gray-300">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                              className="px-2.5 py-1 hover:bg-muted transition-colors duration-200"
+                              className="px-2.5 py-1 hover:bg-gray-100 transition-colors duration-200"
                             >
                               <Plus className="h-3 w-3" strokeWidth={1.5} />
                             </button>
@@ -124,7 +124,7 @@ export function CartButton() {
                         {/* Remove */}
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="p-1 text-muted-foreground hover:text-foreground transition-colors duration-200 self-start"
+                          className="p-1 text-gray-500 hover:text-black transition-colors duration-200 self-start"
                         >
                           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
                         </button>
@@ -136,10 +136,10 @@ export function CartButton() {
 
               {/* Footer */}
               {items.length > 0 && (
-                <div className="border-t border-border px-6 py-5 space-y-4">
+                <div className="border-t border-gray-200 px-6 py-5 space-y-4 shrink-0">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-overline">Total</span>
-                    <span className="text-lg font-serif tracking-tight">${total.toFixed(2)}</span>
+                    <span className="text-overline text-black">Total</span>
+                    <span className="text-lg font-serif tracking-tight text-black">${total.toFixed(2)}</span>
                   </div>
 
                   <button
@@ -154,7 +154,7 @@ export function CartButton() {
                   <button
                     type="button"
                     onClick={clearCart}
-                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors duration-300 py-1"
+                    className="w-full text-xs text-gray-600 hover:text-black transition-colors duration-300 py-1"
                   >
                     Clear Cart
                   </button>

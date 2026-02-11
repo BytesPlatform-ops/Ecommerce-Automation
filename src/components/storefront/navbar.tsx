@@ -181,7 +181,6 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
               products={products}
               productPath={productPath}
               fullWidth={true}
-              onProductClick={() => setIsSearchOpen(false)}
             />
           </div>
         )}

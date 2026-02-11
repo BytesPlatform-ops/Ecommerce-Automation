@@ -23,6 +23,7 @@ export async function createProduct(
       sizeType: string;
       value?: string;
       unit: string;
+      price?: number;
       stock: number;
     }>;
   }
@@ -63,6 +64,7 @@ export async function createProduct(
           sizeType: v.sizeType,
           value: v.value || null,
           unit: v.unit,
+          price: v.price ?? null,
           stock: v.stock,
         })),
       } : undefined,
@@ -91,6 +93,7 @@ export async function updateProduct(
       sizeType: string;
       value?: string;
       unit: string;
+      price?: number;
       stock: number;
     }>;
   }
@@ -151,6 +154,7 @@ export async function updateProduct(
           sizeType: v.sizeType,
           value: v.value || null,
           unit: v.unit,
+          price: v.price ?? null,
           stock: v.stock,
         })),
       } : undefined,
