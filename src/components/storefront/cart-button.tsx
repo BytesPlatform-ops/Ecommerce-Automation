@@ -22,7 +22,15 @@ export function CartButton() {
   function handleCheckout() {
     if (items.length === 0) return;
     setIsCartOpen(false);
-    const username = pathname.split("/")[2];
+    // Extract username from pathname: /stores/[username] -> [username]
+    const pathParts = pathname.split("/").filter(Boolean); // Remove empty strings
+    const username = pathParts.length >= 2 && pathParts[0] === "stores" ? pathParts[1] : "";
+    
+    if (!username) {
+      console.error("Could not extract store username from pathname:", pathname);
+      return;
+    }
+    
     const shippingUrl = `/stores/${username}/shipping?storeId=${items[0].storeId}`;
     router.push(shippingUrl);
   }
