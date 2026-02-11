@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Search, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CartButton } from "./cart-button";
 import { NavbarSearch } from "./navbar-search";
 import styles from "./navbar.module.css";
@@ -30,11 +30,65 @@ interface StorefrontNavbarProps {
 export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, aboutPath, contactPath, homePath, products, productPath }: StorefrontNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Handle scroll to show/hide navbar on mobile
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDifference = currentScrollY - lastScrollY;
+
+      // If scrolling down more than 10px, hide navbar
+      if (scrollDifference > 10) {
+        setIsNavbarVisible(false);
+      }
+      // If scrolling up, show navbar
+      else if (scrollDifference < -10 || currentScrollY === 0) {
+        setIsNavbarVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  // Close search when clicking outside
+  useEffect(() => {
+    if (!isSearchOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const searchContainer = document.getElementById('mobile-search-container');
+      const searchButton = document.getElementById('mobile-search-button');
+      if (searchContainer && !searchContainer.contains(e.target as Node) && 
+          searchButton && !searchButton.contains(e.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isSearchOpen]);
 
   return (
     <>
+      {/* Spacer for fixed navbar */}
+      <div className="h-16 sm:h-[72px]" />
+      
       <div className="relative">
-        <nav className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50" style={{ borderBottomColor: "var(--primary)", overflowAnchor: "none" }}>
+        <nav className="border-b bg-background/95 backdrop-blur-sm fixed top-0 left-0 right-0 z-50 transition-transform duration-300 w-full" style={{ borderBottomColor: "var(--primary)", overflowAnchor: "none", transform: isNavbarVisible ? 'translateY(0)' : 'translateY(-100%)' }}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 sm:h-[72px] min-h-16 sm:min-h-[72px]">
             {/* Logo */}
@@ -92,6 +146,7 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
 
               {/* Mobile Search Toggle */}
               <button
+                id="mobile-search-button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="md:hidden p-2 hover:bg-muted rounded-sm transition-colors duration-200 flex items-center justify-center"
                 aria-label="Search"
@@ -119,13 +174,14 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
         </div>
       </nav>
 
-        {/* Mobile Search - Positioned absolutely so it appears as part of navbar */}
+        {/* Mobile Search - Fixed dropdown below navbar */}
         {isSearchOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-background border-b border-border px-4 sm:px-6 py-4 z-40" style={{ overflowAnchor: 'none' }}>
+          <div id="mobile-search-container" className="md:hidden fixed top-16 sm:top-[72px] left-0 right-0 bg-background border-b border-border px-4 sm:px-6 py-4 z-40 shadow-lg transition-all" style={{ overflowAnchor: 'none', opacity: isNavbarVisible ? 1 : 0, pointerEvents: isNavbarVisible ? 'auto' : 'none' }}>
             <NavbarSearch 
               products={products}
               productPath={productPath}
               fullWidth={true}
+              onProductClick={() => setIsSearchOpen(false)}
             />
           </div>
         )}
