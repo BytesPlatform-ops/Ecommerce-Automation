@@ -33,6 +33,10 @@ export default async function StorefrontHomePage({
         orderBy: { createdAt: "desc" },
         include: { images: { orderBy: { sortOrder: "asc" } } },
       },
+      testimonials: {
+        where: { isPublished: true },
+        orderBy: { sortOrder: "asc" },
+      },
       theme: true,
     },
   });
@@ -67,7 +71,7 @@ export default async function StorefrontHomePage({
       {/* ─── Hero Section ─── */}
       <section className="relative overflow-hidden">
         {heroImageUrl ? (
-          <div className="relative min-h-[85vh] flex items-center">
+          <div className="relative h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center">
             <Image
               src={heroImageUrl}
               alt={store.storeName}
@@ -101,8 +105,8 @@ export default async function StorefrontHomePage({
             </div>
           </div>
         ) : (
-          <div className="min-h-[80vh] flex items-center border-b border-border">
-            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full py-24 sm:py-32">
+          <div className="h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center border-b border-border">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 w-full">
               <div className="max-w-2xl">
                 <p className="text-overline mb-4 sm:mb-6">Welcome to {store.storeName}</p>
                 <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.1] mb-6 tracking-tight">
@@ -336,46 +340,35 @@ export default async function StorefrontHomePage({
       </section>
 
       {/* ─── Testimonials ─── */}
-      <section id="testimonials" className="py-16 sm:py-20 lg:py-24 border-t border-border">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12 sm:mb-16">
-            <p className="text-overline mb-2" style={{ color: "var(--primary)" }}>Testimonials</p>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight">
-              What Our Clients Say
-            </h2>
-          </div>
+      {store.testimonials && store.testimonials.length > 0 && (
+        <section id="testimonials" className="py-16 sm:py-20 lg:py-24 border-t border-border">
+          <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12 sm:mb-16">
+              <p className="text-overline mb-2" style={{ color: "var(--primary)" }}>Testimonials</p>
+              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight">
+                What Our Clients Say
+              </h2>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {[
-              {
-                name: "Sarah Anderson",
-                content: "The quality is exceptional. Every piece feels considered and beautifully made. This is my go-to for thoughtful purchases.",
-              },
-              {
-                name: "Michael Chen",
-                content: "Impeccable packaging and fast delivery. The products are even better in person than the photos suggest.",
-              },
-              {
-                name: "Emma Thompson",
-                content: "A truly curated selection. You can feel the care that goes into every product. Outstanding experience from start to finish.",
-              },
-            ].map((testimonial, idx) => (
-              <div
-                key={idx}
-                className="border border-border p-6 sm:p-8 transition-colors duration-400 hover:border-foreground"
-              >
-                <p className="text-sm text-foreground leading-relaxed mb-6">
-                  &ldquo;{testimonial.content}&rdquo;
-                </p>
-                <div>
-                  <p className="text-overline !text-foreground">{testimonial.name}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Verified Buyer</p>
+            <div className={store.testimonials.length === 1 ? "flex justify-center" : store.testimonials.length === 2 ? "grid grid-cols-2 gap-6 sm:gap-8 mx-auto w-fit" : "grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"}>
+              {store.testimonials.map((testimonial, idx) => (
+                <div
+                  key={idx}
+                  className={`border border-border p-6 sm:p-8 transition-colors duration-400 hover:border-foreground ${store.testimonials.length === 1 ? 'w-full md:w-1/2 lg:w-2/5' : ''}`}
+                >
+                  <p className="text-sm text-foreground leading-relaxed mb-6">
+                    &ldquo;{testimonial.content}&rdquo;
+                  </p>
+                  <div>
+                    <p className="text-overline !text-foreground">{testimonial.customerName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Verified Buyer</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ─── Contact Section ─── */}
       <div id="contact">

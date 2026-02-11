@@ -29,6 +29,11 @@ export default async function SettingsPage() {
     orderBy: { sortOrder: "asc" },
   });
 
+  const testimonials = await prisma.storeTestimonial.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+  });
+
   // Prepare store data for domain settings component
   const domainStore = {
     id: store.id,
@@ -43,6 +48,7 @@ export default async function SettingsPage() {
       domainStore={domainStore}
       faqs={faqs}
       privacySections={privacySections}
+      testimonials={testimonials}
     />
   );
 }

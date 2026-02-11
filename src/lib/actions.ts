@@ -589,6 +589,161 @@ export async function reorderStorePrivacySections(
   return { success: true };
 }
 
+export async function createStoreTestimonial(
+  storeId: string,
+  data: {
+    customerName: string;
+    content: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  const lastTestimonial = await prisma.storeTestimonial.findFirst({
+    where: { storeId },
+    orderBy: { sortOrder: "desc" },
+  });
+
+  const testimonial = await prisma.storeTestimonial.create({
+    data: {
+      storeId,
+      customerName: data.customerName.trim(),
+      content: data.content.trim(),
+      isPublished: data.isPublished ?? true,
+      sortOrder: lastTestimonial ? lastTestimonial.sortOrder + 1 : 0,
+    },
+  });
+
+  return testimonial;
+}
+
+export async function updateStoreTestimonial(
+  testimonialId: string,
+  data: {
+    customerName?: string;
+    content?: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const testimonial = await prisma.storeTestimonial.findFirst({
+    where: { id: testimonialId },
+    include: { store: true },
+  });
+
+  if (!testimonial || testimonial.store.ownerId !== user.id) {
+    throw new Error("Testimonial not found or unauthorized");
+  }
+
+  const updateData: {
+    customerName?: string;
+    content?: string;
+    isPublished?: boolean;
+  } = {};
+
+  if (data.customerName !== undefined) {
+    updateData.customerName = data.customerName.trim();
+  }
+
+  if (data.content !== undefined) {
+    updateData.content = data.content.trim();
+  }
+
+  if (data.isPublished !== undefined) {
+    updateData.isPublished = data.isPublished;
+  }
+
+  return await prisma.storeTestimonial.update({
+    where: { id: testimonialId },
+    data: updateData,
+  });
+}
+
+export async function deleteStoreTestimonial(testimonialId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const testimonial = await prisma.storeTestimonial.findFirst({
+    where: { id: testimonialId },
+    include: { store: true },
+  });
+
+  if (!testimonial || testimonial.store.ownerId !== user.id) {
+    throw new Error("Testimonial not found or unauthorized");
+  }
+
+  return await prisma.storeTestimonial.delete({
+    where: { id: testimonialId },
+  });
+}
+
+export async function reorderStoreTestimonials(
+  storeId: string,
+  orderedIds: string[]
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  if (orderedIds.length === 0) {
+    return { success: true };
+  }
+
+  const testimonials = await prisma.storeTestimonial.findMany({
+    where: { id: { in: orderedIds }, storeId },
+    select: { id: true },
+  });
+
+  if (testimonials.length !== orderedIds.length) {
+    throw new Error("One or more testimonials could not be reordered");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.storeTestimonial.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  return { success: true };
+}
+
 export async function getProduct(productId: string) {
   return await prisma.product.findUnique({
     where: { id: productId },

@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Store, StoreFaq, StorePrivacySection } from "@/types/database";
+import { Store, StoreFaq, StorePrivacySection, StoreTestimonial } from "@/types/database";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
 import { FaqSettings } from "@/components/dashboard/faq-settings";
 import { PrivacyPolicySettings } from "@/components/dashboard/privacy-policy-settings";
-import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield } from "lucide-react";
+import { TestimonialsSettings } from "@/components/dashboard/testimonials-settings";
+import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield, MessageCircle } from "lucide-react";
 import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
   store: Store;
   faqs: StoreFaq[];
   privacySections: StorePrivacySection[];
+  testimonials: StoreTestimonial[];
   domainStore: {
     id: string;
     domain: string | null;
@@ -48,6 +50,12 @@ const tabs = [
     description: "Manage frequently asked questions for your store",
   },
   {
+    id: "testimonials",
+    label: "Testimonials",
+    icon: MessageCircle,
+    description: "Manage customer testimonials displayed on your storefront",
+  },
+  {
     id: "privacy",
     label: "Privacy Policy",
     icon: Shield,
@@ -60,6 +68,7 @@ export function SettingsPageContent({
   domainStore,
   faqs,
   privacySections,
+  testimonials,
 }: SettingsPageContentProps) {
   const [activeTab, setActiveTab] = useState("store");
 
@@ -126,6 +135,9 @@ export function SettingsPageContent({
           {activeTab === "domain" && <DomainSettings store={domainStore} />}
           {activeTab === "contact" && <ContactSettings store={store} />}
           {activeTab === "faq" && <FaqSettings storeId={store.id} faqs={faqs} />}
+          {activeTab === "testimonials" && (
+            <TestimonialsSettings storeId={store.id} testimonials={testimonials} />
+          )}
           {activeTab === "privacy" && (
             <PrivacyPolicySettings storeId={store.id} sections={privacySections} />
           )}

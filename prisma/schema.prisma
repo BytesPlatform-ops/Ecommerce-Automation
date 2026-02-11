@@ -144,6 +144,7 @@ model Store {
   orders   Order[]
   faqs     StoreFaq[]
   privacySections StorePrivacySection[]
+  testimonials StoreTestimonial[]
 
   @@index([ownerId])
   @@index([themeId])
@@ -179,6 +180,22 @@ model StoreFaq {
   @@index([storeId])
   @@index([storeId, sortOrder])
   @@map("store_faqs")
+}
+
+model StoreTestimonial {
+  id           String   @id @default(cuid())
+  storeId      String
+  store        Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customerName String
+  content      String   @db.Text
+  sortOrder    Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([storeId, sortOrder])
+  @@map("store_testimonials")
 }
 
 model Product {
