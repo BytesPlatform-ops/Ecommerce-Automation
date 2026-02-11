@@ -21,6 +21,12 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
   const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
 
+  console.log("[Email SendGrid Config]", {
+    hasApiKey: !!SENDGRID_API_KEY,
+    fromEmail: FROM_EMAIL,
+    apiKeyStart: SENDGRID_API_KEY?.substring(0, 10) + "..."
+  });
+
   if (!SENDGRID_API_KEY) {
     console.warn("[Email] SENDGRID_API_KEY is not configured. Email not sent.");
     return { success: false, message: "SendGrid API key not configured" };
@@ -327,11 +333,25 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
       html,
     };
 
+    console.log("[Email] Sending customer email with:", {
+      to: customerEmail,
+      from: FROM_EMAIL,
+      subject: `Order Confirmed - ${storeName} (Order #${orderId})`,
+      htmlLength: html.length
+    });
+
     await sgMail.send(msg);
     console.log(`[Email] Order confirmation sent to ${customerEmail} for order ${orderId}`);
     return { success: true, message: "Email sent successfully" };
   } catch (error) {
     console.error(`[Email] Failed to send order confirmation to ${customerEmail}:`, error);
+    if (error instanceof Error) {
+      console.error("[Email] Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+    }
     return { 
       success: false, 
       message: error instanceof Error ? error.message : "Failed to send email" 
@@ -345,6 +365,12 @@ export async function sendStoreNotificationEmail(
 ) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
   const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+
+  console.log("[Email Store Notification] Config check:", {
+    hasApiKey: !!SENDGRID_API_KEY,
+    storeContactEmail,
+    fromEmail: FROM_EMAIL
+  });
 
   if (!SENDGRID_API_KEY) {
     console.warn("[Email] SENDGRID_API_KEY is not configured. Email not sent.");
@@ -591,11 +617,25 @@ export async function sendStoreNotificationEmail(
       html,
     };
 
+    console.log("[Email] Sending store notification with:", {
+      to: storeContactEmail,
+      from: FROM_EMAIL,
+      subject: `New Order #${orderId} - ${storeName}`,
+      htmlLength: html.length
+    });
+
     await sgMail.send(msg);
     console.log(`[Email] Store notification sent to ${storeContactEmail} for order ${orderId}`);
     return { success: true, message: "Store notification sent" };
   } catch (error) {
     console.error(`[Email] Failed to send store notification:`, error);
+    if (error instanceof Error) {
+      console.error("[Email Store] Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+    }
     return { 
       success: false, 
       message: error instanceof Error ? error.message : "Failed to send email" 

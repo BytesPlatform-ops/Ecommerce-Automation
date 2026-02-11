@@ -22,16 +22,23 @@ export function CartButton() {
   function handleCheckout() {
     if (items.length === 0) return;
     setIsCartOpen(false);
+    
     // Extract username from pathname: /stores/[username] -> [username]
     const pathParts = pathname.split("/").filter(Boolean); // Remove empty strings
-    const username = pathParts.length >= 2 && pathParts[0] === "stores" ? pathParts[1] : "";
+    const isStorePath = pathParts.length >= 2 && pathParts[0] === "stores";
     
-    if (!username) {
-      console.error("Could not extract store username from pathname:", pathname);
-      return;
+    let shippingUrl: string;
+    
+    if (isStorePath) {
+      // On main app with /stores/[username] path
+      const username = pathParts[1];
+      shippingUrl = `/stores/${username}/shipping?storeId=${items[0].storeId}`;
+    } else {
+      // On custom domain or root path - go directly to /shipping
+      shippingUrl = `/shipping?storeId=${items[0].storeId}`;
     }
     
-    const shippingUrl = `/stores/${username}/shipping?storeId=${items[0].storeId}`;
+    console.log("[Checkout] Redirecting to:", shippingUrl, "from pathname:", pathname);
     router.push(shippingUrl);
   }
 

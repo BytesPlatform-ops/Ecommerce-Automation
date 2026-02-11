@@ -50,7 +50,13 @@ export async function POST(request: NextRequest) {
 
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log("Payment succeeded:", paymentIntent.id);
+        console.log("[Webhook] payment_intent.succeeded:", {
+          paymentIntentId: paymentIntent.id,
+          amount: paymentIntent.amount,
+          status: paymentIntent.status,
+          clientSecret: paymentIntent.client_secret?.substring(0, 20) + "..."
+        });
+        
         // Update order status to Completed and payment status to Paid
         try {
           await updateOrderStatus(paymentIntent.id, "Completed", "Paid");
@@ -59,7 +65,10 @@ export async function POST(request: NextRequest) {
           // Send confirmation email to customer
           await handlePaymentSuccessEmail(paymentIntent.id);
         } catch (error) {
-          console.error("[Webhook] Failed to update order status:", error);
+          console.error("[Webhook] Failed to update order status or send email:", {
+            error: error instanceof Error ? error.message : String(error),
+            paymentIntentId: paymentIntent.id
+          });
         }
         break;
       }
@@ -95,10 +104,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const storeId = session.metadata?.storeId;
   const itemsJson = session.metadata?.items;
   const shippingInfoJson = session.metadata?.shippingInfo;
+  const paymentIntentId = session.payment_intent as string;
 
   console.log("[Webhook] checkout.session.completed", {
     sessionId: session.id,
     storeId,
+    paymentIntentId,
     amount: session.amount_total,
     paymentStatus: session.payment_status,
     hasItemsMetadata: !!itemsJson,
@@ -106,8 +117,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     metadata: session.metadata
   });
 
-  if (!storeId || !itemsJson) {
-    console.error("[Webhook] Missing metadata in checkout session", { storeId, hasItems: !!itemsJson });
+  if (!storeId || !itemsJson || !paymentIntentId) {
+    console.error("[Webhook] Missing required data in checkout session", { 
+      storeId, 
+      hasItems: !!itemsJson, 
+      paymentIntentId,
+      sessionId: session.id
+    });
     return;
   }
 
@@ -137,11 +153,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   // It will be updated to Completed when payment_intent.succeeded webhook fires
   const initialStatus: "Pending" | "Completed" = "Pending";
 
+  const customerEmail = session.customer_email || session.customer_details?.email || "unknown@email.com";
+
   const orderData = {
     storeId,
-    stripePaymentId: session.payment_intent as string,
+    stripePaymentId: paymentIntentId,
     stripeSessionId: session.id,
-    customerEmail: session.customer_email || session.customer_details?.email || "unknown@email.com",
+    customerEmail,
     customerName: session.customer_details?.name || undefined,
     total: session.amount_total || 0,
     currency: session.currency || "usd",
@@ -204,16 +222,29 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
 
     if (!order) {
       console.error(`[Email] Order not found for payment ${stripePaymentId}`);
-      // Try to find by checking all orders (for debugging)
-      const allOrders = await prisma.order.findMany({
+      // Try various debug methods
+      const ordersBySession = await prisma.order.findMany({
         where: { stripePaymentId },
       });
-      console.log(`[Email] Debug - Found ${allOrders.length} orders for payment ID`);
+      console.log(`[Email] Debug - Orders with matching stripePaymentId: ${ordersBySession.length}`);
+      
+      // Also check all orders to see what's there
+      const recentOrders = await prisma.order.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      });
+      console.log(`[Email] Debug - Last 5 orders:`, recentOrders.map(o => ({
+        id: o.id,
+        stripePaymentId: o.stripePaymentId,
+        storeId: o.storeId
+      })));
       return;
     }
 
     console.log(`[Email] Found order ${order.id} for payment ${stripePaymentId}`);
+    console.log(`[Email] Order Status: ${order.status}`);
     console.log(`[Email] Customer email: ${order.customerEmail}`);
+    console.log(`[Email] Store: ${order.store.storeName}`);
     console.log(`[Email] Store contact email: ${order.store.contactEmail}`);
     console.log(`[Email] Items count: ${order.items.length}`);
 
@@ -228,6 +259,11 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
     console.log(`[Email] Email items prepared: ${JSON.stringify(emailItems)}`);
 
     // Send customer confirmation email
+    if (!order.customerEmail) {
+      console.error('[Email] No customer email found on order');
+      return;
+    }
+
     console.log(`[Email] Attempting to send customer email to ${order.customerEmail}`);
     const customerEmailResult = await sendOrderConfirmationEmail({
       orderId: order.id,
@@ -239,7 +275,7 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
       storeName: order.store.storeName,
     });
 
-    console.log("[Email] Customer email result:", customerEmailResult);
+    console.log("[Email] Customer email result:", JSON.stringify(customerEmailResult));
 
     // Send store notification email if store has contact email configured
     if (order.store.contactEmail) {
@@ -257,13 +293,14 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
         }
       );
 
-      console.log("[Email] Store notification result:", storeEmailResult);
+      console.log("[Email] Store notification result:", JSON.stringify(storeEmailResult));
     } else {
-      console.log(`[Email] Store contact email not configured for store ${order.storeId}`);
+      console.log(`[Email] No store contact email configured for store ${order.storeId}`);
     }
   } catch (error) {
-    console.error("[Email] Failed to send payment success emails:", error);
+    console.error("[Email] Error in handlePaymentSuccessEmail:", error);
     if (error instanceof Error) {
+      console.error("[Email] Error type:", error.constructor.name);
       console.error("[Email] Error message:", error.message);
       console.error("[Email] Error stack:", error.stack);
     }

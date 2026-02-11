@@ -1146,6 +1146,12 @@ export async function updateOrderStatus(
   status: "Pending" | "Completed" | "Failed" | "Refunded",
   paymentStatus?: "Pending" | "Paid" | "Settled" | "Refunded"
 ) {
+  console.log("[Order Status Update] Attempting to update:", {
+    stripePaymentId,
+    status,
+    paymentStatus
+  });
+
   const updateData: any = {
     status: status as OrderStatus,
   };
@@ -1154,30 +1160,47 @@ export async function updateOrderStatus(
     updateData.paymentStatus = paymentStatus as PaymentStatus;
   }
 
-  const updatedOrder = await prisma.order.update({
-    where: { stripePaymentId },
-    data: updateData,
-    include: { items: true },
-  });
+  try {
+    const updatedOrder = await prisma.order.update({
+      where: { stripePaymentId },
+      data: updateData,
+      include: { items: true },
+    });
 
-  // Reduce stock when order is completed
-  if (status === "Completed") {
-    for (const item of updatedOrder.items) {
-      if (item.variantId) {
-        // If item has a variant, reduce variant stock
-        await prisma.productVariant.update({
-          where: { id: item.variantId },
-          data: {
-            stock: {
-              decrement: item.quantity,
+    console.log("[Order Status Update] Order updated successfully:", {
+      orderId: updatedOrder.id,
+      status: updatedOrder.status,
+      paymentStatus: updatedOrder.paymentStatus,
+      itemCount: updatedOrder.items.length
+    });
+
+    // Reduce stock when order is completed
+    if (status === "Completed") {
+      for (const item of updatedOrder.items) {
+        if (item.variantId) {
+          // If item has a variant, reduce variant stock
+          await prisma.productVariant.update({
+            where: { id: item.variantId },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
             },
-          },
-        });
+          });
+        }
       }
+      console.log("[Order Status Update] Stock reduced for completed order:", updatedOrder.id);
     }
-  }
 
-  return updatedOrder;
+    return updatedOrder;
+  } catch (error) {
+    console.error("[Order Status Update] Failed to update order:", {
+      stripePaymentId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    throw error;
+  }
 }
 
 /**
