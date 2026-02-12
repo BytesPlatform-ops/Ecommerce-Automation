@@ -50,24 +50,28 @@ export async function POST(request: NextRequest) {
 
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log("[Webhook] payment_intent.succeeded:", {
-          paymentIntentId: paymentIntent.id,
-          amount: paymentIntent.amount,
-          status: paymentIntent.status,
-          clientSecret: paymentIntent.client_secret?.substring(0, 20) + "..."
-        });
+        console.log("\n[Webhook] ==========================================");
+        console.log("[Webhook] 🎉 PAYMENT_INTENT.SUCCEEDED EVENT RECEIVED");
+        console.log("[Webhook] paymentIntentId:", paymentIntent.id);
+        console.log("[Webhook] amount:", paymentIntent.amount);
+        console.log("[Webhook] status:", paymentIntent.status);
+        console.log("[Webhook] ==========================================\n");
         
         // Update order status to Completed and payment status to Paid
         try {
+          console.log("[Webhook] Calling updateOrderStatus with paymentIntentId:", paymentIntent.id);
           await updateOrderStatus(paymentIntent.id, "Completed", "Paid");
-          console.log("[Webhook] Order marked as Completed, payment status: Paid", paymentIntent.id);
+          console.log("[Webhook] ✓ Order marked as Completed, payment status: Paid");
           
           // Send confirmation email to customer
+          console.log("[Webhook] Calling handlePaymentSuccessEmail...");
           await handlePaymentSuccessEmail(paymentIntent.id);
+          console.log("[Webhook] ✓ handlePaymentSuccessEmail completed");
         } catch (error) {
-          console.error("[Webhook] Failed to update order status or send email:", {
+          console.error("[Webhook] ❌ Error in payment_intent.succeeded handler:", {
             error: error instanceof Error ? error.message : String(error),
-            paymentIntentId: paymentIntent.id
+            paymentIntentId: paymentIntent.id,
+            stack: error instanceof Error ? error.stack : undefined
           });
         }
         break;
@@ -191,72 +195,17 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   try {
     const order = await createOrder(orderData);
     console.log("[Webhook] Order created successfully:", order.id, "with status: Pending");
-
-    // Only send emails if payment is already confirmed (payment_status = "paid")
-    // Otherwise, emails will be sent when payment_intent.succeeded event fires
+    console.log("[Webhook] Emails will be sent when payment_intent.succeeded event fires and order status becomes Completed");
+    
+    // FALLBACK: Also attempt to send emails immediately if payment is already paid
+    // This handles cases where payment_intent.succeeded doesn't fire or is delayed
     if (session.payment_status === "paid") {
-      console.log("[Webhook] Payment already confirmed (status: paid), sending emails immediately for order:", order.id);
-
+      console.log("[Webhook] Payment status is 'paid', attempting immediate email send as fallback...");
       try {
-        // Fetch the order with store details for email
-        const orderWithStore = await prisma.order.findUnique({
-          where: { id: order.id },
-          include: {
-            items: true,
-            store: true,
-          },
-        });
-
-        if (!orderWithStore) {
-          console.error("[Webhook] Failed to fetch order for email sending:", order.id);
-        } else {
-          // Format items for email
-          const emailItems = orderWithStore.items.map((item) => ({
-            productName: item.productName,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice.toString(),
-            variantInfo: item.variantInfo,
-          }));
-
-          // Send customer confirmation email
-          console.log("[Webhook] Sending customer email to:", orderWithStore.customerEmail);
-          const customerEmailResult = await sendOrderConfirmationEmail({
-            orderId: orderWithStore.id,
-            customerName: orderWithStore.customerName,
-            customerEmail: orderWithStore.customerEmail,
-            items: emailItems,
-            total: orderWithStore.total.toString(),
-            currency: orderWithStore.currency,
-            storeName: orderWithStore.store.storeName,
-          });
-          console.log("[Webhook] Customer email result:", customerEmailResult);
-
-          // Send store notification email if store has contact email
-          if (orderWithStore.store.contactEmail) {
-            console.log("[Webhook] Sending store notification to:", orderWithStore.store.contactEmail);
-            const storeEmailResult = await sendStoreNotificationEmail(
-              orderWithStore.store.contactEmail,
-              {
-                orderId: orderWithStore.id,
-                customerName: orderWithStore.customerName,
-                customerEmail: orderWithStore.customerEmail,
-                items: emailItems,
-                total: orderWithStore.total.toString(),
-                currency: orderWithStore.currency,
-                storeName: orderWithStore.store.storeName,
-              }
-            );
-            console.log("[Webhook] Store email result:", storeEmailResult);
-          } else {
-            console.log("[Webhook] No store contact email configured for store:", orderWithStore.storeId);
-          }
-        }
-      } catch (emailError) {
-        console.error("[Webhook] Error sending emails:", emailError);
-        // Don't fail the webhook if emails fail - the order is already created
+        await handlePaymentSuccessEmail(paymentIntentId);
+      } catch (fallbackError) {
+        console.error("[Webhook] Fallback email send failed:", fallbackError instanceof Error ? fallbackError.message : String(fallbackError));
       }
-    } else {
-      console.log("[Webhook] Payment not yet confirmed (status: " + session.payment_status + "), emails will be sent on payment_intent.succeeded event");
     }
   } catch (error) {
     console.error("[Webhook] Failed to create order", {
@@ -270,7 +219,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 }
 
 async function handlePaymentSuccessEmail(stripePaymentId: string) {
-  console.log(`[Email] Starting email send for payment ${stripePaymentId}`);
+  console.log(`[Email] ====== STARTING EMAIL HANDLER ======`);
+  console.log(`[Email] Looking for order with stripePaymentId: ${stripePaymentId}`);
   
   try {
     // Fetch the order with all details
@@ -288,7 +238,7 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
     });
 
     if (!order) {
-      console.error(`[Email] Order not found for payment ${stripePaymentId}`);
+      console.error(`[Email] ❌ ORDER NOT FOUND for payment ${stripePaymentId}`);
       // Try various debug methods
       const ordersBySession = await prisma.order.findMany({
         where: { stripePaymentId },
@@ -303,12 +253,13 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
       console.log(`[Email] Debug - Last 5 orders:`, recentOrders.map(o => ({
         id: o.id,
         stripePaymentId: o.stripePaymentId,
-        storeId: o.storeId
+        storeId: o.storeId,
+        status: o.status
       })));
       return;
     }
 
-    console.log(`[Email] Found order ${order.id} for payment ${stripePaymentId}`);
+    console.log(`[Email] ✓ FOUND order ${order.id}`);
     console.log(`[Email] Order Status: ${order.status}`);
     console.log(`[Email] Customer email: ${order.customerEmail}`);
     console.log(`[Email] Store: ${order.store.storeName}`);
@@ -316,37 +267,45 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
     console.log(`[Email] Items count: ${order.items.length}`);
 
     // Format order items for email
-    const emailItems = order.items.map((item) => ({
-      productName: item.productName,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice.toFixed(2),
-      variantInfo: item.variantInfo,
-    }));
+    const emailItems = order.items.map((item) => {
+      return {
+        productName: item.productName,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(),
+        variantInfo: item.variantInfo,
+      };
+    });
 
     console.log(`[Email] Email items prepared: ${JSON.stringify(emailItems)}`);
 
     // Send customer confirmation email
     if (!order.customerEmail) {
-      console.error('[Email] No customer email found on order');
+      console.error('[Email] ❌ NO CUSTOMER EMAIL - Cannot send customer email');
       return;
     }
 
-    console.log(`[Email] Attempting to send customer email to ${order.customerEmail}`);
+    console.log(`[Email] 📧 Sending CUSTOMER EMAIL to ${order.customerEmail}`);
     const customerEmailResult = await sendOrderConfirmationEmail({
       orderId: order.id,
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       items: emailItems,
-      total: order.total.toFixed(2),
+      total: order.total.toString(),
       currency: order.currency,
       storeName: order.store.storeName,
     });
 
     console.log("[Email] Customer email result:", JSON.stringify(customerEmailResult));
+    
+    if (!customerEmailResult.success) {
+      console.error("[Email] ❌ FAILED to send customer email:", customerEmailResult.message);
+    } else {
+      console.log("[Email] ✓ Successfully sent customer email");
+    }
 
     // Send store notification email if store has contact email configured
     if (order.store.contactEmail) {
-      console.log(`[Email] Attempting to send store email to ${order.store.contactEmail}`);
+      console.log(`[Email] 📧 Sending STORE EMAIL to ${order.store.contactEmail}`);
       const storeEmailResult = await sendStoreNotificationEmail(
         order.store.contactEmail,
         {
@@ -354,17 +313,26 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
           customerName: order.customerName,
           customerEmail: order.customerEmail,
           items: emailItems,
-          total: order.total.toFixed(2),
+          total: order.total.toString(),
           currency: order.currency,
           storeName: order.store.storeName,
         }
       );
 
       console.log("[Email] Store notification result:", JSON.stringify(storeEmailResult));
+      
+      if (!storeEmailResult.success) {
+        console.error("[Email] ❌ FAILED to send store notification:", storeEmailResult.message);
+      } else {
+        console.log("[Email] ✓ Successfully sent store notification");
+      }
     } else {
-      console.log(`[Email] No store contact email configured for store ${order.storeId}`);
+      console.warn(`[Email] ⚠️ STORE CONTACT EMAIL NOT CONFIGURED - Store notification NOT sent. Store ID: ${order.storeId}`);
     }
+    
+    console.log(`[Email] ====== EMAIL HANDLER COMPLETE ======`);
   } catch (error) {
+    console.error("[Email] ====== ERROR IN EMAIL HANDLER ======");
     console.error("[Email] Error in handlePaymentSuccessEmail:", error);
     if (error instanceof Error) {
       console.error("[Email] Error type:", error.constructor.name);
