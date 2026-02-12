@@ -84,7 +84,7 @@ function CheckoutSuccessHandlerInner() {
   };
 
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 max-w-md animate-in slide-in-from-top">
+    <div className="fixed bottom-4 right-4 z-[100] max-w-md animate-in slide-in-from-bottom">
       <div className={`p-4 rounded-lg shadow-lg border flex items-center justify-between ${
         status === "success" ? "bg-green-50 border-green-200" :
         status === "error" ? "bg-red-50 border-red-200" :
