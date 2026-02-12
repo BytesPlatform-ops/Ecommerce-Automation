@@ -20,10 +20,15 @@ interface OrderDetails {
 export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
   const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  // For customer emails, use the store name as the sender
+  const FROM_NAME = orderDetails.storeName || process.env.SENDGRID_FROM_NAME || "Chameleon Store";
+  const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
   console.log("[Email SendGrid Config]", {
     hasApiKey: !!SENDGRID_API_KEY,
     fromEmail: FROM_EMAIL,
+    fromName: FROM_NAME,
+    fromAddress: FROM_ADDRESS,
     apiKeyStart: SENDGRID_API_KEY?.substring(0, 10) + "..."
   });
 
@@ -328,14 +333,14 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   try {
     const msg: MailDataRequired = {
       to: customerEmail,
-      from: FROM_EMAIL,
+      from: FROM_ADDRESS,
       subject: `Order Confirmed - ${storeName} (Order #${orderId})`,
       html,
     };
 
     console.log("[Email] Sending customer email with:", {
       to: customerEmail,
-      from: FROM_EMAIL,
+      from: FROM_ADDRESS,
       subject: `Order Confirmed - ${storeName} (Order #${orderId})`,
       htmlLength: html.length
     });
@@ -365,11 +370,15 @@ export async function sendStoreNotificationEmail(
 ) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
   const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Chameleon Store";
+  const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
   console.log("[Email Store Notification] Config check:", {
     hasApiKey: !!SENDGRID_API_KEY,
     storeContactEmail,
-    fromEmail: FROM_EMAIL
+    fromEmail: FROM_EMAIL,
+    fromName: FROM_NAME,
+    fromAddress: FROM_ADDRESS
   });
 
   if (!SENDGRID_API_KEY) {
@@ -612,14 +621,14 @@ export async function sendStoreNotificationEmail(
   try {
     const msg: MailDataRequired = {
       to: storeContactEmail,
-      from: FROM_EMAIL,
+      from: FROM_ADDRESS,
       subject: `New Order #${orderId} - ${storeName}`,
       html,
     };
 
     console.log("[Email] Sending store notification with:", {
       to: storeContactEmail,
-      from: FROM_EMAIL,
+      from: FROM_ADDRESS,
       subject: `New Order #${orderId} - ${storeName}`,
       htmlLength: html.length
     });
