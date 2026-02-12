@@ -1204,6 +1204,131 @@ export async function updateOrderStatus(
 }
 
 /**
+ * Generate a tracking number for shipped orders
+ */
+function generateTrackingNumber(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "TRK-";
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+/**
+ * Mark an order as shipped and send shipping confirmation email
+ */
+export async function markOrderAsShipped(orderId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not authenticated" };
+  }
+
+  try {
+    // Fetch the order with store info to verify ownership
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        store: {
+          select: { id: true, ownerId: true, storeName: true },
+        },
+        items: {
+          select: {
+            productName: true,
+            variantInfo: true,
+            quantity: true,
+            unitPrice: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return { success: false, message: "Order not found" };
+    }
+
+    if (order.store.ownerId !== user.id) {
+      return { success: false, message: "Unauthorized" };
+    }
+
+    if (order.status === "Shipped") {
+      return { success: false, message: "Order is already marked as shipped" };
+    }
+
+    // Generate tracking number
+    const trackingNumber = generateTrackingNumber();
+    const shippedAt = new Date();
+
+    // Update the order
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.Shipped,
+        trackingNumber,
+        shippedAt,
+      },
+    });
+
+    console.log("[Mark as Shipped] Order updated:", {
+      orderId: updatedOrder.id,
+      trackingNumber,
+      shippedAt,
+    });
+
+    // Send shipping confirmation email
+    const { sendShippingConfirmationEmail } = await import("@/lib/email");
+    
+    const emailResult = await sendShippingConfirmationEmail({
+      orderId: order.id,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      storeName: order.store.storeName,
+      trackingNumber,
+      items: order.items.map((item) => ({
+        productName: item.productName,
+        variantInfo: item.variantInfo,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(),
+      })),
+      shippingAddress: {
+        firstName: order.shippingFirstName || undefined,
+        lastName: order.shippingLastName || undefined,
+        address: order.shippingAddress || undefined,
+        apartment: order.shippingApartment || undefined,
+        city: order.shippingCity || undefined,
+        state: order.shippingState || undefined,
+        zipCode: order.shippingZipCode || undefined,
+        country: order.shippingCountry || undefined,
+      },
+    });
+
+    if (!emailResult.success) {
+      console.warn("[Mark as Shipped] Email failed but order was updated:", emailResult.message);
+    }
+
+    return {
+      success: true,
+      message: "Order marked as shipped",
+      trackingNumber,
+      shippedAt: shippedAt.toISOString(),
+      emailSent: emailResult.success,
+    };
+  } catch (error) {
+    console.error("[Mark as Shipped] Failed:", {
+      orderId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to mark order as shipped",
+    };
+  }
+}
+
+/**
  * Get orders for the current user's store with optional date filter
  */
 export async function getStoreOrders(options?: {

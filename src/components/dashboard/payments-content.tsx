@@ -34,7 +34,7 @@ interface PaymentsContentProps {
 }
 
 type DateFilter = "7days" | "30days" | "all" | "custom";
-type StatusFilter = "all" | "Pending" | "Completed" | "Failed" | "Refunded";
+type StatusFilter = "all" | "Pending" | "Completed" | "Shipped" | "Failed" | "Refunded";
 
 interface Order {
   id: string;
@@ -63,6 +63,9 @@ interface Order {
   shippingZipCode?: string;
   shippingCountry?: string;
   shippingPhone?: string;
+  // Tracking information
+  trackingNumber?: string | null;
+  shippedAt?: Date | null;
 }
 
 interface OrderStats {
@@ -374,8 +377,13 @@ export default function PaymentsContent({
       isPending: true,
     }));
 
-    // Combine with actual orders
-    const allTransactions = [...pendingTransactions, ...getFilteredOrders()];
+    // Apply status filter to pending transactions
+    const filteredPendingTransactions = pendingTransactions.filter((transaction: any) => {
+      return statusFilter === "all" || transaction.status === statusFilter;
+    });
+
+    // Combine with actual orders (which are already filtered by getFilteredOrders)
+    const allTransactions = [...filteredPendingTransactions, ...getFilteredOrders()];
     
     // Apply search filter
     const filtered = allTransactions.filter((transaction: any) => {
@@ -416,6 +424,7 @@ export default function PaymentsContent({
       all: orders.length,
       pending: orders.filter((o) => o.status === "Pending").length,
       completed: orders.filter((o) => o.status === "Completed").length,
+      shipped: orders.filter((o) => o.status === "Shipped").length,
       failed: orders.filter((o) => o.status === "Failed").length,
       refunded: orders.filter((o) => o.status === "Refunded").length,
     };
@@ -1004,6 +1013,7 @@ export default function PaymentsContent({
               <option value="all">All Status</option>
               <option value="Pending">Pending</option>
               <option value="Completed">Completed</option>
+              <option value="Shipped">Shipped</option>
               <option value="Failed">Failed</option>
               <option value="Refunded">Refunded</option>
             </select>
@@ -1166,11 +1176,13 @@ export default function PaymentsContent({
                             ? "bg-blue-100 text-blue-800"
                             : transaction.status === "Completed"
                             ? "bg-green-100 text-green-800"
-                            : transaction.status === "Failed"
-                              ? "bg-red-100 text-red-800"
-                              : transaction.status === "Refunded"
-                                ? "bg-gray-100 text-gray-800"
-                                : "bg-yellow-100 text-yellow-800"
+                            : transaction.status === "Shipped"
+                              ? "bg-purple-100 text-purple-800"
+                              : transaction.status === "Failed"
+                                ? "bg-red-100 text-red-800"
+                                : transaction.status === "Refunded"
+                                  ? "bg-gray-100 text-gray-800"
+                                  : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
                         {transaction.isPending ? (
@@ -1280,6 +1292,9 @@ export default function PaymentsContent({
           onClose={() => {
             setIsModalOpen(false);
             setSelectedOrder(null);
+          }}
+          onOrderShipped={() => {
+            loadData();
           }}
         />
       )}

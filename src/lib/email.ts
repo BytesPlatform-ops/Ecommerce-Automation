@@ -651,3 +651,211 @@ export async function sendStoreNotificationEmail(
     };
   }
 }
+
+interface ShippingConfirmationDetails {
+  orderId: string;
+  customerName?: string | null;
+  customerEmail: string;
+  storeName: string;
+  trackingNumber: string;
+  items: OrderItem[];
+  shippingAddress?: {
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    apartment?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+}
+
+export async function sendShippingConfirmationEmail(details: ShippingConfirmationDetails) {
+  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  const FROM_NAME = details.storeName;
+  const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
+
+  console.log("[Email Shipping] SendGrid Config:", {
+    hasApiKey: !!SENDGRID_API_KEY,
+    fromEmail: FROM_EMAIL,
+    fromName: FROM_NAME,
+    fromAddress: FROM_ADDRESS,
+  });
+
+  if (!SENDGRID_API_KEY) {
+    console.warn("[Email Shipping] SENDGRID_API_KEY is not configured. Email not sent.");
+    return { success: false, message: "SendGrid API key not configured" };
+  }
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  const {
+    orderId,
+    customerName,
+    customerEmail,
+    storeName,
+    trackingNumber,
+    items,
+    shippingAddress,
+  } = details;
+
+  // Build items HTML
+  const itemsHtml = items
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding: 16px 0; border-bottom: 1px solid #e8e0d0;">
+        <div style="font-weight: 500; color: #1a1a1a; font-size: 15px;">${item.productName}</div>
+        ${item.variantInfo ? `<div style="color: #8b7355; font-size: 13px; margin-top: 4px;">${item.variantInfo}</div>` : ""}
+      </td>
+      <td style="padding: 16px 0; border-bottom: 1px solid #e8e0d0; text-align: center; color: #1a1a1a;">
+        ${item.quantity}
+      </td>
+    </tr>
+  `
+    )
+    .join("");
+
+  // Format shipping address
+  const addressLines = [];
+  if (shippingAddress?.firstName || shippingAddress?.lastName) {
+    addressLines.push(`${shippingAddress.firstName || ""} ${shippingAddress.lastName || ""}`.trim());
+  }
+  if (shippingAddress?.address) {
+    addressLines.push(shippingAddress.address);
+  }
+  if (shippingAddress?.apartment) {
+    addressLines.push(shippingAddress.apartment);
+  }
+  if (shippingAddress?.city || shippingAddress?.state || shippingAddress?.zipCode) {
+    addressLines.push(
+      `${shippingAddress.city || ""}${shippingAddress.city && shippingAddress.state ? ", " : ""}${shippingAddress.state || ""} ${shippingAddress.zipCode || ""}`.trim()
+    );
+  }
+  if (shippingAddress?.country) {
+    addressLines.push(shippingAddress.country);
+  }
+  const formattedAddress = addressLines.join("<br>");
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.6; color: #1a1a1a; background-color: #f8f6f3;">
+  <div style="background-color: #f8f6f3; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 0; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+      
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #ffffff; padding: 50px 40px; text-align: center;">
+        <div style="font-size: 12px; letter-spacing: 4px; text-transform: uppercase; color: #c9a962; margin-bottom: 16px;">Shipping Confirmation</div>
+        <h1 style="margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 2px;">${storeName}</h1>
+      </div>
+
+      <!-- Main Content -->
+      <div style="padding: 50px 40px;">
+        
+        <!-- Greeting -->
+        <div style="text-align: center; margin-bottom: 40px;">
+          <div style="width: 60px; height: 1px; background: linear-gradient(90deg, transparent, #c9a962, transparent); margin: 0 auto 30px;"></div>
+          <h2 style="margin: 0 0 16px; font-size: 24px; font-weight: 400; color: #1a1a1a; letter-spacing: 1px;">Your Order Is On Its Way</h2>
+          <p style="margin: 0; color: #666666; font-size: 16px; line-height: 1.8;">
+            Dear ${customerName || "Valued Customer"},<br>
+            We are delighted to inform you that your order has been carefully prepared and is now on its journey to you.
+          </p>
+        </div>
+
+        <!-- Tracking Number Box -->
+        <div style="background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 100%); border: 1px solid #e8e0d0; padding: 30px; text-align: center; margin-bottom: 40px;">
+          <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #8b7355; margin-bottom: 12px;">Tracking Number</div>
+          <div style="font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: 2px; font-family: 'Courier New', monospace;">${trackingNumber}</div>
+        </div>
+
+        <!-- Order Details -->
+        <div style="margin-bottom: 40px;">
+          <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #8b7355; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e8e0d0;">Order Details</div>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 12px 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8b7355; border-bottom: 1px solid #e8e0d0; font-weight: 500;">Item</th>
+                <th style="text-align: center; padding: 12px 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #8b7355; border-bottom: 1px solid #e8e0d0; font-weight: 500;">Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+        </div>
+
+        ${formattedAddress ? `
+        <!-- Shipping Address -->
+        <div style="margin-bottom: 40px;">
+          <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #8b7355; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e8e0d0;">Shipping To</div>
+          <p style="margin: 0; color: #1a1a1a; font-size: 15px; line-height: 1.8;">
+            ${formattedAddress}
+          </p>
+        </div>
+        ` : ""}
+
+        <!-- Closing Message -->
+        <div style="text-align: center; padding: 30px 0; border-top: 1px solid #e8e0d0;">
+          <p style="margin: 0 0 16px; color: #666666; font-size: 15px; line-height: 1.8;">
+            Should you have any questions regarding your shipment, please do not hesitate to reach out to us.
+          </p>
+          <p style="margin: 0; color: #1a1a1a; font-size: 15px;">
+            With warm regards,<br>
+            <strong style="color: #c9a962;">${storeName}</strong>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="background: #1a1a1a; color: #999999; padding: 30px 40px; text-align: center;">
+        <div style="font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;">Order Reference: ${orderId}</div>
+        <div style="font-size: 11px; color: #666666;">Thank you for choosing ${storeName}</div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+  try {
+    const msg: MailDataRequired = {
+      to: customerEmail,
+      from: FROM_ADDRESS,
+      subject: `Your Order Has Shipped - ${storeName}`,
+      html,
+    };
+
+    console.log("[Email Shipping] Sending shipping confirmation with:", {
+      to: customerEmail,
+      from: FROM_ADDRESS,
+      subject: `Your Order Has Shipped - ${storeName}`,
+      htmlLength: html.length,
+    });
+
+    await sgMail.send(msg);
+    console.log(`[Email Shipping] Shipping confirmation sent to ${customerEmail} for order ${orderId}`);
+    return { success: true, message: "Shipping confirmation sent" };
+  } catch (error) {
+    console.error(`[Email Shipping] Failed to send shipping confirmation:`, error);
+    if (error instanceof Error) {
+      console.error("[Email Shipping] Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      });
+    }
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send email",
+    };
+  }
+}

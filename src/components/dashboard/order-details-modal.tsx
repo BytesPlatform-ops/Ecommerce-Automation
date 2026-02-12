@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2 } from "lucide-react";
+import { markOrderAsShipped } from "@/lib/actions";
 
 function formatCurrency(amount: number | string, currency = "usd") {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
@@ -51,17 +52,48 @@ interface OrderDetailsModalProps {
     shippingZipCode?: string;
     shippingCountry?: string;
     shippingPhone?: string;
+    trackingNumber?: string | null;
+    shippedAt?: Date | null;
   };
   isOpen: boolean;
   onClose: () => void;
+  onOrderShipped?: () => void;
 }
 
 export function OrderDetailsModal({
   order,
   isOpen,
   onClose,
+  onOrderShipped,
 }: OrderDetailsModalProps) {
+  const [isShipping, setIsShipping] = useState(false);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+  const [shippingSuccess, setShippingSuccess] = useState<{ trackingNumber: string } | null>(null);
+
   if (!isOpen) return null;
+
+  const handleMarkAsShipped = async () => {
+    setIsShipping(true);
+    setShippingError(null);
+    
+    try {
+      const result = await markOrderAsShipped(order.id);
+      
+      if (result.success) {
+        setShippingSuccess({ trackingNumber: result.trackingNumber! });
+        onOrderShipped?.();
+      } else {
+        setShippingError(result.message || "Failed to mark as shipped");
+      }
+    } catch (error) {
+      setShippingError("An unexpected error occurred");
+    } finally {
+      setIsShipping(false);
+    }
+  };
+
+  const isAlreadyShipped = order.status === "Shipped" || shippingSuccess !== null;
+  const displayTrackingNumber = shippingSuccess?.trackingNumber || order.trackingNumber;
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -125,14 +157,16 @@ export function OrderDetailsModal({
                         ? "bg-blue-100 text-blue-700"
                         : order.status === "Completed"
                           ? "bg-green-100 text-green-700"
-                          : order.status === "Failed"
-                            ? "bg-red-100 text-red-700"
-                            : order.status === "Refunded"
-                              ? "bg-gray-100 text-gray-700"
-                              : "bg-amber-100 text-amber-700"
+                          : order.status === "Shipped" || isAlreadyShipped
+                            ? "bg-purple-100 text-purple-700"
+                            : order.status === "Failed"
+                              ? "bg-red-100 text-red-700"
+                              : order.status === "Refunded"
+                                ? "bg-gray-100 text-gray-700"
+                                : "bg-amber-100 text-amber-700"
                     }`}
                   >
-                    {order.status}
+                    {isAlreadyShipped ? "Shipped" : order.status}
                   </span>
                 </div>
                 <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
@@ -348,17 +382,65 @@ export function OrderDetailsModal({
                   </p>
                 </div>
               </div>
+
+              {/* Tracking Information - Show when shipped */}
+              {displayTrackingNumber && (
+                <div className="bg-purple-50 rounded-xl p-5 border border-purple-200 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Truck className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-purple-600 uppercase tracking-widest font-bold mb-1">
+                      Tracking Number
+                    </p>
+                    <p className="text-base font-semibold text-gray-900 font-mono">
+                      {displayTrackingNumber}
+                    </p>
+                    {(order.shippedAt || shippingSuccess) && (
+                      <p className="text-xs text-purple-500 mt-1">
+                        Shipped on {formatDate(order.shippedAt || new Date())}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4 flex gap-3 justify-end">
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all hover:scale-105"
-            >
-              Close
-            </button>
+          <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4">
+            {shippingError && (
+              <div className="mb-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                {shippingError}
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              {!isAlreadyShipped && (
+                <button
+                  onClick={handleMarkAsShipped}
+                  disabled={isShipping}
+                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                >
+                  {isShipping ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Marking as Shipped...
+                    </>
+                  ) : (
+                    <>
+                      <Truck className="h-4 w-4" />
+                      Mark as Shipped
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all hover:scale-105"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
