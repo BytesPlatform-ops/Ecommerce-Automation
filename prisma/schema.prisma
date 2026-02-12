@@ -6,9 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL") // runtime (pooler / ipv4)
-  // directUrl  = env("DIRECT_URL")   // migrations (direct)
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum DomainStatus {
