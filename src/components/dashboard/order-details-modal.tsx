@@ -1,0 +1,367 @@
+"use client";
+
+import { useEffect } from "react";
+import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar } from "lucide-react";
+
+function formatCurrency(amount: number | string, currency = "usd") {
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(num);
+}
+
+function formatDate(date: Date | string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+interface OrderItem {
+  id: string;
+  productName: string;
+  variantInfo?: string;
+  quantity: number;
+  unitPrice: string;
+}
+
+interface OrderDetailsModalProps {
+  order: {
+    id: string;
+    customerEmail: string;
+    customerName: string | null;
+    total: string;
+    currency: string;
+    status: string;
+    paymentStatus: string;
+    createdAt: Date;
+    items: OrderItem[];
+    shippingFirstName?: string;
+    shippingLastName?: string;
+    shippingCompany?: string;
+    shippingAddress?: string;
+    shippingApartment?: string;
+    shippingCity?: string;
+    shippingState?: string;
+    shippingZipCode?: string;
+    shippingCountry?: string;
+    shippingPhone?: string;
+  };
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function OrderDetailsModal({
+  order,
+  isOpen,
+  onClose,
+}: OrderDetailsModalProps) {
+  if (!isOpen) return null;
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
+  const hasShippingInfo =
+    order.shippingAddress ||
+    order.shippingCity ||
+    order.shippingCountry;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/35 z-40 transition-opacity animate-in fade-in"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Modal */}
+      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+        <div
+          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[95vh] overflow-hidden flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white px-6 py-6 flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold">Order Details</h2>
+              <p className="text-blue-100 text-sm mt-2 font-mono break-all">
+                ID: {order.id}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 p-2 rounded-lg hover:bg-white/20 transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto flex-1">
+            <div className="p-6 space-y-6">
+              {/* Status Cards */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">
+                    Order Status
+                  </p>
+                  <span
+                    className={`inline-flex px-4 py-2 text-sm font-bold rounded-lg whitespace-nowrap ${
+                      order.status === "Processing"
+                        ? "bg-blue-100 text-blue-700"
+                        : order.status === "Completed"
+                          ? "bg-green-100 text-green-700"
+                          : order.status === "Failed"
+                            ? "bg-red-100 text-red-700"
+                            : order.status === "Refunded"
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                </div>
+                <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">
+                    Payment Status
+                  </p>
+                  <span
+                    className={`inline-flex px-4 py-2 text-sm font-bold rounded-lg whitespace-nowrap ${
+                      order.paymentStatus === "Pending"
+                        ? "bg-amber-100 text-amber-700"
+                        : order.paymentStatus === "Paid"
+                          ? "bg-blue-100 text-blue-700"
+                          : order.paymentStatus === "Settled"
+                            ? "bg-green-100 text-green-700"
+                            : order.paymentStatus === "Refunded"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {order.paymentStatus}
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer Information */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User className="h-4 w-4 text-blue-600" />
+                  </div>
+                  Customer Information
+                </h3>
+                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 space-y-4">
+                  {order.customerName && (
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                        Customer Name
+                      </p>
+                      <p className="text-base font-semibold text-gray-900">
+                        {order.customerName}
+                      </p>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-start gap-3">
+                      <Mail className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          Email Address
+                        </p>
+                        <p className="text-base font-medium text-gray-900 break-all">
+                          {order.customerEmail}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping Information */}
+              {hasShippingInfo && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-green-600" />
+                    </div>
+                    Shipping Address
+                  </h3>
+                  <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 space-y-3">
+                    {(order.shippingFirstName || order.shippingLastName) && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          Recipient
+                        </p>
+                        <p className="text-base font-semibold text-gray-900">
+                          {order.shippingFirstName} {order.shippingLastName}
+                        </p>
+                      </div>
+                    )}
+                    {order.shippingCompany && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          Company
+                        </p>
+                        <p className="text-base font-medium text-gray-900">
+                          {order.shippingCompany}
+                        </p>
+                      </div>
+                    )}
+                    {order.shippingAddress && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          Street Address
+                        </p>
+                        <p className="text-base font-medium text-gray-900">
+                          {order.shippingAddress}
+                          {order.shippingApartment && `, ${order.shippingApartment}`}
+                        </p>
+                      </div>
+                    )}
+                    {(order.shippingCity || order.shippingState || order.shippingZipCode) && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          City, State, ZIP
+                        </p>
+                        <p className="text-base font-medium text-gray-900">
+                          {order.shippingCity}, {order.shippingState} {order.shippingZipCode}
+                        </p>
+                      </div>
+                    )}
+                    {order.shippingCountry && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                          Country
+                        </p>
+                        <p className="text-base font-medium text-gray-900">
+                          {order.shippingCountry}
+                        </p>
+                      </div>
+                    )}
+                    {order.shippingPhone && (
+                      <div className="border-t border-gray-200 pt-3 flex items-start gap-3">
+                        <Phone className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                            Phone Number
+                          </p>
+                          <p className="text-base font-medium text-gray-900">
+                            {order.shippingPhone}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Order Items */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Package className="h-4 w-4 text-purple-600" />
+                  </div>
+                  Order Items ({order.items.length})
+                </h3>
+                <div className="space-y-2">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-white rounded-lg p-4 border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900">{item.productName}</p>
+                          {item.variantInfo && (
+                            <p className="text-xs text-gray-600 mt-1 font-medium">{item.variantInfo}</p>
+                          )}
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-gray-900 text-base">
+                            {formatCurrency(item.unitPrice, order.currency)}
+                          </p>
+                          <p className="text-xs text-gray-600 font-medium">Qty: {item.quantity}</p>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                        <span className="text-xs text-gray-600 font-semibold uppercase">Line Total</span>
+                        <span className="font-bold text-gray-900">
+                          {formatCurrency(
+                            (parseFloat(item.unitPrice) * item.quantity).toString(),
+                            order.currency
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-6 border border-blue-200 space-y-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
+                  Order Summary
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700">Subtotal</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatCurrency(order.total, order.currency)}
+                    </span>
+                  </div>
+                  <div className="border-t border-blue-200 pt-3 flex items-center justify-between">
+                    <span className="font-bold text-gray-900 text-base">Total Amount</span>
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      {formatCurrency(order.total, order.currency)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Date */}
+              <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-6 w-6 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">
+                    Order Placed
+                  </p>
+                  <p className="text-base font-semibold text-gray-900">
+                    {formatDate(order.createdAt)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="sticky bottom-0 border-t border-gray-200 bg-gray-50 px-6 py-4 flex gap-3 justify-end">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 transition-all hover:scale-105"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -22,6 +22,7 @@ import {
   disconnectStripeAccount,
   getStripePendingCharges,
 } from "@/lib/actions";
+import { OrderDetailsModal } from "./order-details-modal";
 
 interface PaymentsContentProps {
   storeId: string;
@@ -49,7 +50,19 @@ interface Order {
     productName: string;
     quantity: number;
     unitPrice: string;
+    variantInfo?: string;
   }>;
+  // Shipping information
+  shippingFirstName?: string;
+  shippingLastName?: string;
+  shippingCompany?: string;
+  shippingAddress?: string;
+  shippingApartment?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingZipCode?: string;
+  shippingCountry?: string;
+  shippingPhone?: string;
 }
 
 interface OrderStats {
@@ -110,6 +123,8 @@ export default function PaymentsContent({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Check for URL params (success/error from OAuth)
   useEffect(() => {
@@ -1110,7 +1125,11 @@ export default function PaymentsContent({
                 {getPaginatedTransactions().map((transaction: any, index) => (
                   <tr
                     key={transaction.id}
-                    className={`hover:bg-gray-50 transition-colors ${
+                    onClick={() => {
+                      setSelectedOrder(transaction);
+                      setIsModalOpen(true);
+                    }}
+                    className={`hover:bg-gray-100 cursor-pointer transition-colors ${
                       transaction.isPending ? "bg-blue-50/30" : index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                     }`}
                   >
@@ -1252,6 +1271,18 @@ export default function PaymentsContent({
           </div>
         )}
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedOrder(null);
+          }}
+        />
+      )}
     </div>
   );
 }
