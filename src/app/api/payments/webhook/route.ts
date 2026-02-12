@@ -5,6 +5,8 @@ import { constructWebhookEvent } from "@/lib/stripe";
 import { createOrder, updateOrderStatus } from "@/lib/actions";
 import { sendOrderConfirmationEmail, sendStoreNotificationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import { logAudit, AuditAction, getRequestIp } from "@/lib/audit";
+import { secureLog } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -41,6 +43,14 @@ export async function POST(request: NextRequest) {
 
   // Handle the event
   try {
+    await logAudit({
+      action: AuditAction.WebhookProcessed,
+      actorId: null,
+      resourceType: "Webhook",
+      metadata: { eventType: event.type, eventId: event.id },
+      ipAddress: getRequestIp(request),
+    });
+
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -50,28 +60,23 @@ export async function POST(request: NextRequest) {
 
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log("\n[Webhook] ==========================================");
-        console.log("[Webhook] 🎉 PAYMENT_INTENT.SUCCEEDED EVENT RECEIVED");
-        console.log("[Webhook] paymentIntentId:", paymentIntent.id);
-        console.log("[Webhook] amount:", paymentIntent.amount);
-        console.log("[Webhook] status:", paymentIntent.status);
-        console.log("[Webhook] ==========================================\n");
+        secureLog.info("[Webhook] Payment intent succeeded", {
+          paymentIntentId: paymentIntent.id,
+          amount: paymentIntent.amount,
+          status: paymentIntent.status,
+        });
         
         // Update order status to Completed and payment status to Paid
         try {
-          console.log("[Webhook] Calling updateOrderStatus with paymentIntentId:", paymentIntent.id);
           await updateOrderStatus(paymentIntent.id, "Completed", "Paid");
-          console.log("[Webhook] ✓ Order marked as Completed, payment status: Paid");
+          secureLog.info("[Webhook] Order marked as Completed");
           
           // Send confirmation email to customer
-          console.log("[Webhook] Calling handlePaymentSuccessEmail...");
           await handlePaymentSuccessEmail(paymentIntent.id);
-          console.log("[Webhook] ✓ handlePaymentSuccessEmail completed");
+          secureLog.info("[Webhook] Payment success email processed");
         } catch (error) {
-          console.error("[Webhook] ❌ Error in payment_intent.succeeded handler:", {
-            error: error instanceof Error ? error.message : String(error),
+          secureLog.error("[Webhook] Error in payment_intent.succeeded handler", error, {
             paymentIntentId: paymentIntent.id,
-            stack: error instanceof Error ? error.stack : undefined
           });
         }
         break;
@@ -79,7 +84,7 @@ export async function POST(request: NextRequest) {
 
       case "payment_intent.payment_failed": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log("Payment failed:", paymentIntent.id);
+        secureLog.warn("[Webhook] Payment failed", { paymentIntentId: paymentIntent.id });
         // If we already created an order, update its status
         try {
           await updateOrderStatus(paymentIntent.id, "Failed");
@@ -90,12 +95,12 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        secureLog.info(`[Webhook] Unhandled event type: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("Error processing webhook:", err);
+    secureLog.error("Error processing webhook", err);
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }
@@ -110,7 +115,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const shippingInfoJson = session.metadata?.shippingInfo;
   const paymentIntentId = session.payment_intent as string;
 
-  console.log("[Webhook] checkout.session.completed", {
+  secureLog.info("[Webhook] checkout.session.completed", {
     sessionId: session.id,
     storeId,
     paymentIntentId,
@@ -118,21 +123,19 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     paymentStatus: session.payment_status,
     hasItemsMetadata: !!itemsJson,
     hasShippingInfo: !!shippingInfoJson,
-    metadata: session.metadata
   });
 
   if (!storeId || !itemsJson || !paymentIntentId) {
-    console.error("[Webhook] Missing required data in checkout session", { 
+    secureLog.error("[Webhook] Missing required data in checkout session", undefined, { 
       storeId, 
       hasItems: !!itemsJson, 
       paymentIntentId,
-      sessionId: session.id
+      sessionId: session.id,
     });
     return;
   }
 
   const parsedItems = JSON.parse(itemsJson);
-  console.log("[Webhook] Parsed items:", parsedItems);
   
   const items = parsedItems as Array<{
     productId: string;
@@ -147,9 +150,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   if (shippingInfoJson) {
     try {
       shippingInfo = JSON.parse(shippingInfoJson);
-      console.log("[Webhook] Parsed shipping info:", shippingInfo);
     } catch (error) {
-      console.error("[Webhook] Failed to parse shipping info:", error);
+      secureLog.error("[Webhook] Failed to parse shipping info", error);
     }
   }
 
@@ -189,38 +191,34 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     } : undefined,
   };
 
-  console.log("[Webhook] Creating order with data:", JSON.stringify(orderData, null, 2));
+  secureLog.info("[Webhook] Creating order", { storeId, sessionId: session.id });
 
   // Create the order
   try {
     const order = await createOrder(orderData);
-    console.log("[Webhook] Order created successfully:", order.id, "with status: Pending");
-    console.log("[Webhook] Emails will be sent when payment_intent.succeeded event fires and order status becomes Completed");
+    secureLog.info("[Webhook] Order created successfully", { orderId: order.id, status: "Pending" });
     
     // FALLBACK: Also attempt to send emails immediately if payment is already paid
     // This handles cases where payment_intent.succeeded doesn't fire or is delayed
     if (session.payment_status === "paid") {
-      console.log("[Webhook] Payment status is 'paid', attempting immediate email send as fallback...");
+      secureLog.info("[Webhook] Payment already paid, attempting immediate email as fallback");
       try {
         await handlePaymentSuccessEmail(paymentIntentId);
       } catch (fallbackError) {
-        console.error("[Webhook] Fallback email send failed:", fallbackError instanceof Error ? fallbackError.message : String(fallbackError));
+        secureLog.error("[Webhook] Fallback email send failed", fallbackError);
       }
     }
   } catch (error) {
-    console.error("[Webhook] Failed to create order", {
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
+    secureLog.error("[Webhook] Failed to create order", error, {
       sessionId: session.id,
-      storeId
+      storeId,
     });
     throw error;
   }
 }
 
 async function handlePaymentSuccessEmail(stripePaymentId: string) {
-  console.log(`[Email] ====== STARTING EMAIL HANDLER ======`);
-  console.log(`[Email] Looking for order with stripePaymentId: ${stripePaymentId}`);
+  secureLog.info("[Email] Starting email handler", { stripePaymentId });
   
   try {
     // Fetch the order with all details
@@ -238,33 +236,15 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
     });
 
     if (!order) {
-      console.error(`[Email] ❌ ORDER NOT FOUND for payment ${stripePaymentId}`);
-      // Try various debug methods
-      const ordersBySession = await prisma.order.findMany({
-        where: { stripePaymentId },
-      });
-      console.log(`[Email] Debug - Orders with matching stripePaymentId: ${ordersBySession.length}`);
-      
-      // Also check all orders to see what's there
-      const recentOrders = await prisma.order.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' }
-      });
-      console.log(`[Email] Debug - Last 5 orders:`, recentOrders.map(o => ({
-        id: o.id,
-        stripePaymentId: o.stripePaymentId,
-        storeId: o.storeId,
-        status: o.status
-      })));
+      secureLog.error("[Email] Order not found for payment", undefined, { stripePaymentId });
       return;
     }
 
-    console.log(`[Email] ✓ FOUND order ${order.id}`);
-    console.log(`[Email] Order Status: ${order.status}`);
-    console.log(`[Email] Customer email: ${order.customerEmail}`);
-    console.log(`[Email] Store: ${order.store.storeName}`);
-    console.log(`[Email] Store contact email: ${order.store.contactEmail}`);
-    console.log(`[Email] Items count: ${order.items.length}`);
+    secureLog.info("[Email] Found order", {
+      orderId: order.id,
+      status: order.status,
+      itemCount: order.items.length,
+    });
 
     // Format order items for email
     const emailItems = order.items.map((item) => {
@@ -276,15 +256,12 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
       };
     });
 
-    console.log(`[Email] Email items prepared: ${JSON.stringify(emailItems)}`);
-
     // Send customer confirmation email
     if (!order.customerEmail) {
-      console.error('[Email] ❌ NO CUSTOMER EMAIL - Cannot send customer email');
+      secureLog.error("[Email] No customer email - cannot send", undefined, { orderId: order.id });
       return;
     }
 
-    console.log(`[Email] 📧 Sending CUSTOMER EMAIL to ${order.customerEmail}`);
     const customerEmailResult = await sendOrderConfirmationEmail({
       orderId: order.id,
       customerName: order.customerName,
@@ -295,17 +272,14 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
       storeName: order.store.storeName,
     });
 
-    console.log("[Email] Customer email result:", JSON.stringify(customerEmailResult));
-    
     if (!customerEmailResult.success) {
-      console.error("[Email] ❌ FAILED to send customer email:", customerEmailResult.message);
+      secureLog.error("[Email] Failed to send customer email", undefined, { message: customerEmailResult.message });
     } else {
-      console.log("[Email] ✓ Successfully sent customer email");
+      secureLog.info("[Email] Customer email sent successfully");
     }
 
     // Send store notification email if store has contact email configured
     if (order.store.contactEmail) {
-      console.log(`[Email] 📧 Sending STORE EMAIL to ${order.store.contactEmail}`);
       const storeEmailResult = await sendStoreNotificationEmail(
         order.store.contactEmail,
         {
@@ -319,26 +293,16 @@ async function handlePaymentSuccessEmail(stripePaymentId: string) {
         }
       );
 
-      console.log("[Email] Store notification result:", JSON.stringify(storeEmailResult));
-      
       if (!storeEmailResult.success) {
-        console.error("[Email] ❌ FAILED to send store notification:", storeEmailResult.message);
+        secureLog.error("[Email] Failed to send store notification", undefined, { message: storeEmailResult.message });
       } else {
-        console.log("[Email] ✓ Successfully sent store notification");
+        secureLog.info("[Email] Store notification sent successfully");
       }
-    } else {
-      console.warn(`[Email] ⚠️ STORE CONTACT EMAIL NOT CONFIGURED - Store notification NOT sent. Store ID: ${order.storeId}`);
     }
     
-    console.log(`[Email] ====== EMAIL HANDLER COMPLETE ======`);
+    secureLog.info("[Email] Email handler complete", { orderId: order.id });
   } catch (error) {
-    console.error("[Email] ====== ERROR IN EMAIL HANDLER ======");
-    console.error("[Email] Error in handlePaymentSuccessEmail:", error);
-    if (error instanceof Error) {
-      console.error("[Email] Error type:", error.constructor.name);
-      console.error("[Email] Error message:", error.message);
-      console.error("[Email] Error stack:", error.stack);
-    }
+    secureLog.error("[Email] Error in handlePaymentSuccessEmail", error);
     // Don't throw - log the error but continue webhook processing
   }
 }

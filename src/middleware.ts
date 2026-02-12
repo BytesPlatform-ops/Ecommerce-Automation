@@ -7,10 +7,10 @@ const PLATFORM_DOMAINS = [
   "localhost",
   "127.0.0.1:3000",
   "127.0.0.1",
-  "ecommerce-automation-wt2l.onrender.com", // Your Render domain
-  // Add your main production domain here when you have one
-  // "mystorefactory.com",
-  // "www.mystorefactory.com",
+  // Production domains loaded from env at runtime
+  ...(process.env.NEXT_PUBLIC_APP_URL
+    ? [process.env.NEXT_PUBLIC_APP_URL.replace(/^https?:\/\//, "")]
+    : []),
 ];
 
 // Get the platform URL for internal API calls
@@ -23,7 +23,11 @@ function getPlatformUrl(): string {
   
   // Check if we're in production (Render environment)
   if (process.env.RENDER === "true" || process.env.NODE_ENV === "production") {
-    return "https://ecommerce-automation-wt2l.onrender.com";
+    // Use the configured app URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (appUrl) {
+      return appUrl.startsWith("http") ? appUrl : `https://${appUrl}`;
+    }
   }
   
   // Default to localhost for development

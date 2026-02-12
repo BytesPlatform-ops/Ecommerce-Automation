@@ -5,7 +5,7 @@
 
 const RENDER_API_BASE = "https://api.render.com/v1";
 const RENDER_API_KEY = process.env.RENDER_API_KEY;
-const RENDER_SERVICE_ID = process.env.RENDER_SERVICE_ID || "srv-d613777gi27c73e1loq0";
+const RENDER_SERVICE_ID = process.env.RENDER_SERVICE_ID;
 
 interface RenderDomainResponse {
   id: string;
@@ -36,9 +36,9 @@ interface RenderErrorResponse {
 export async function addDomainToRender(
   domain: string
 ): Promise<{ success: boolean; data?: RenderDomainResponse; error?: string }> {
-  if (!RENDER_API_KEY) {
-    console.error("[Render API] RENDER_API_KEY is not set in environment variables");
-    return { success: false, error: "Render API key not configured" };
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    console.error("[Render API] RENDER_API_KEY or RENDER_SERVICE_ID is not set");
+    return { success: false, error: "Render API not configured" };
   }
 
   try {
@@ -87,9 +87,9 @@ export async function addDomainToRender(
 export async function getDomainFromRender(
   domain: string
 ): Promise<{ success: boolean; data?: RenderDomainResponse; error?: string }> {
-  if (!RENDER_API_KEY) {
-    console.error("[Render API] RENDER_API_KEY is not set in environment variables");
-    return { success: false, error: "Render API key not configured" };
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    console.error("[Render API] RENDER_API_KEY or RENDER_SERVICE_ID is not set");
+    return { success: false, error: "Render API not configured" };
   }
 
   try {
@@ -137,9 +137,9 @@ export async function getDomainFromRender(
 export async function removeDomainFromRender(
   domain: string
 ): Promise<{ success: boolean; error?: string }> {
-  if (!RENDER_API_KEY) {
-    console.error("[Render API] RENDER_API_KEY is not set in environment variables");
-    return { success: false, error: "Render API key not configured" };
+  if (!RENDER_API_KEY || !RENDER_SERVICE_ID) {
+    console.error("[Render API] RENDER_API_KEY or RENDER_SERVICE_ID is not set");
+    return { success: false, error: "Render API not configured" };
   }
 
   try {

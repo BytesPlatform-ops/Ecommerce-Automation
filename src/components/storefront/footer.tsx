@@ -1,5 +1,20 @@
 import { Heart, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 
+/** Only allow http/https URLs to prevent javascript: injection */
+function safeSocialUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return trimmed;
+    }
+  } catch {
+    // Invalid URL
+  }
+  return null;
+}
+
 interface StorefrontFooterProps {
   storeName: string;
   slug: string;
@@ -37,6 +52,13 @@ export function StorefrontFooter({
 }: StorefrontFooterProps) {
   const hasSocials = instagramUrl || facebookUrl || twitterUrl || linkedinUrl || youtubeUrl;
 
+  // Sanitize all social URLs to prevent javascript: injection
+  const safeInstagram = safeSocialUrl(instagramUrl);
+  const safeFacebook = safeSocialUrl(facebookUrl);
+  const safeTwitter = safeSocialUrl(twitterUrl);
+  const safeLinkedin = safeSocialUrl(linkedinUrl);
+  const safeYoutube = safeSocialUrl(youtubeUrl);
+
   return (
     <footer className="border-t border-border bg-background mt-24">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
@@ -49,28 +71,28 @@ export function StorefrontFooter({
             </p>
             {hasSocials && (
               <div className="flex gap-4 mt-6">
-                {instagramUrl && (
-                  <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                {safeInstagram && (
+                  <a href={safeInstagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
                     <Instagram className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
-                {facebookUrl && (
-                  <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                {safeFacebook && (
+                  <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
                     <Facebook className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
-                {twitterUrl && (
-                  <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                {safeTwitter && (
+                  <a href={safeTwitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
                     <Twitter className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
-                {linkedinUrl && (
-                  <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                {safeLinkedin && (
+                  <a href={safeLinkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
                     <Linkedin className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
-                {youtubeUrl && (
-                  <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                {safeYoutube && (
+                  <a href={safeYoutube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
                     <Youtube className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}

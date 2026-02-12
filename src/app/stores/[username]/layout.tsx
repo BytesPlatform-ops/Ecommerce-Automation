@@ -5,14 +5,17 @@ import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
 import { CartProvider } from "@/components/storefront/cart-context";
 import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success-handler";
+import { sanitizeHexColor, sanitizeFontFamily } from "@/lib/security";
 
 // Check if we're on a custom domain
 async function isCustomDomain() {
   const headersList = await headers();
   const host = headersList.get("host") || "";
   const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
-  const isRender = host.includes("ecommerce-automation-wt2l.onrender.com");
-  return !isLocal && !isRender;
+  // Check against configured app URL instead of hardcoded domain
+  const appDomain = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "";
+  const isPlatform = isLocal || (appDomain && host.includes(appDomain));
+  return !isPlatform;
 }
 
 export default async function StorefrontLayout({
@@ -67,23 +70,19 @@ export default async function StorefrontLayout({
     price: Number(p.price),
   }));
 
-  // Helper function to ensure hex codes have # prefix
-  const formatHex = (hex: string | null | undefined) => {
-    if (!hex) return undefined;
-    return hex.startsWith("#") ? hex : `#${hex}`;
-  };
+  // Helper function to safely sanitize hex color values
+  const primaryColor = sanitizeHexColor(store.theme?.primaryHex, "#1A1A1A");
+  const secondaryColor = sanitizeHexColor(store.theme?.secondaryHex, "#737373");
+  const fontFamily = sanitizeFontFamily(store.theme?.fontFamily);
 
-  // CSS variables for theming
+  // CSS variables for theming (using sanitized values)
   const themeStyles = store.theme
     ? ({
-        "--primary": formatHex(store.theme.primaryHex),
-        "--secondary": formatHex(store.theme.secondaryHex),
-        "--font-family": store.theme.fontFamily,
+        "--primary": primaryColor,
+        "--secondary": secondaryColor,
+        "--font-family": fontFamily,
       } as React.CSSProperties)
     : {};
-
-  const primaryColor = formatHex(store.theme?.primaryHex) || "#1A1A1A";
-  const secondaryColor = formatHex(store.theme?.secondaryHex) || "#737373";
 
   return (
     <div
@@ -94,7 +93,7 @@ export default async function StorefrontLayout({
         :root {
           --primary: ${primaryColor};
           --secondary: ${secondaryColor};
-          --font-family: ${store.theme?.fontFamily || "var(--font-inter), sans-serif"};
+          --font-family: ${fontFamily};
         }
         .storefront {
           font-family: var(--font-family);

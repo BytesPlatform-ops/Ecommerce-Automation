@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeDomain } from "@/lib/domain-utils";
+import { checkRateLimit } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   try {
+    // Rate limit by IP: max 30 lookups per minute
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimit = checkRateLimit(`store-lookup:${ip}`, 30, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const domain = searchParams.get("domain");
 
@@ -16,7 +27,6 @@ export async function GET(request: NextRequest) {
 
     // Normalize the domain (remove www., protocol, etc.)
     const normalizedDomain = normalizeDomain(domain);
-    console.log(`[API by-domain] Looking up: "${normalizedDomain}" (original: "${domain}")`);
 
     // First, check if any store has this domain (regardless of status)
     const anyStore = await prisma.store.findFirst({
@@ -28,7 +38,6 @@ export async function GET(request: NextRequest) {
         ],
       },
       select: {
-        id: true,
         subdomainSlug: true,
         storeName: true,
         domain: true,
@@ -37,18 +46,14 @@ export async function GET(request: NextRequest) {
     });
 
     if (!anyStore) {
-      console.log(`[API by-domain] No store found with domain: "${normalizedDomain}"`);
       return NextResponse.json(
         { error: "Store not found for this domain" },
         { status: 404 }
       );
     }
 
-    console.log(`[API by-domain] Found store: slug="${anyStore.subdomainSlug}", domain="${anyStore.domain}", status="${anyStore.domainStatus}"`);
-
     // Check if domain is live
     if (anyStore.domainStatus !== "Live") {
-      console.log(`[API by-domain] Store exists but status is "${anyStore.domainStatus}", not "Live"`);
       return NextResponse.json(
         { error: `Domain exists but status is ${anyStore.domainStatus}`, status: anyStore.domainStatus },
         { status: 404 }

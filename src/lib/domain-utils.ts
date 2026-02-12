@@ -10,7 +10,7 @@ export type DomainStatus = (typeof DOMAIN_STATUS)[keyof typeof DOMAIN_STATUS];
 
 // Render Configuration
 export const RENDER_CONFIG = {
-  SERVICE_ID: process.env.RENDER_SERVICE_ID || "srv-d613777gi27c73e1loq0",
+  SERVICE_ID: process.env.RENDER_SERVICE_ID || "",
   // Standard Render IP for A Record
   IP_ADDRESS: "216.24.57.1",
   // CNAME target for www subdomain

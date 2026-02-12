@@ -5,11 +5,69 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateDomainFormat, normalizeDomain, DOMAIN_STATUS } from "@/lib/domain-utils";
 import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus } from "@prisma/client";
+import { sanitizeUrl, secureLog, sanitizeString } from "@/lib/security";
+import { logAudit, AuditAction } from "@/lib/audit";
+import { z } from "zod";
+import crypto from "crypto";
 import {
   getConnectedAccount,
   getAccountBalance,
   getAccountPayouts,
 } from "@/lib/stripe";
+
+// ==================== ZOD SCHEMAS ====================
+
+const createProductSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(5000).optional(),
+  price: z.number().min(0).max(999999.99),
+  imageUrl: z.string().url().max(2048).optional(),
+  imageUrls: z.array(z.string().url().max(2048)).max(20).optional(),
+  variants: z.array(z.object({
+    sizeType: z.string().max(50),
+    value: z.string().max(100).optional(),
+    unit: z.string().max(20),
+    price: z.number().min(0).max(999999.99).optional(),
+    stock: z.number().int().min(0).max(999999),
+  })).max(100).optional(),
+});
+
+const updateStoreSchema = z.object({
+  storeName: z.string().min(1).max(100).optional(),
+  aboutText: z.string().max(10000).optional(),
+  themeId: z.string().max(100).optional(),
+  heroImageUrl: z.string().url().max(2048).nullable().optional(),
+  heroHeadline: z.string().max(200).nullable().optional(),
+  heroDescription: z.string().max(1000).nullable().optional(),
+  heroTextAlign: z.string().max(20).optional(),
+  storeLogoUrl: z.string().url().max(2048).nullable().optional(),
+  contactEmail: z.string().email().max(254).nullable().optional(),
+  contactPhone: z.string().max(30).nullable().optional(),
+  instagramUrl: z.string().max(2048).nullable().optional(),
+  facebookUrl: z.string().max(2048).nullable().optional(),
+  twitterUrl: z.string().max(2048).nullable().optional(),
+  linkedinUrl: z.string().max(2048).nullable().optional(),
+  youtubeUrl: z.string().max(2048).nullable().optional(),
+  whatsappNumber: z.string().max(30).nullable().optional(),
+  supportedQueryTypes: z.string().max(500).nullable().optional(),
+});
+
+const faqSchema = z.object({
+  question: z.string().min(1).max(1000),
+  answer: z.string().min(1).max(5000),
+  isPublished: z.boolean().optional(),
+});
+
+const testimonialSchema = z.object({
+  customerName: z.string().min(1).max(200),
+  content: z.string().min(1).max(5000),
+  isPublished: z.boolean().optional(),
+});
+
+const sectionSchema = z.object({
+  heading: z.string().min(1).max(500),
+  content: z.string().min(1).max(10000),
+});
 
 export async function createProduct(
   storeId: string,
@@ -44,23 +102,26 @@ export async function createProduct(
     throw new Error("Store not found or unauthorized");
   }
 
-  const primaryImageUrl = data.imageUrls?.[0] ?? data.imageUrl ?? null;
+  // Validate input
+  const validated = createProductSchema.parse(data);
+
+  const primaryImageUrl = validated.imageUrls?.[0] ?? validated.imageUrl ?? null;
 
   const product = await prisma.product.create({
     data: {
       storeId,
-      name: data.name,
-      description: data.description || null,
-      price: data.price,
+      name: sanitizeString(validated.name, 200),
+      description: validated.description ? sanitizeString(validated.description, 5000) : null,
+      price: validated.price,
       imageUrl: primaryImageUrl,
-      images: data.imageUrls && data.imageUrls.length > 0 ? {
-        create: data.imageUrls.map((url, index) => ({
+      images: validated.imageUrls && validated.imageUrls.length > 0 ? {
+        create: validated.imageUrls.map((url, index) => ({
           url,
           sortOrder: index,
         })),
       } : undefined,
-      variants: data.variants && data.variants.length > 0 ? {
-        create: data.variants.map(v => ({
+      variants: validated.variants && validated.variants.length > 0 ? {
+        create: validated.variants.map(v => ({
           sizeType: v.sizeType,
           value: v.value || null,
           unit: v.unit,
@@ -72,6 +133,15 @@ export async function createProduct(
     include: {
       variants: true,
     },
+  });
+
+  await logAudit({
+    action: AuditAction.ProductCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "Product",
+    resourceId: product.id,
+    metadata: { name: product.name },
   });
   
   return {
@@ -136,21 +206,24 @@ export async function updateProduct(
     });
   }
 
+  // Validate input
+  const validated = createProductSchema.parse(data);
+
   const product = await prisma.product.update({
     where: { id: productId },
     data: {
-      name: data.name,
-      description: data.description ?? undefined,
-      price: data.price,
+      name: sanitizeString(validated.name, 200),
+      description: validated.description ? sanitizeString(validated.description, 5000) : undefined,
+      price: validated.price,
       imageUrl: primaryImageUrl,
-      images: data.imageUrls && data.imageUrls.length > 0 ? {
-        create: data.imageUrls.map((url, index) => ({
+      images: validated.imageUrls && validated.imageUrls.length > 0 ? {
+        create: validated.imageUrls.map((url, index) => ({
           url,
           sortOrder: index,
         })),
       } : undefined,
-      variants: data.variants && data.variants.length > 0 ? {
-        create: data.variants.map(v => ({
+      variants: validated.variants && validated.variants.length > 0 ? {
+        create: validated.variants.map(v => ({
           sizeType: v.sizeType,
           value: v.value || null,
           unit: v.unit,
@@ -162,6 +235,15 @@ export async function updateProduct(
     include: {
       variants: true,
     },
+  });
+
+  await logAudit({
+    action: AuditAction.ProductUpdated,
+    actorId: user.id,
+    storeId: existingProduct.storeId,
+    resourceType: "Product",
+    resourceId: product.id,
+    metadata: { name: product.name },
   });
   
   return {
@@ -190,6 +272,15 @@ export async function deleteProduct(productId: string) {
 
   const deletedProduct = await prisma.product.delete({
     where: { id: productId },
+  });
+
+  await logAudit({
+    action: AuditAction.ProductDeleted,
+    actorId: user.id,
+    storeId: product.storeId,
+    resourceType: "Product",
+    resourceId: productId,
+    metadata: { name: product.name },
   });
 
   return {
@@ -227,6 +318,9 @@ export async function updateStore(
     throw new Error("Not authenticated");
   }
 
+  // Validate input
+  const validated = updateStoreSchema.parse(data);
+
   // Verify store ownership
   const store = await prisma.store.findFirst({
     where: { id: storeId, ownerId: user.id },
@@ -237,71 +331,81 @@ export async function updateStore(
   }
 
   const updateData: any = {
-    storeName: data.storeName,
-    aboutText: data.aboutText,
-    themeId: data.themeId,
+    storeName: validated.storeName ? sanitizeString(validated.storeName, 100) : undefined,
+    aboutText: validated.aboutText ? sanitizeString(validated.aboutText, 10000) : undefined,
+    themeId: validated.themeId,
   };
 
-  if (data.heroImageUrl !== undefined) {
-    updateData.heroImageUrl = data.heroImageUrl;
+  if (validated.heroImageUrl !== undefined) {
+    updateData.heroImageUrl = validated.heroImageUrl;
   }
 
-  if (data.heroHeadline !== undefined) {
-    updateData.heroHeadline = data.heroHeadline;
+  if (validated.heroHeadline !== undefined) {
+    updateData.heroHeadline = validated.heroHeadline;
   }
 
-  if (data.heroDescription !== undefined) {
-    updateData.heroDescription = data.heroDescription;
+  if (validated.heroDescription !== undefined) {
+    updateData.heroDescription = validated.heroDescription;
   }
 
-  if (data.heroTextAlign !== undefined) {
-    updateData.heroTextAlign = data.heroTextAlign;
+  if (validated.heroTextAlign !== undefined) {
+    updateData.heroTextAlign = validated.heroTextAlign;
   }
 
-  if (data.storeLogoUrl !== undefined) {
-    updateData.storeLogoUrl = data.storeLogoUrl;
+  if (validated.storeLogoUrl !== undefined) {
+    updateData.storeLogoUrl = validated.storeLogoUrl;
   }
 
-  if (data.contactEmail !== undefined) {
-    updateData.contactEmail = data.contactEmail;
+  if (validated.contactEmail !== undefined) {
+    updateData.contactEmail = validated.contactEmail;
   }
 
-  if (data.contactPhone !== undefined) {
-    updateData.contactPhone = data.contactPhone;
+  if (validated.contactPhone !== undefined) {
+    updateData.contactPhone = validated.contactPhone;
   }
 
-  if (data.instagramUrl !== undefined) {
-    updateData.instagramUrl = data.instagramUrl;
+  if (validated.instagramUrl !== undefined) {
+    updateData.instagramUrl = validated.instagramUrl ? sanitizeUrl(validated.instagramUrl) : null;
   }
 
-  if (data.facebookUrl !== undefined) {
-    updateData.facebookUrl = data.facebookUrl;
+  if (validated.facebookUrl !== undefined) {
+    updateData.facebookUrl = validated.facebookUrl ? sanitizeUrl(validated.facebookUrl) : null;
   }
 
-  if (data.twitterUrl !== undefined) {
-    updateData.twitterUrl = data.twitterUrl;
+  if (validated.twitterUrl !== undefined) {
+    updateData.twitterUrl = validated.twitterUrl ? sanitizeUrl(validated.twitterUrl) : null;
   }
 
-  if (data.linkedinUrl !== undefined) {
-    updateData.linkedinUrl = data.linkedinUrl;
+  if (validated.linkedinUrl !== undefined) {
+    updateData.linkedinUrl = validated.linkedinUrl ? sanitizeUrl(validated.linkedinUrl) : null;
   }
 
-  if (data.youtubeUrl !== undefined) {
-    updateData.youtubeUrl = data.youtubeUrl;
+  if (validated.youtubeUrl !== undefined) {
+    updateData.youtubeUrl = validated.youtubeUrl ? sanitizeUrl(validated.youtubeUrl) : null;
   }
 
-  if (data.whatsappNumber !== undefined) {
-    updateData.whatsappNumber = data.whatsappNumber;
+  if (validated.whatsappNumber !== undefined) {
+    updateData.whatsappNumber = validated.whatsappNumber;
   }
 
-  if (data.supportedQueryTypes !== undefined) {
-    updateData.supportedQueryTypes = data.supportedQueryTypes;
+  if (validated.supportedQueryTypes !== undefined) {
+    updateData.supportedQueryTypes = validated.supportedQueryTypes;
   }
 
-  return await prisma.store.update({
+  const updatedStore = await prisma.store.update({
     where: { id: storeId },
     data: updateData,
   });
+
+  await logAudit({
+    action: AuditAction.StoreUpdated,
+    actorId: user.id,
+    storeId,
+    resourceType: "Store",
+    resourceId: storeId,
+  });
+
+  return updatedStore;
 }
 
 export async function createStoreFaq(
@@ -327,6 +431,9 @@ export async function createStoreFaq(
     throw new Error("Store not found or unauthorized");
   }
 
+  // Validate input
+  const validated = faqSchema.parse(data);
+
   const lastFaq = await prisma.storeFaq.findFirst({
     where: { storeId },
     orderBy: { sortOrder: "desc" },
@@ -335,11 +442,19 @@ export async function createStoreFaq(
   const faq = await prisma.storeFaq.create({
     data: {
       storeId,
-      question: data.question.trim(),
-      answer: data.answer.trim(),
-      isPublished: data.isPublished ?? true,
+      question: sanitizeString(validated.question, 1000),
+      answer: sanitizeString(validated.answer, 5000),
+      isPublished: validated.isPublished ?? true,
       sortOrder: lastFaq ? lastFaq.sortOrder + 1 : 0,
     },
+  });
+
+  await logAudit({
+    action: AuditAction.FaqCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "StoreFaq",
+    resourceId: faq.id,
   });
 
   return faq;
@@ -387,10 +502,20 @@ export async function updateStoreFaq(
     updateData.isPublished = data.isPublished;
   }
 
-  return await prisma.storeFaq.update({
+  const updatedFaq = await prisma.storeFaq.update({
     where: { id: faqId },
     data: updateData,
   });
+
+  await logAudit({
+    action: AuditAction.FaqUpdated,
+    actorId: user.id,
+    storeId: faq.storeId,
+    resourceType: "StoreFaq",
+    resourceId: faqId,
+  });
+
+  return updatedFaq;
 }
 
 export async function deleteStoreFaq(faqId: string) {
@@ -410,9 +535,19 @@ export async function deleteStoreFaq(faqId: string) {
     throw new Error("FAQ not found or unauthorized");
   }
 
-  return await prisma.storeFaq.delete({
+  const deleted = await prisma.storeFaq.delete({
     where: { id: faqId },
   });
+
+  await logAudit({
+    action: AuditAction.FaqDeleted,
+    actorId: user.id,
+    storeId: faq.storeId,
+    resourceType: "StoreFaq",
+    resourceId: faqId,
+  });
+
+  return deleted;
 }
 
 export async function reorderStoreFaqs(storeId: string, orderedIds: string[]) {
@@ -478,19 +613,32 @@ export async function createStorePrivacySection(
     throw new Error("Store not found or unauthorized");
   }
 
+  // Validate input
+  const validated = sectionSchema.parse(data);
+
   const lastSection = await prisma.storePrivacySection.findFirst({
     where: { storeId },
     orderBy: { sortOrder: "desc" },
   });
 
-  return await prisma.storePrivacySection.create({
+  const section = await prisma.storePrivacySection.create({
     data: {
       storeId,
-      heading: data.heading.trim(),
-      content: data.content.trim(),
+      heading: sanitizeString(validated.heading, 500),
+      content: sanitizeString(validated.content, 10000),
       sortOrder: lastSection ? lastSection.sortOrder + 1 : 0,
     },
   });
+
+  await logAudit({
+    action: AuditAction.PrivacySectionCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "StorePrivacySection",
+    resourceId: section.id,
+  });
+
+  return section;
 }
 
 export async function updateStorePrivacySection(
@@ -526,10 +674,20 @@ export async function updateStorePrivacySection(
     updateData.content = data.content.trim();
   }
 
-  return await prisma.storePrivacySection.update({
+  const updatedSection = await prisma.storePrivacySection.update({
     where: { id: sectionId },
     data: updateData,
   });
+
+  await logAudit({
+    action: AuditAction.PrivacySectionUpdated,
+    actorId: user.id,
+    storeId: section.storeId,
+    resourceType: "StorePrivacySection",
+    resourceId: sectionId,
+  });
+
+  return updatedSection;
 }
 
 export async function deleteStorePrivacySection(sectionId: string) {
@@ -549,9 +707,19 @@ export async function deleteStorePrivacySection(sectionId: string) {
     throw new Error("Privacy section not found or unauthorized");
   }
 
-  return await prisma.storePrivacySection.delete({
+  const deleted = await prisma.storePrivacySection.delete({
     where: { id: sectionId },
   });
+
+  await logAudit({
+    action: AuditAction.PrivacySectionDeleted,
+    actorId: user.id,
+    storeId: section.storeId,
+    resourceType: "StorePrivacySection",
+    resourceId: sectionId,
+  });
+
+  return deleted;
 }
 
 export async function reorderStorePrivacySections(
@@ -621,19 +789,32 @@ export async function createStoreShippingReturnsSection(
     throw new Error("Store not found or unauthorized");
   }
 
+  // Validate input
+  const validated = sectionSchema.parse(data);
+
   const lastSection = await prisma.storeShippingReturnsSection.findFirst({
     where: { storeId },
     orderBy: { sortOrder: "desc" },
   });
 
-  return await prisma.storeShippingReturnsSection.create({
+  const section = await prisma.storeShippingReturnsSection.create({
     data: {
       storeId,
-      heading: data.heading.trim(),
-      content: data.content.trim(),
+      heading: sanitizeString(validated.heading, 500),
+      content: sanitizeString(validated.content, 10000),
       sortOrder: lastSection ? lastSection.sortOrder + 1 : 0,
     },
   });
+
+  await logAudit({
+    action: AuditAction.ShippingSectionCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "StoreShippingReturnsSection",
+    resourceId: section.id,
+  });
+
+  return section;
 }
 
 export async function updateStoreShippingReturnsSection(
@@ -669,10 +850,20 @@ export async function updateStoreShippingReturnsSection(
     updateData.content = data.content.trim();
   }
 
-  return await prisma.storeShippingReturnsSection.update({
+  const updatedSection = await prisma.storeShippingReturnsSection.update({
     where: { id: sectionId },
     data: updateData,
   });
+
+  await logAudit({
+    action: AuditAction.ShippingSectionUpdated,
+    actorId: user.id,
+    storeId: section.storeId,
+    resourceType: "StoreShippingReturnsSection",
+    resourceId: sectionId,
+  });
+
+  return updatedSection;
 }
 
 export async function deleteStoreShippingReturnsSection(sectionId: string) {
@@ -692,9 +883,19 @@ export async function deleteStoreShippingReturnsSection(sectionId: string) {
     throw new Error("Shipping & Returns section not found or unauthorized");
   }
 
-  return await prisma.storeShippingReturnsSection.delete({
+  const deleted = await prisma.storeShippingReturnsSection.delete({
     where: { id: sectionId },
   });
+
+  await logAudit({
+    action: AuditAction.ShippingSectionDeleted,
+    actorId: user.id,
+    storeId: section.storeId,
+    resourceType: "StoreShippingReturnsSection",
+    resourceId: sectionId,
+  });
+
+  return deleted;
 }
 
 export async function reorderStoreShippingReturnsSections(
@@ -764,6 +965,9 @@ export async function createStoreTestimonial(
     throw new Error("Store not found or unauthorized");
   }
 
+  // Validate input
+  const validated = testimonialSchema.parse(data);
+
   const lastTestimonial = await prisma.storeTestimonial.findFirst({
     where: { storeId },
     orderBy: { sortOrder: "desc" },
@@ -772,11 +976,19 @@ export async function createStoreTestimonial(
   const testimonial = await prisma.storeTestimonial.create({
     data: {
       storeId,
-      customerName: data.customerName.trim(),
-      content: data.content.trim(),
-      isPublished: data.isPublished ?? true,
+      customerName: sanitizeString(validated.customerName, 200),
+      content: sanitizeString(validated.content, 5000),
+      isPublished: validated.isPublished ?? true,
       sortOrder: lastTestimonial ? lastTestimonial.sortOrder + 1 : 0,
     },
+  });
+
+  await logAudit({
+    action: AuditAction.TestimonialCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "StoreTestimonial",
+    resourceId: testimonial.id,
   });
 
   return testimonial;
@@ -824,10 +1036,20 @@ export async function updateStoreTestimonial(
     updateData.isPublished = data.isPublished;
   }
 
-  return await prisma.storeTestimonial.update({
+  const updatedTestimonial = await prisma.storeTestimonial.update({
     where: { id: testimonialId },
     data: updateData,
   });
+
+  await logAudit({
+    action: AuditAction.TestimonialUpdated,
+    actorId: user.id,
+    storeId: testimonial.storeId,
+    resourceType: "StoreTestimonial",
+    resourceId: testimonialId,
+  });
+
+  return updatedTestimonial;
 }
 
 export async function deleteStoreTestimonial(testimonialId: string) {
@@ -847,9 +1069,19 @@ export async function deleteStoreTestimonial(testimonialId: string) {
     throw new Error("Testimonial not found or unauthorized");
   }
 
-  return await prisma.storeTestimonial.delete({
+  const deleted = await prisma.storeTestimonial.delete({
     where: { id: testimonialId },
   });
+
+  await logAudit({
+    action: AuditAction.TestimonialDeleted,
+    actorId: user.id,
+    storeId: testimonial.storeId,
+    resourceType: "StoreTestimonial",
+    resourceId: testimonialId,
+  });
+
+  return deleted;
 }
 
 export async function reorderStoreTestimonials(
@@ -920,6 +1152,23 @@ export async function createStore(
   userId: string,
   data: { storeName: string; subdomainSlug: string; themeId: string }
 ) {
+  // Verify the caller is actually this user (prevent IDOR)
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || user.id !== userId) {
+    throw new Error("Not authenticated or user mismatch");
+  }
+
+  // Check if user already has a store (one store per user)
+  const existingUserStore = await prisma.store.findFirst({
+    where: { ownerId: userId },
+  });
+
+  if (existingUserStore) {
+    throw new Error("You already have a store. Only one store per account is allowed.");
+  }
+
   // Verify slug uniqueness
   const existingStore = await prisma.store.findUnique({
     where: { subdomainSlug: data.subdomainSlug },
@@ -929,13 +1178,29 @@ export async function createStore(
     throw new Error("This store name is already taken. Please choose another.");
   }
 
+  // Validate slug format
+  const slugRegex = /^[a-z0-9][a-z0-9-]{1,}[a-z0-9]$/;
+  if (!slugRegex.test(data.subdomainSlug)) {
+    throw new Error("Store slug must contain only lowercase letters, numbers, and hyphens.");
+  }
+
   return await prisma.store.create({
     data: {
       ownerId: userId,
-      storeName: data.storeName,
-      subdomainSlug: data.subdomainSlug,
+      storeName: data.storeName.trim().slice(0, 100),
+      subdomainSlug: data.subdomainSlug.slice(0, 50),
       themeId: data.themeId,
     },
+  }).then(async (store) => {
+    await logAudit({
+      action: AuditAction.StoreCreated,
+      actorId: userId,
+      storeId: store.id,
+      resourceType: "Store",
+      resourceId: store.id,
+      metadata: { storeName: store.storeName, slug: store.subdomainSlug },
+    });
+    return store;
   });
 }
 
@@ -1006,36 +1271,98 @@ export async function updateStoreDomain(
     },
   });
 
+  await logAudit({
+    action: AuditAction.DomainUpdated,
+    actorId: user.id,
+    storeId,
+    resourceType: "Store",
+    resourceId: storeId,
+    metadata: { domain: normalizedDomain },
+  });
+
   return { success: true };
 }
 
 /**
- * Update domain status for a store (internal use by API routes)
+ * Update domain status for a store.
+ * Requires authentication and store ownership verification.
  */
 export async function updateDomainStatus(
   storeId: string,
   status: DomainStatus,
   certificateGeneratedAt?: Date
 ) {
+  if (!storeId || !status) {
+    throw new Error("Missing required parameters");
+  }
+
+  // Auth guard: verify the caller owns this store
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
   return await prisma.store.update({
     where: { id: storeId },
     data: {
       domainStatus: status,
       ...(certificateGeneratedAt && { certificateGeneratedAt }),
     },
+  }).then(async (updated) => {
+    await logAudit({
+      action: AuditAction.DomainStatusChanged,
+      actorId: user.id,
+      storeId,
+      resourceType: "Store",
+      resourceId: storeId,
+      metadata: { status, previousStatus: store.domainStatus },
+    });
+    return updated;
   });
 }
 
 // ==================== STRIPE CONNECT ACTIONS ====================
 
 /**
- * Save Stripe Connect account ID to store after OAuth
+ * Save Stripe Connect account ID to store after OAuth.
+ * Requires authentication and store ownership verification.
  */
 export async function saveStripeConnectAccount(
   storeId: string,
   stripeConnectId: string
 ) {
-  return await prisma.store.update({
+  // Validate inputs
+  if (!storeId || !stripeConnectId) {
+    throw new Error("Missing required parameters");
+  }
+
+  // Auth guard: verify the caller owns this store
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  const result = await prisma.store.update({
     where: { id: storeId },
     data: {
       stripeConnectId,
@@ -1043,6 +1370,17 @@ export async function saveStripeConnectAccount(
       stripeConnectedAt: new Date(),
     },
   });
+
+  await logAudit({
+    action: AuditAction.StripeConnected,
+    actorId: user.id,
+    storeId,
+    resourceType: "Store",
+    resourceId: storeId,
+    metadata: { stripeConnectId },
+  });
+
+  return result;
 }
 
 /**
@@ -1072,6 +1410,14 @@ export async function disconnectStripeAccount(storeId: string) {
       stripeConnectStatus: StripeConnectStatus.NotConnected,
       stripeConnectedAt: null,
     },
+  });
+
+  await logAudit({
+    action: AuditAction.StripeDisconnected,
+    actorId: user.id,
+    storeId,
+    resourceType: "Store",
+    resourceId: storeId,
   });
 
   return { success: true };
@@ -1251,31 +1597,43 @@ export async function createOrder(data: {
     if (data.initialStatus === "Completed") {
       for (const item of order.items) {
         if (item.variantId) {
-          await prisma.productVariant.update({
+          // Check stock floor before decrementing
+          const variant = await prisma.productVariant.findUnique({
             where: { id: item.variantId },
-            data: {
-              stock: {
-                decrement: item.quantity,
-              },
-            },
+            select: { stock: true },
           });
+          if (variant) {
+            const decrementBy = Math.min(item.quantity, variant.stock);
+            if (decrementBy > 0) {
+              await prisma.productVariant.update({
+                where: { id: item.variantId },
+                data: { stock: { decrement: decrementBy } },
+              });
+            }
+          }
         }
       }
-      console.log("[Order Created] Stock reduced for Completed order:", order.id);
+      secureLog.info("[Order Created] Stock reduced for Completed order", { orderId: order.id });
     }
 
-    console.log("[Order Created]", {
+    await logAudit({
+      action: AuditAction.OrderCreated,
+      actorId: null, // Called from webhook/verify-session, no authenticated user
+      storeId: order.storeId,
+      resourceType: "Order",
+      resourceId: order.id,
+      metadata: { status: order.status, total: Number(order.total), itemsCount: order.items.length },
+    });
+
+    secureLog.info("[Order Created]", {
       orderId: order.id,
       storeId: order.storeId,
-      amount: order.total,
-      itemsCount: order.items.length
+      itemsCount: order.items.length,
     });
     return order;
   } catch (error) {
-    console.error("[Order Creation Failed]", {
-      error: error instanceof Error ? error.message : String(error),
+    secureLog.error("[Order Creation Failed]", error, {
       storeId: data.storeId,
-      paymentId: data.stripePaymentId,
     });
     throw error;
   }
@@ -1289,10 +1647,10 @@ export async function updateOrderStatus(
   status: "Pending" | "Completed" | "Failed" | "Refunded",
   paymentStatus?: "Pending" | "Paid" | "Settled" | "Refunded"
 ) {
-  console.log("[Order Status Update] Attempting to update:", {
+  secureLog.info("[Order Status Update] Attempting to update", {
     stripePaymentId,
     status,
-    paymentStatus
+    paymentStatus,
   });
 
   const updateData: any = {
@@ -1310,52 +1668,59 @@ export async function updateOrderStatus(
       include: { items: true },
     });
 
-    console.log("[Order Status Update] Order updated successfully:", {
+    secureLog.info("[Order Status Update] Order updated successfully", {
       orderId: updatedOrder.id,
       status: updatedOrder.status,
       paymentStatus: updatedOrder.paymentStatus,
-      itemCount: updatedOrder.items.length
+      itemCount: updatedOrder.items.length,
     });
 
-    // Reduce stock when order is completed
+    // Reduce stock when order is completed (with floor check)
     if (status === "Completed") {
       for (const item of updatedOrder.items) {
         if (item.variantId) {
-          // If item has a variant, reduce variant stock
-          await prisma.productVariant.update({
+          const variant = await prisma.productVariant.findUnique({
             where: { id: item.variantId },
-            data: {
-              stock: {
-                decrement: item.quantity,
-              },
-            },
+            select: { stock: true },
           });
+          if (variant) {
+            const decrementBy = Math.min(item.quantity, variant.stock);
+            if (decrementBy > 0) {
+              await prisma.productVariant.update({
+                where: { id: item.variantId },
+                data: { stock: { decrement: decrementBy } },
+              });
+            }
+          }
         }
       }
-      console.log("[Order Status Update] Stock reduced for completed order:", updatedOrder.id);
+      secureLog.info("[Order Status Update] Stock reduced for completed order", { orderId: updatedOrder.id });
     }
+
+    await logAudit({
+      action: AuditAction.OrderStatusChanged,
+      actorId: null, // Called from webhook/verify-session
+      storeId: updatedOrder.storeId,
+      resourceType: "Order",
+      resourceId: updatedOrder.id,
+      metadata: { status, paymentStatus, previousStatus: "Pending" },
+    });
 
     return updatedOrder;
   } catch (error) {
-    console.error("[Order Status Update] Failed to update order:", {
+    secureLog.error("[Order Status Update] Failed to update order", error, {
       stripePaymentId,
-      error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
     });
     throw error;
   }
 }
 
 /**
- * Generate a tracking number for shipped orders
+ * Generate a cryptographically secure tracking number for shipped orders
  */
 function generateTrackingNumber(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "TRK-";
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
+  const bytes = crypto.randomBytes(6);
+  return "TRK-" + bytes.toString("hex").toUpperCase().slice(0, 8);
 }
 
 /**
@@ -1418,6 +1783,15 @@ export async function markOrderAsShipped(orderId: string) {
       orderId: updatedOrder.id,
       trackingNumber,
       shippedAt,
+    });
+
+    await logAudit({
+      action: AuditAction.OrderShipped,
+      actorId: user.id,
+      storeId: order.store.id,
+      resourceType: "Order",
+      resourceId: orderId,
+      metadata: { trackingNumber },
     });
 
     // Send shipping confirmation email

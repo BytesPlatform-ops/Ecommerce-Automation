@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { RENDER_CONFIG, DOMAIN_STATUS } from "@/lib/domain-utils";
 import { addDomainToRender, getDomainFromRender } from "@/lib/render-api";
 import { DomainStatus } from "@prisma/client";
+import { checkRateLimit } from "@/lib/security";
+import { logAudit, AuditAction, getRequestIp } from "@/lib/audit";
 import dns from "dns";
 import { promisify } from "util";
 
@@ -17,6 +19,16 @@ const dnsResolve4 = promisify(dns.resolve4);
  */
 export async function POST(request: Request) {
   try {
+    // Rate limit by IP: max 10 domain checks per minute
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimit = checkRateLimit(`domain-check:${ip}`, 10, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -103,6 +115,16 @@ export async function POST(request: Request) {
         data: { domainStatus: DomainStatus.Securing },
       });
 
+      logAudit({
+        action: AuditAction.DomainUpdated,
+        actorId: user.id,
+        storeId: store.id,
+        resourceType: "Domain",
+        resourceId: store.domain,
+        metadata: { from: store.domainStatus, to: "Securing" },
+        ipAddress: ip,
+      });
+
       // Fire async Render API call (don't await to return response quickly)
       // This registers the domain with Render and starts SSL certificate generation
       addDomainToRender(store.domain)
@@ -148,6 +170,16 @@ export async function POST(request: Request) {
             domainStatus: DomainStatus.Live,
             certificateGeneratedAt: new Date(),
           },
+        });
+
+        logAudit({
+          action: AuditAction.DomainUpdated,
+          actorId: user.id,
+          storeId: store.id,
+          resourceType: "Domain",
+          resourceId: store.domain,
+          metadata: { from: "Securing", to: "Live" },
+          ipAddress: ip,
         });
 
         return NextResponse.json({

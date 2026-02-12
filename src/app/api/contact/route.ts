@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import sgMail from "@sendgrid/mail";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/security";
 
 const contactSchema = z.object({
   storeId: z.string().trim().min(1),
@@ -33,6 +34,16 @@ function escapeHtml(value: string) {
 
 export async function POST(request: Request) {
   try {
+    // Rate limit by IP: max 5 contact form submissions per minute
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimit = checkRateLimit(`contact:${ip}`, 5, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
+      );
+    }
+
     const apiKey = process.env.SENDGRID_API_KEY;
     const fromEmail = process.env.SENDGRID_FROM_EMAIL;
     const fromName = process.env.SENDGRID_FROM_NAME || "Storefront Contact";

@@ -1,5 +1,19 @@
 import sgMail, { MailDataRequired } from "@sendgrid/mail";
 
+// HTML escape function for email template safety
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&": return "&amp;";
+      case "<": return "&lt;";
+      case ">": return "&gt;";
+      case '"': return "&quot;";
+      case "'": return "&#39;";
+      default: return char;
+    }
+  });
+}
+
 interface OrderItem {
   productName: string;
   quantity: number;
@@ -24,14 +38,6 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   const FROM_NAME = orderDetails.storeName || process.env.SENDGRID_FROM_NAME || "Chameleon Store";
   const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
-  console.log("[Email SendGrid Config]", {
-    hasApiKey: !!SENDGRID_API_KEY,
-    fromEmail: FROM_EMAIL,
-    fromName: FROM_NAME,
-    fromAddress: FROM_ADDRESS,
-    apiKeyStart: SENDGRID_API_KEY?.substring(0, 10) + "..."
-  });
-
   if (!SENDGRID_API_KEY) {
     console.warn("[Email] SENDGRID_API_KEY is not configured. Email not sent.");
     return { success: false, message: "SendGrid API key not configured" };
@@ -53,20 +59,20 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   const currencySymbol = currency.toLowerCase() === "usd" ? "$" : currency.toUpperCase();
   const formattedTotal = typeof total === "string" ? total : (Math.round(parseFloat(String(total)) * 100) / 100).toFixed(2);
 
-  // Build items HTML
+  // Build items HTML (escape all user-generated content to prevent HTML injection)
   const itemsHtml = items
     .map(
       (item) => `
     <tr>
       <td>
-        <div style="font-weight: 600; color: #1a1a2e;">${item.productName}</div>
-        ${item.variantInfo ? `<small>${item.variantInfo}</small>` : ""}
+        <div style="font-weight: 600; color: #1a1a2e;">${escapeHtml(item.productName)}</div>
+        ${item.variantInfo ? `<small>${escapeHtml(item.variantInfo)}</small>` : ""}
       </td>
       <td style="text-align: center;">
         ${item.quantity}
       </td>
       <td style="text-align: right;">
-        ${currencySymbol}${typeof item.unitPrice === "string" ? item.unitPrice : item.unitPrice.toFixed(2)}
+        ${currencySymbol}${typeof item.unitPrice === "string" ? escapeHtml(item.unitPrice) : item.unitPrice.toFixed(2)}
       </td>
       <td style="text-align: right; font-weight: 600; color: #1a1a2e;">
         ${currencySymbol}${typeof item.unitPrice === "number" && typeof item.quantity === "number" ? (Math.round(item.unitPrice * item.quantity * 100) / 100).toFixed(2) : (parseFloat(String(item.unitPrice)) * item.quantity).toFixed(2)}
@@ -267,7 +273,7 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
       <div class="divider"></div>
 
       <div class="content">
-        <p class="greeting">Dear <strong>${customerName || "Valued Customer"}</strong>,</p>
+        <p class="greeting">Dear <strong>${escapeHtml(customerName || "Valued Customer")}</strong>,</p>
         
         <p class="greeting">We're delighted to confirm that your order has been successfully placed and payment has been received. We appreciate your business and look forward to delivering an exceptional experience.</p>
 
@@ -299,11 +305,11 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
         <div class="order-info">
           <div class="info-item">
             <div class="info-label">Order Reference</div>
-            <div class="info-value">#${orderId}</div>
+            <div class="info-value">#${escapeHtml(orderId)}</div>
           </div>
           <div class="info-item">
             <div class="info-label">Store</div>
-            <div class="info-value">${storeName}</div>
+            <div class="info-value">${escapeHtml(storeName)}</div>
           </div>
         </div>
 
@@ -316,13 +322,13 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
 
         <div class="footer-text">
           <p>With appreciation,</p>
-          <p><strong>${storeName}</strong></p>
+          <p><strong>${escapeHtml(storeName)}</strong></p>
         </div>
       </div>
 
       <div class="footer">
         <p>This is an automated confirmation message. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.</p>
+        <p>&copy; ${new Date().getFullYear()} ${escapeHtml(storeName)}. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -338,25 +344,13 @@ export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
       html,
     };
 
-    console.log("[Email] Sending customer email with:", {
-      to: customerEmail,
-      from: FROM_ADDRESS,
-      subject: `Order Confirmed - ${storeName} (Order #${orderId})`,
-      htmlLength: html.length
-    });
-
     await sgMail.send(msg);
-    console.log(`[Email] Order confirmation sent to ${customerEmail} for order ${orderId}`);
+    console.log(`[Email] Order confirmation sent for order ${orderId}`);
     return { success: true, message: "Email sent successfully" };
   } catch (error) {
-    console.error(`[Email] Failed to send order confirmation to ${customerEmail}:`, error);
-    if (error instanceof Error) {
-      console.error("[Email] Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-    }
+    console.error(`[Email] Failed to send order confirmation for order ${orderId}:`,
+      error instanceof Error ? error.message : "Unknown error"
+    );
     return { 
       success: false, 
       message: error instanceof Error ? error.message : "Failed to send email" 
@@ -373,16 +367,8 @@ export async function sendStoreNotificationEmail(
   const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Chameleon Store";
   const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
-  console.log("[Email Store Notification] Config check:", {
-    hasApiKey: !!SENDGRID_API_KEY,
-    storeContactEmail,
-    fromEmail: FROM_EMAIL,
-    fromName: FROM_NAME,
-    fromAddress: FROM_ADDRESS
-  });
-
   if (!SENDGRID_API_KEY) {
-    console.warn("[Email] SENDGRID_API_KEY is not configured. Email not sent.");
+    console.warn("[Email] SENDGRID_API_KEY is not configured. Store notification not sent.");
     return { success: false, message: "SendGrid API key not configured" };
   }
 
@@ -405,13 +391,13 @@ export async function sendStoreNotificationEmail(
       (item) => `
     <tr style="border-bottom: 1px solid #e8e8e8;">
       <td style="padding: 12px 0; color: #1a1a2e; font-weight: 500;">
-        ${item.productName} ${item.variantInfo ? `<span style="color: #999;">(${item.variantInfo})</span>` : ""}
+        ${escapeHtml(item.productName)} ${item.variantInfo ? `<span style="color: #999;">(${escapeHtml(item.variantInfo)})</span>` : ""}
       </td>
       <td style="padding: 12px 0; color: #666; text-align: center;">
         x${item.quantity}
       </td>
       <td style="padding: 12px 0; color: #1a1a2e; text-align: right; font-weight: 600;">
-        ${currencySymbol}${typeof item.unitPrice === "string" ? item.unitPrice : item.unitPrice.toFixed(2)}
+        ${currencySymbol}${typeof item.unitPrice === "string" ? escapeHtml(item.unitPrice) : item.unitPrice.toFixed(2)}
       </td>
     </tr>
   `
@@ -572,15 +558,15 @@ export async function sendStoreNotificationEmail(
         <div class="order-details">
           <div class="detail-row">
             <div class="detail-label">Order ID</div>
-            <div class="detail-value">#${orderId}</div>
+            <div class="detail-value">#${escapeHtml(orderId)}</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Customer</div>
-            <div class="detail-value">${customerName || "N/A"}</div>
+            <div class="detail-value">${escapeHtml(customerName || "N/A")}</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Email</div>
-            <div class="detail-value">${customerEmail}</div>
+            <div class="detail-value">${escapeHtml(customerEmail)}</div>
           </div>
           <div class="detail-row">
             <div class="detail-label">Order Total</div>
@@ -610,7 +596,7 @@ export async function sendStoreNotificationEmail(
 
       <div class="footer">
         <p>This is an automated merchant notification. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.</p>
+        <p>&copy; ${new Date().getFullYear()} ${escapeHtml(storeName)}. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -626,25 +612,13 @@ export async function sendStoreNotificationEmail(
       html,
     };
 
-    console.log("[Email] Sending store notification with:", {
-      to: storeContactEmail,
-      from: FROM_ADDRESS,
-      subject: `New Order #${orderId} - ${storeName}`,
-      htmlLength: html.length
-    });
-
     await sgMail.send(msg);
-    console.log(`[Email] Store notification sent to ${storeContactEmail} for order ${orderId}`);
+    console.log(`[Email] Store notification sent for order ${orderId}`);
     return { success: true, message: "Store notification sent" };
   } catch (error) {
-    console.error(`[Email] Failed to send store notification:`, error);
-    if (error instanceof Error) {
-      console.error("[Email Store] Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
-    }
+    console.error(`[Email] Failed to send store notification for order ${orderId}:`,
+      error instanceof Error ? error.message : "Unknown error"
+    );
     return { 
       success: false, 
       message: error instanceof Error ? error.message : "Failed to send email" 
@@ -677,13 +651,6 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
   const FROM_NAME = details.storeName;
   const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
-  console.log("[Email Shipping] SendGrid Config:", {
-    hasApiKey: !!SENDGRID_API_KEY,
-    fromEmail: FROM_EMAIL,
-    fromName: FROM_NAME,
-    fromAddress: FROM_ADDRESS,
-  });
-
   if (!SENDGRID_API_KEY) {
     console.warn("[Email Shipping] SENDGRID_API_KEY is not configured. Email not sent.");
     return { success: false, message: "SendGrid API key not configured" };
@@ -707,8 +674,8 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
       (item) => `
     <tr>
       <td style="padding: 16px 0; border-bottom: 1px solid #e8e0d0;">
-        <div style="font-weight: 500; color: #1a1a1a; font-size: 15px;">${item.productName}</div>
-        ${item.variantInfo ? `<div style="color: #8b7355; font-size: 13px; margin-top: 4px;">${item.variantInfo}</div>` : ""}
+        <div style="font-weight: 500; color: #1a1a1a; font-size: 15px;">${escapeHtml(item.productName)}</div>
+        ${item.variantInfo ? `<div style="color: #8b7355; font-size: 13px; margin-top: 4px;">${escapeHtml(item.variantInfo)}</div>` : ""}
       </td>
       <td style="padding: 16px 0; border-bottom: 1px solid #e8e0d0; text-align: center; color: #1a1a1a;">
         ${item.quantity}
@@ -718,24 +685,24 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
     )
     .join("");
 
-  // Format shipping address
+  // Format shipping address (escape all user-supplied fields)
   const addressLines = [];
   if (shippingAddress?.firstName || shippingAddress?.lastName) {
-    addressLines.push(`${shippingAddress.firstName || ""} ${shippingAddress.lastName || ""}`.trim());
+    addressLines.push(escapeHtml(`${shippingAddress.firstName || ""} ${shippingAddress.lastName || ""}`.trim()));
   }
   if (shippingAddress?.address) {
-    addressLines.push(shippingAddress.address);
+    addressLines.push(escapeHtml(shippingAddress.address));
   }
   if (shippingAddress?.apartment) {
-    addressLines.push(shippingAddress.apartment);
+    addressLines.push(escapeHtml(shippingAddress.apartment));
   }
   if (shippingAddress?.city || shippingAddress?.state || shippingAddress?.zipCode) {
-    addressLines.push(
+    addressLines.push(escapeHtml(
       `${shippingAddress.city || ""}${shippingAddress.city && shippingAddress.state ? ", " : ""}${shippingAddress.state || ""} ${shippingAddress.zipCode || ""}`.trim()
-    );
+    ));
   }
   if (shippingAddress?.country) {
-    addressLines.push(shippingAddress.country);
+    addressLines.push(escapeHtml(shippingAddress.country));
   }
   const formattedAddress = addressLines.join("<br>");
 
@@ -753,7 +720,7 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #ffffff; padding: 50px 40px; text-align: center;">
         <div style="font-size: 12px; letter-spacing: 4px; text-transform: uppercase; color: #c9a962; margin-bottom: 16px;">Shipping Confirmation</div>
-        <h1 style="margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 2px;">${storeName}</h1>
+        <h1 style="margin: 0; font-size: 28px; font-weight: 400; letter-spacing: 2px;">${escapeHtml(storeName)}</h1>
       </div>
 
       <!-- Main Content -->
@@ -764,7 +731,7 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
           <div style="width: 60px; height: 1px; background: linear-gradient(90deg, transparent, #c9a962, transparent); margin: 0 auto 30px;"></div>
           <h2 style="margin: 0 0 16px; font-size: 24px; font-weight: 400; color: #1a1a1a; letter-spacing: 1px;">Your Order Is On Its Way</h2>
           <p style="margin: 0; color: #666666; font-size: 16px; line-height: 1.8;">
-            Dear ${customerName || "Valued Customer"},<br>
+            Dear ${escapeHtml(customerName || "Valued Customer")},<br>
             We are delighted to inform you that your order has been carefully prepared and is now on its journey to you.
           </p>
         </div>
@@ -772,7 +739,7 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
         <!-- Tracking Number Box -->
         <div style="background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 100%); border: 1px solid #e8e0d0; padding: 30px; text-align: center; margin-bottom: 40px;">
           <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #8b7355; margin-bottom: 12px;">Tracking Number</div>
-          <div style="font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: 2px; font-family: 'Courier New', monospace;">${trackingNumber}</div>
+          <div style="font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: 2px; font-family: 'Courier New', monospace;">${escapeHtml(trackingNumber)}</div>
         </div>
 
         <!-- Order Details -->
@@ -808,7 +775,7 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
           </p>
           <p style="margin: 0; color: #1a1a1a; font-size: 15px;">
             With warm regards,<br>
-            <strong style="color: #c9a962;">${storeName}</strong>
+            <strong style="color: #c9a962;">${escapeHtml(storeName)}</strong>
           </p>
         </div>
 
@@ -816,8 +783,8 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
 
       <!-- Footer -->
       <div style="background: #1a1a1a; color: #999999; padding: 30px 40px; text-align: center;">
-        <div style="font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;">Order Reference: ${orderId}</div>
-        <div style="font-size: 11px; color: #666666;">Thank you for choosing ${storeName}</div>
+        <div style="font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;">Order Reference: ${escapeHtml(orderId)}</div>
+        <div style="font-size: 11px; color: #666666;">Thank you for choosing ${escapeHtml(storeName)}</div>
       </div>
 
     </div>
@@ -834,25 +801,13 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
       html,
     };
 
-    console.log("[Email Shipping] Sending shipping confirmation with:", {
-      to: customerEmail,
-      from: FROM_ADDRESS,
-      subject: `Your Order Has Shipped - ${storeName}`,
-      htmlLength: html.length,
-    });
-
     await sgMail.send(msg);
-    console.log(`[Email Shipping] Shipping confirmation sent to ${customerEmail} for order ${orderId}`);
+    console.log(`[Email Shipping] Shipping confirmation sent for order ${orderId}`);
     return { success: true, message: "Shipping confirmation sent" };
   } catch (error) {
-    console.error(`[Email Shipping] Failed to send shipping confirmation:`, error);
-    if (error instanceof Error) {
-      console.error("[Email Shipping] Error details:", {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      });
-    }
+    console.error(`[Email Shipping] Failed to send shipping confirmation for order ${orderId}:`,
+      error instanceof Error ? error.message : "Unknown error"
+    );
     return {
       success: false,
       message: error instanceof Error ? error.message : "Failed to send email",

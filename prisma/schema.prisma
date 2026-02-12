@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum DomainStatus {
@@ -326,4 +327,67 @@ model OrderItem {
   @@index([productId])
   @@index([variantId])
   @@map("order_items")
+}
+
+// ==================== AUDIT LOGGING ====================
+
+enum AuditAction {
+  // Store
+  StoreCreated
+  StoreUpdated
+  DomainUpdated
+  DomainStatusChanged
+  // Product
+  ProductCreated
+  ProductUpdated
+  ProductDeleted
+  // Stripe
+  StripeConnected
+  StripeDisconnected
+  // Orders
+  OrderCreated
+  OrderStatusChanged
+  OrderShipped
+  // FAQ
+  FaqCreated
+  FaqUpdated
+  FaqDeleted
+  // Testimonials
+  TestimonialCreated
+  TestimonialUpdated
+  TestimonialDeleted
+  // Privacy Sections
+  PrivacySectionCreated
+  PrivacySectionUpdated
+  PrivacySectionDeleted
+  // Shipping & Returns Sections
+  ShippingSectionCreated
+  ShippingSectionUpdated
+  ShippingSectionDeleted
+  // Auth
+  LoginSuccess
+  LoginFailed
+  SignOut
+  // Payments
+  CheckoutCreated
+  WebhookProcessed
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  action       AuditAction
+  actorId      String?     // User ID (null for system/webhook actions)
+  storeId      String?     // Store scope (null for non-store actions like login)
+  resourceType String      // e.g., "Product", "Order", "Store"
+  resourceId   String?     // ID of the affected record
+  metadata     Json?       // Extra context: before/after diff, IP, user-agent, etc.
+  ipAddress    String?
+  createdAt    DateTime    @default(now())
+
+  @@index([actorId])
+  @@index([storeId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resourceType, resourceId])
+  @@map("audit_logs")
 }

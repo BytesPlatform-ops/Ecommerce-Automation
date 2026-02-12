@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { exchangeCodeForAccount } from "@/lib/stripe";
 import { saveStripeConnectAccount } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
+import { createClient } from "@/lib/supabase/server";
+import { verifyOAuthState } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get("code");
-  const state = searchParams.get("state"); // storeId
+  const state = searchParams.get("state"); // Signed state (base64url encoded)
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
@@ -28,15 +30,33 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Verify the signed state parameter to prevent CSRF
+  const storeId = verifyOAuthState(state);
+  if (!storeId) {
+    return NextResponse.redirect(
+      `${redirectUrl}?error=${encodeURIComponent("Invalid or expired authorization state. Please try again.")}`
+    );
+  }
+
+  // Authenticate the current user
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(
+      `${redirectUrl}?error=${encodeURIComponent("You must be logged in to connect a Stripe account.")}`
+    );
+  }
+
   try {
-    // Verify the store exists
-    const store = await prisma.store.findUnique({
-      where: { id: state },
+    // Verify the store exists AND belongs to the authenticated user
+    const store = await prisma.store.findFirst({
+      where: { id: storeId, ownerId: user.id },
     });
 
     if (!store) {
       return NextResponse.redirect(
-        `${redirectUrl}?error=${encodeURIComponent("Store not found")}`
+        `${redirectUrl}?error=${encodeURIComponent("Store not found or you don't have permission to connect Stripe for this store.")}`
       );
     }
 
@@ -44,7 +64,7 @@ export async function GET(request: NextRequest) {
     const { stripeAccountId } = await exchangeCodeForAccount(code);
 
     // Save the Stripe Connect ID to the store
-    await saveStripeConnectAccount(state, stripeAccountId);
+    await saveStripeConnectAccount(storeId, stripeAccountId);
 
     return NextResponse.redirect(`${redirectUrl}?success=true`);
   } catch (err) {

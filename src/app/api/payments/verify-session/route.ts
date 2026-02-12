@@ -3,13 +3,15 @@ import { stripe } from "@/lib/stripe";
 import { createOrder, updateOrderStatus } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
 import { sendOrderConfirmationEmail, sendStoreNotificationEmail } from "@/lib/email";
+import { checkRateLimit, secureLog } from "@/lib/security";
+import { logAudit, AuditAction, getRequestIp } from "@/lib/audit";
 
 /**
  * Send order confirmation emails to customer and store owner
  */
 async function sendOrderEmails(orderId: string) {
   try {
-    console.log(`[Session Verify] Sending order emails for order: ${orderId}`);
+    secureLog.info("[Session Verify] Sending order emails", { orderId });
     
     // Fetch the order with all details
     const order = await prisma.order.findUnique({
@@ -21,7 +23,7 @@ async function sendOrderEmails(orderId: string) {
     });
 
     if (!order) {
-      console.error(`[Session Verify Email] Order not found: ${orderId}`);
+      secureLog.error("[Session Verify Email] Order not found", undefined, { orderId });
       return;
     }
 
@@ -35,7 +37,6 @@ async function sendOrderEmails(orderId: string) {
 
     // Send customer confirmation email
     if (order.customerEmail && order.customerEmail !== "unknown@email.com") {
-      console.log(`[Session Verify Email] Sending customer email to: ${order.customerEmail}`);
       const customerEmailResult = await sendOrderConfirmationEmail({
         orderId: order.id,
         customerName: order.customerName,
@@ -47,17 +48,16 @@ async function sendOrderEmails(orderId: string) {
       });
 
       if (customerEmailResult.success) {
-        console.log(`[Session Verify Email] ✓ Customer email sent to ${order.customerEmail}`);
+        secureLog.info("[Session Verify Email] Customer email sent", { orderId });
       } else {
-        console.error(`[Session Verify Email] ✗ Failed to send customer email:`, customerEmailResult.message);
+        secureLog.error("[Session Verify Email] Failed to send customer email", undefined, { message: customerEmailResult.message });
       }
     } else {
-      console.warn(`[Session Verify Email] No valid customer email for order ${orderId}`);
+      secureLog.info("[Session Verify Email] No valid customer email for order", { orderId });
     }
 
     // Send store notification email if store has contact email configured
     if (order.store.contactEmail) {
-      console.log(`[Session Verify Email] Sending store notification to: ${order.store.contactEmail}`);
       const storeEmailResult = await sendStoreNotificationEmail(
         order.store.contactEmail,
         {
@@ -72,15 +72,13 @@ async function sendOrderEmails(orderId: string) {
       );
 
       if (storeEmailResult.success) {
-        console.log(`[Session Verify Email] ✓ Store notification sent to ${order.store.contactEmail}`);
+        secureLog.info("[Session Verify Email] Store notification sent", { orderId });
       } else {
-        console.error(`[Session Verify Email] ✗ Failed to send store notification:`, storeEmailResult.message);
+        secureLog.error("[Session Verify Email] Failed to send store notification", undefined, { message: storeEmailResult.message });
       }
-    } else {
-      console.warn(`[Session Verify Email] Store has no contact email configured for store: ${order.store.storeName}`);
     }
   } catch (error) {
-    console.error(`[Session Verify Email] Error sending emails:`, error);
+    secureLog.error("[Session Verify Email] Error sending emails", error, { orderId });
     // Don't throw - email failures shouldn't break the order flow
   }
 }
@@ -92,13 +90,20 @@ async function sendOrderEmails(orderId: string) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP: max 15 verify attempts per minute
+    const ip = getRequestIp(request);
+    const rateLimit = checkRateLimit(`verify-session:${ip}`, 15, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
+      );
+    }
+
     const body = await request.json();
     const { sessionId, storeId }: { sessionId: string; storeId: string } = body;
 
-    console.log("[Session Verify] Received request:", { sessionId, storeId });
-
     if (!sessionId || !storeId) {
-      console.log("[Session Verify] Missing sessionId or storeId");
       return NextResponse.json(
         { error: "Missing sessionId or storeId" },
         { status: 400 }
@@ -127,7 +132,7 @@ export async function POST(request: NextRequest) {
     if (existingOrder) {
       // If order exists but is still Pending, update to Completed and reduce stock
       if (existingOrder.status === "Pending") {
-        console.log("[Session Verify] Existing order is Pending, updating to Completed:", existingOrder.id);
+        secureLog.info("[Session Verify] Updating pending order to Completed", { orderId: existingOrder.id });
         await updateOrderStatus(existingOrder.stripePaymentId, "Completed", "Paid");
         
         // Send order confirmation emails for the now-completed order
@@ -157,7 +162,7 @@ export async function POST(request: NextRequest) {
     const itemsJson = session.metadata?.items;
     const shippingInfoJson = session.metadata?.shippingInfo;
 
-    console.log("[Session Verify] Session metadata:", session.metadata);
+    console.log("[Session Verify] Session metadata keys:", Object.keys(session.metadata || {}));
 
     if (!itemsJson) {
       return NextResponse.json(
@@ -179,9 +184,8 @@ export async function POST(request: NextRequest) {
     if (shippingInfoJson) {
       try {
         shippingInfo = JSON.parse(shippingInfoJson);
-        console.log("[Session Verify] Parsed shipping info:", shippingInfo);
       } catch (error) {
-        console.error("[Session Verify] Failed to parse shipping info:", error);
+        secureLog.error("[Session Verify] Failed to parse shipping info", error);
       }
     }
 
@@ -216,7 +220,7 @@ export async function POST(request: NextRequest) {
       } : undefined,
     });
 
-    console.log("[Session Verify] Order created:", order.id);
+    secureLog.info("[Session Verify] Order created", { orderId: order.id });
 
     // Send order confirmation emails
     await sendOrderEmails(order.id);
@@ -227,7 +231,7 @@ export async function POST(request: NextRequest) {
       alreadyExists: false 
     });
   } catch (error) {
-    console.error("Error verifying session:", error);
+    secureLog.error("[Session Verify] Error verifying session", error);
     return NextResponse.json(
       { error: "Failed to verify session" },
       { status: 500 }

@@ -2,11 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createCheckoutSession } from "@/lib/stripe";
 import { validateAddress } from "@/lib/address-validation";
+import { checkRateLimit } from "@/lib/security";
+import { logAudit, AuditAction, getRequestIp } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit by IP: max 10 checkout attempts per minute
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const rateLimit = checkRateLimit(`checkout:${ip}`, 10, 60000);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.resetIn / 1000)) } }
+      );
+    }
+
     const body = await request.json();
-    console.log("[Checkout API] Received request body:", JSON.stringify(body, null, 2));
     
     const {
       storeId,
@@ -34,8 +45,6 @@ export async function POST(request: NextRequest) {
         phone: string;
       };
     } = body;
-
-    console.log("[Checkout API] Parsed shipping info:", shippingInfo);
 
     if (!storeId || !items || items.length === 0) {
       return NextResponse.json(
@@ -107,6 +116,9 @@ export async function POST(request: NextRequest) {
         id: { in: productIds },
         storeId: storeId,
       },
+      include: {
+        variants: true,
+      },
     });
 
     if (products.length !== productIds.length) {
@@ -116,12 +128,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build line items
+    // Build line items — use variant-specific price when available
     const lineItems = items.map((item) => {
       const product = products.find((p) => p.id === item.productId)!;
+      let unitAmount = Math.round(Number(product.price) * 100); // Default: base price in cents
+
+      // If a variant is specified and has its own price, use that instead
+      if (item.variantId) {
+        const variant = product.variants.find((v) => v.id === item.variantId);
+        if (variant && variant.price !== null) {
+          unitAmount = Math.round(Number(variant.price) * 100);
+        }
+      }
+
       return {
         name: product.name,
-        unitAmount: Math.round(Number(product.price) * 100), // Convert to cents
+        unitAmount,
         quantity: item.quantity,
         productId: product.id,
         variantId: item.variantId || null,
@@ -133,9 +155,6 @@ export async function POST(request: NextRequest) {
     const requestHost = request.headers.get("host") || "";
     const requestOrigin = request.headers.get("origin") || "";
     
-    console.log("[Checkout API] Request host:", requestHost);
-    console.log("[Checkout API] Request origin:", requestOrigin);
-    
     // Check if the request is from a custom domain (not localhost and not the server domain)
     const isCustomDomain = !requestHost.includes("localhost") && 
                           !requestHost.includes("127.0.0.1") &&
@@ -146,12 +165,10 @@ export async function POST(request: NextRequest) {
     if (isCustomDomain && requestOrigin) {
       // Use the custom domain origin
       storeUrl = requestOrigin;
-      console.log("[Checkout API] Using custom domain URL:", storeUrl);
     } else {
       // Use the server URL with nested route
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
       storeUrl = `${baseUrl}/stores/${store.subdomainSlug}`;
-      console.log("[Checkout API] Using server URL:", storeUrl);
     }
     
     const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}&store_id=${storeId}`;
@@ -168,12 +185,19 @@ export async function POST(request: NextRequest) {
       shippingInfo,
     });
 
-    console.log("[Checkout API] Stripe session created:", session.id);
-    console.log("[Checkout API] Session URL:", session.url);
+    await logAudit({
+      action: AuditAction.CheckoutCreated,
+      actorId: null,
+      storeId,
+      resourceType: "Checkout",
+      resourceId: session.id,
+      ipAddress: getRequestIp(request),
+      metadata: { itemCount: lineItems.length },
+    });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    console.error("Error creating checkout session:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to create checkout session" },
       { status: 500 }

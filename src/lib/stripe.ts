@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { createOAuthState } from "@/lib/security";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
@@ -10,7 +11,8 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 /**
- * Get the Stripe Connect OAuth URL for a store owner to connect their account
+ * Get the Stripe Connect OAuth URL for a store owner to connect their account.
+ * Uses a signed state parameter (HMAC) to prevent CSRF and store ID tampering.
  */
 export function getStripeConnectOAuthUrl(storeId: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
@@ -20,12 +22,15 @@ export function getStripeConnectOAuthUrl(storeId: string): string {
     throw new Error("NEXT_PUBLIC_STRIPE_CONNECT_CLIENT_ID is not set in environment variables");
   }
   
+  // Create a signed state with HMAC to prevent CSRF attacks
+  const signedState = createOAuthState(storeId);
+  
   const params = new URLSearchParams({
     response_type: "code",
     client_id: process.env.NEXT_PUBLIC_STRIPE_CONNECT_CLIENT_ID,
     scope: "read_write",
     redirect_uri: redirectUri,
-    state: storeId, // Pass storeId to identify which store to connect
+    state: signedState,
   });
 
   return `https://connect.stripe.com/oauth/authorize?${params.toString()}`;
@@ -172,10 +177,7 @@ export async function createCheckoutSession({
   // Add shipping info to metadata if provided
   if (shippingInfo) {
     sessionMetadata.shippingInfo = JSON.stringify(shippingInfo);
-    console.log("[Stripe] Adding shipping info to metadata:", shippingInfo);
   }
-
-  console.log("[Stripe] Session metadata:", sessionMetadata);
 
   const session = await stripe.checkout.sessions.create(
     {

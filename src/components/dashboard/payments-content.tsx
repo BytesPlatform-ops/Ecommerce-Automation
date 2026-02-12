@@ -263,21 +263,28 @@ export default function PaymentsContent({
     }
   }
 
-  function handleConnect() {
-    // Redirect to Stripe Connect OAuth - build URL client-side
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const redirectUri = `${baseUrl}/api/payments/connect/callback`;
-    const clientId = process.env.NEXT_PUBLIC_STRIPE_CONNECT_CLIENT_ID || "";
+  async function handleConnect() {
+    // Request signed OAuth URL from server to prevent CSRF
+    try {
+      setError(null);
+      const response = await fetch("/api/payments/connect/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeId }),
+      });
 
-    const params = new URLSearchParams({
-      response_type: "code",
-      client_id: clientId,
-      scope: "read_write",
-      redirect_uri: redirectUri,
-      state: storeId,
-    });
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error || "Failed to initiate Stripe Connect");
+        return;
+      }
 
-    window.location.href = `https://connect.stripe.com/oauth/authorize?${params.toString()}`;
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (err) {
+      console.error("Error initiating Stripe Connect:", err);
+      setError("Failed to initiate Stripe Connect");
+    }
   }
 
   function formatCurrency(amount: number | string, currency = "usd") {
