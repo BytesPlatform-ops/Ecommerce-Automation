@@ -9,6 +9,8 @@ interface StorefrontFooterProps {
   showFaq?: boolean;
   privacyPath?: string;
   showPrivacy?: boolean;
+  shippingReturnsPath?: string;
+  showShippingReturns?: boolean;
   instagramUrl?: string;
   facebookUrl?: string;
   twitterUrl?: string;
@@ -25,6 +27,8 @@ export function StorefrontFooter({
   showFaq,
   privacyPath,
   showPrivacy,
+  shippingReturnsPath,
+  showShippingReturns,
   instagramUrl,
   facebookUrl,
   twitterUrl,
@@ -100,11 +104,13 @@ export function StorefrontFooter({
           <div>
             <p className="text-overline mb-4">Support</p>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
-                  Shipping & Returns
-                </a>
-              </li>
+              {showShippingReturns && shippingReturnsPath && (
+                <li>
+                  <a href={shippingReturnsPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                    Shipping & Returns
+                  </a>
+                </li>
+              )}
               {showFaq && faqPath && (
                 <li>
                   <a href={faqPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">

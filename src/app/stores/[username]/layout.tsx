@@ -44,6 +44,7 @@ export default async function StorefrontLayout({
   const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
   const faqPath = onCustomDomain ? "/faq" : `/stores/${username}/faq`;
   const privacyPath = onCustomDomain ? "/privacy" : `/stores/${username}/privacy`;
+  const shippingReturnsPath = onCustomDomain ? "/shipping-returns" : `/stores/${username}/shipping-returns`;
   const contactPath = onCustomDomain ? "/contact" : `/stores/${username}/contact`;
 
   const faqCount = await prisma.storeFaq.count({
@@ -51,6 +52,10 @@ export default async function StorefrontLayout({
   });
 
   const privacyCount = await prisma.storePrivacySection.count({
+    where: { storeId: store.id },
+  });
+
+  const shippingReturnsCount = await prisma.storeShippingReturnsSection.count({
     where: { storeId: store.id },
   });
 
@@ -136,6 +141,8 @@ export default async function StorefrontLayout({
             showFaq={faqCount > 0}
             privacyPath={privacyPath}
             showPrivacy={privacyCount > 0}
+            shippingReturnsPath={shippingReturnsPath}
+            showShippingReturns={shippingReturnsCount > 0}
             instagramUrl={(store as any).instagramUrl}
             facebookUrl={(store as any).facebookUrl}
             twitterUrl={(store as any).twitterUrl}

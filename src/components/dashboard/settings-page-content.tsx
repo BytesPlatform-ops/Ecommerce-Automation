@@ -1,20 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Store, StoreFaq, StorePrivacySection, StoreTestimonial } from "@/types/database";
+import { Store, StoreFaq, StorePrivacySection, StoreShippingReturnsSection, StoreTestimonial } from "@/types/database";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
 import { FaqSettings } from "@/components/dashboard/faq-settings";
 import { PrivacyPolicySettings } from "@/components/dashboard/privacy-policy-settings";
+import { ShippingReturnsSettings } from "@/components/dashboard/shipping-returns-settings";
 import { TestimonialsSettings } from "@/components/dashboard/testimonials-settings";
-import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield, MessageCircle } from "lucide-react";
+import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield, MessageCircle, Truck } from "lucide-react";
 import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
   store: Store;
   faqs: StoreFaq[];
   privacySections: StorePrivacySection[];
+  shippingReturnsSections: StoreShippingReturnsSection[];
   testimonials: StoreTestimonial[];
   domainStore: {
     id: string;
@@ -56,6 +58,12 @@ const tabs = [
     description: "Manage customer testimonials displayed on your storefront",
   },
   {
+    id: "shipping",
+    label: "Shipping & Returns",
+    icon: Truck,
+    description: "Manage shipping and return policies for your store",
+  },
+  {
     id: "privacy",
     label: "Privacy Policy",
     icon: Shield,
@@ -68,6 +76,7 @@ export function SettingsPageContent({
   domainStore,
   faqs,
   privacySections,
+  shippingReturnsSections,
   testimonials,
 }: SettingsPageContentProps) {
   const [activeTab, setActiveTab] = useState("store");
@@ -137,6 +146,9 @@ export function SettingsPageContent({
           {activeTab === "faq" && <FaqSettings storeId={store.id} faqs={faqs} />}
           {activeTab === "testimonials" && (
             <TestimonialsSettings storeId={store.id} testimonials={testimonials} />
+          )}
+          {activeTab === "shipping" && (
+            <ShippingReturnsSettings storeId={store.id} sections={shippingReturnsSections} />
           )}
           {activeTab === "privacy" && (
             <PrivacyPolicySettings storeId={store.id} sections={privacySections} />

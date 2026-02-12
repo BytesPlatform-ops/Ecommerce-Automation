@@ -29,6 +29,11 @@ export default async function SettingsPage() {
     orderBy: { sortOrder: "asc" },
   });
 
+  const shippingReturnsSections = await prisma.storeShippingReturnsSection.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+  });
+
   const testimonials = await prisma.storeTestimonial.findMany({
     where: { storeId: store.id },
     orderBy: { sortOrder: "asc" },
@@ -48,6 +53,7 @@ export default async function SettingsPage() {
       domainStore={domainStore}
       faqs={faqs}
       privacySections={privacySections}
+      shippingReturnsSections={shippingReturnsSections}
       testimonials={testimonials}
     />
   );
