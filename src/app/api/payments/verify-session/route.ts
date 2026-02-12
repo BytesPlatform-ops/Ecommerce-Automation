@@ -2,6 +2,88 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createOrder, updateOrderStatus } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
+import { sendOrderConfirmationEmail, sendStoreNotificationEmail } from "@/lib/email";
+
+/**
+ * Send order confirmation emails to customer and store owner
+ */
+async function sendOrderEmails(orderId: string) {
+  try {
+    console.log(`[Session Verify] Sending order emails for order: ${orderId}`);
+    
+    // Fetch the order with all details
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        store: true,
+      },
+    });
+
+    if (!order) {
+      console.error(`[Session Verify Email] Order not found: ${orderId}`);
+      return;
+    }
+
+    // Format order items for email
+    const emailItems = order.items.map((item) => ({
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice.toString(),
+      variantInfo: item.variantInfo,
+    }));
+
+    // Send customer confirmation email
+    if (order.customerEmail && order.customerEmail !== "unknown@email.com") {
+      console.log(`[Session Verify Email] Sending customer email to: ${order.customerEmail}`);
+      const customerEmailResult = await sendOrderConfirmationEmail({
+        orderId: order.id,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        items: emailItems,
+        total: order.total.toString(),
+        currency: order.currency,
+        storeName: order.store.storeName,
+      });
+
+      if (customerEmailResult.success) {
+        console.log(`[Session Verify Email] ✓ Customer email sent to ${order.customerEmail}`);
+      } else {
+        console.error(`[Session Verify Email] ✗ Failed to send customer email:`, customerEmailResult.message);
+      }
+    } else {
+      console.warn(`[Session Verify Email] No valid customer email for order ${orderId}`);
+    }
+
+    // Send store notification email if store has contact email configured
+    if (order.store.contactEmail) {
+      console.log(`[Session Verify Email] Sending store notification to: ${order.store.contactEmail}`);
+      const storeEmailResult = await sendStoreNotificationEmail(
+        order.store.contactEmail,
+        {
+          orderId: order.id,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          items: emailItems,
+          total: order.total.toString(),
+          currency: order.currency,
+          storeName: order.store.storeName,
+        }
+      );
+
+      if (storeEmailResult.success) {
+        console.log(`[Session Verify Email] ✓ Store notification sent to ${order.store.contactEmail}`);
+      } else {
+        console.error(`[Session Verify Email] ✗ Failed to send store notification:`, storeEmailResult.message);
+      }
+    } else {
+      console.warn(`[Session Verify Email] Store has no contact email configured for store: ${order.store.storeName}`);
+    }
+  } catch (error) {
+    console.error(`[Session Verify Email] Error sending emails:`, error);
+    // Don't throw - email failures shouldn't break the order flow
+  }
+}
 
 /**
  * Verify a checkout session and create order if it doesn't exist
@@ -47,6 +129,9 @@ export async function POST(request: NextRequest) {
       if (existingOrder.status === "Pending") {
         console.log("[Session Verify] Existing order is Pending, updating to Completed:", existingOrder.id);
         await updateOrderStatus(existingOrder.stripePaymentId, "Completed", "Paid");
+        
+        // Send order confirmation emails for the now-completed order
+        await sendOrderEmails(existingOrder.id);
       }
       return NextResponse.json({ 
         success: true, 
@@ -132,6 +217,9 @@ export async function POST(request: NextRequest) {
     });
 
     console.log("[Session Verify] Order created:", order.id);
+
+    // Send order confirmation emails
+    await sendOrderEmails(order.id);
 
     return NextResponse.json({ 
       success: true, 
