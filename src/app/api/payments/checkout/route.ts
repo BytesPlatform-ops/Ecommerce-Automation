@@ -129,8 +129,31 @@ export async function POST(request: NextRequest) {
     });
 
     // Determine URLs for success and cancel
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
-    const storeUrl = `${baseUrl}/stores/${store.subdomainSlug}`;
+    // Check if request is from a custom domain
+    const requestHost = request.headers.get("host") || "";
+    const requestOrigin = request.headers.get("origin") || "";
+    
+    console.log("[Checkout API] Request host:", requestHost);
+    console.log("[Checkout API] Request origin:", requestOrigin);
+    
+    // Check if the request is from a custom domain (not localhost and not the server domain)
+    const isCustomDomain = !requestHost.includes("localhost") && 
+                          !requestHost.includes("127.0.0.1") &&
+                          requestHost !== process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "");
+    
+    let storeUrl: string;
+    
+    if (isCustomDomain && requestOrigin) {
+      // Use the custom domain origin
+      storeUrl = requestOrigin;
+      console.log("[Checkout API] Using custom domain URL:", storeUrl);
+    } else {
+      // Use the server URL with nested route
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
+      storeUrl = `${baseUrl}/stores/${store.subdomainSlug}`;
+      console.log("[Checkout API] Using server URL:", storeUrl);
+    }
+    
     const successUrl = `${storeUrl}?checkout=success&session_id={CHECKOUT_SESSION_ID}&store_id=${storeId}`;
     const cancelUrl = `${storeUrl}?checkout=cancelled`;
 

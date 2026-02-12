@@ -191,6 +191,73 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   try {
     const order = await createOrder(orderData);
     console.log("[Webhook] Order created successfully:", order.id, "with status: Pending");
+
+    // Only send emails if payment is already confirmed (payment_status = "paid")
+    // Otherwise, emails will be sent when payment_intent.succeeded event fires
+    if (session.payment_status === "paid") {
+      console.log("[Webhook] Payment already confirmed (status: paid), sending emails immediately for order:", order.id);
+
+      try {
+        // Fetch the order with store details for email
+        const orderWithStore = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: {
+            items: true,
+            store: true,
+          },
+        });
+
+        if (!orderWithStore) {
+          console.error("[Webhook] Failed to fetch order for email sending:", order.id);
+        } else {
+          // Format items for email
+          const emailItems = orderWithStore.items.map((item) => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice.toString(),
+            variantInfo: item.variantInfo,
+          }));
+
+          // Send customer confirmation email
+          console.log("[Webhook] Sending customer email to:", orderWithStore.customerEmail);
+          const customerEmailResult = await sendOrderConfirmationEmail({
+            orderId: orderWithStore.id,
+            customerName: orderWithStore.customerName,
+            customerEmail: orderWithStore.customerEmail,
+            items: emailItems,
+            total: orderWithStore.total.toString(),
+            currency: orderWithStore.currency,
+            storeName: orderWithStore.store.storeName,
+          });
+          console.log("[Webhook] Customer email result:", customerEmailResult);
+
+          // Send store notification email if store has contact email
+          if (orderWithStore.store.contactEmail) {
+            console.log("[Webhook] Sending store notification to:", orderWithStore.store.contactEmail);
+            const storeEmailResult = await sendStoreNotificationEmail(
+              orderWithStore.store.contactEmail,
+              {
+                orderId: orderWithStore.id,
+                customerName: orderWithStore.customerName,
+                customerEmail: orderWithStore.customerEmail,
+                items: emailItems,
+                total: orderWithStore.total.toString(),
+                currency: orderWithStore.currency,
+                storeName: orderWithStore.store.storeName,
+              }
+            );
+            console.log("[Webhook] Store email result:", storeEmailResult);
+          } else {
+            console.log("[Webhook] No store contact email configured for store:", orderWithStore.storeId);
+          }
+        }
+      } catch (emailError) {
+        console.error("[Webhook] Error sending emails:", emailError);
+        // Don't fail the webhook if emails fail - the order is already created
+      }
+    } else {
+      console.log("[Webhook] Payment not yet confirmed (status: " + session.payment_status + "), emails will be sent on payment_intent.succeeded event");
+    }
   } catch (error) {
     console.error("[Webhook] Failed to create order", {
       error: error instanceof Error ? error.message : String(error),
