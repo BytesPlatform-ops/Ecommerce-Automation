@@ -12,26 +12,27 @@ export async function GET(request: NextRequest) {
   let normalized = hostname.trim().toLowerCase().replace(/^www\./, "").split(":")[0];
 
   try {
-    // Query with timeout to prevent hanging
-    const store = await Promise.race([
-      prisma.store.findFirst({
-        where: {
-          domainStatus: "Live",
-          OR: [
-            { domain: normalized },
-            { domain: `www.${normalized}` },
-            { domain: hostname },
-          ],
-        },
-        select: { subdomainSlug: true },
-      }),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)), // 4s timeout
-    ]);
+    const store = await prisma.store.findFirst({
+      where: {
+        domainStatus: "Live",
+        OR: [
+          { domain: normalized },
+          { domain: `www.${normalized}` },
+          { domain: hostname },
+        ],
+      },
+      select: { subdomainSlug: true },
+    });
+
+    if (store) {
+      console.log(`[Domain Lookup] Found: ${hostname} → ${store.subdomainSlug}`);
+    } else {
+      console.log(`[Domain Lookup] Not found: ${hostname} (normalized: ${normalized})`);
+    }
 
     return NextResponse.json({ slug: store?.subdomainSlug ?? null });
   } catch (error) {
     console.error("[Domain Lookup API] Error:", error);
-    // Return null instead of 500 so middleware can gracefully fail over
-    return NextResponse.json({ slug: null }, { status: 200 });
+    return NextResponse.json({ slug: null }, { status: 500 });
   }
 }
