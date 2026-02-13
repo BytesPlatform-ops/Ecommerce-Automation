@@ -73,7 +73,16 @@ async function getStoreByDomain(domain: string, request: NextRequest): Promise<s
 
     // Build absolute URL pointed at the same origin
     const apiUrl = new URL(`/api/domain-lookup?hostname=${encodeURIComponent(domain)}`, request.url);
-    const res = await fetch(apiUrl, { cache: "no-store" });
+    
+    // Add 5 second timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const res = await fetch(apiUrl, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       console.error("[Domain Lookup] API returned", res.status);
