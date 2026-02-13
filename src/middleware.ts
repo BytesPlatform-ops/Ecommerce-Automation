@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-import { prisma } from "@/lib/prisma";
 
 // Platform domains - these are YOUR main domains where the landing page lives
 const PLATFORM_DOMAINS = [
@@ -61,8 +60,8 @@ function normalizeDomainForLookup(domain: string): string {
   return normalized;
 }
 
-// Lookup store by custom domain — direct Prisma query with in-memory cache
-async function getStoreByDomain(domain: string): Promise<string | null> {
+// Lookup store by custom domain — fetch internal API with in-memory cache
+async function getStoreByDomain(domain: string, request: NextRequest): Promise<string | null> {
   try {
     const normalizedDomain = normalizeDomainForLookup(domain);
 
@@ -72,20 +71,17 @@ async function getStoreByDomain(domain: string): Promise<string | null> {
       return cached;
     }
 
-    // Direct DB query (no HTTP self-fetch)
-    const store = await prisma.store.findFirst({
-      where: {
-        domainStatus: "Live",
-        OR: [
-          { domain: normalizedDomain },
-          { domain: `www.${normalizedDomain}` },
-          { domain: domain },
-        ],
-      },
-      select: { subdomainSlug: true },
-    });
+    // Build absolute URL pointed at the same origin
+    const apiUrl = new URL(`/api/domain-lookup?hostname=${encodeURIComponent(domain)}`, request.url);
+    const res = await fetch(apiUrl, { cache: "no-store" });
 
-    const slug = store?.subdomainSlug ?? null;
+    if (!res.ok) {
+      console.error("[Domain Lookup] API returned", res.status);
+      return null;
+    }
+
+    const data = await res.json();
+    const slug: string | null = data.slug ?? null;
     setCachedSlug(normalizedDomain, slug);
     return slug;
   } catch (error) {
@@ -121,7 +117,7 @@ export async function middleware(request: NextRequest) {
   // If we get here, this is a custom domain (e.g., www.example.com)
   // We need to find which store it belongs to and rewrite to /stores/[username]
 
-  const storeSlug = await getStoreByDomain(hostname);
+  const storeSlug = await getStoreByDomain(hostname, request);
 
   if (storeSlug) {
     // Build the rewrite path
