@@ -13,29 +13,25 @@ const PLATFORM_DOMAINS = [
     : []),
 ];
 
-// ─── In-memory domain → slug cache (TTL: 24 hours) ───
-const DOMAIN_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours (domain mappings are stable)
-const domainCache = new Map<string, { slug: string | null; expires: number }>();
-
-function getCachedSlug(domain: string): string | null | undefined {
-  const entry = domainCache.get(domain);
-  if (!entry) return undefined; // cache miss
-  if (Date.now() > entry.expires) {
-    domainCache.delete(domain);
-    return undefined; // expired
+// Get the platform URL for internal API calls
+function getPlatformUrl(): string {
+  // Check for explicit platform URL first
+  if (process.env.NEXT_PUBLIC_PLATFORM_URL) {
+    const url = process.env.NEXT_PUBLIC_PLATFORM_URL;
+    return url.startsWith("http") ? url : `https://${url}`;
   }
-  return entry.slug;
-}
-
-function setCachedSlug(domain: string, slug: string | null) {
-  domainCache.set(domain, { slug, expires: Date.now() + DOMAIN_CACHE_TTL });
-  // Evict stale entries periodically (keep cache small)
-  if (domainCache.size > 200) {
-    const now = Date.now();
-    for (const [key, val] of domainCache) {
-      if (now > val.expires) domainCache.delete(key);
+  
+  // Check if we're in production (Render environment)
+  if (process.env.RENDER === "true" || process.env.NODE_ENV === "production") {
+    // Use the configured app URL
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (appUrl) {
+      return appUrl.startsWith("http") ? appUrl : `https://${appUrl}`;
     }
   }
+  
+  // Default to localhost for development
+  return "http://localhost:3000";
 }
 
 // Check if this is a platform domain
@@ -60,32 +56,44 @@ function normalizeDomainForLookup(domain: string): string {
   return normalized;
 }
 
-// Lookup store by custom domain — fetch internal API with in-memory cache
-async function getStoreByDomain(domain: string, request: NextRequest): Promise<string | null> {
+// Lookup store by custom domain using internal API (Prisma - bypasses RLS)
+async function getStoreByDomain(domain: string): Promise<string | null> {
   try {
     const normalizedDomain = normalizeDomainForLookup(domain);
+    console.log(`[Domain Lookup] Looking up domain: "${normalizedDomain}" (original: "${domain}")`);
 
-    // Check in-memory cache first
-    const cached = getCachedSlug(normalizedDomain);
-    if (cached !== undefined) {
-      return cached;
-    }
+    // Call the internal API endpoint which uses Prisma (bypasses RLS issues)
+    const platformUrl = getPlatformUrl();
+    const apiUrl = `${platformUrl}/api/stores/by-domain?domain=${encodeURIComponent(normalizedDomain)}`;
+    
+    console.log(`[Domain Lookup] Calling API: ${apiUrl}`);
+    
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // Short timeout to avoid blocking
+      signal: AbortSignal.timeout(5000),
+    });
 
-    // Build absolute URL pointed at the same origin
-    const apiUrl = new URL(`/api/domain-lookup?hostname=${encodeURIComponent(domain)}`, request.url);
-    const res = await fetch(apiUrl, { cache: "no-store" });
-
-    if (!res.ok) {
-      console.error("[Domain Lookup] API returned", res.status);
+    if (!response.ok) {
+      console.log(`[Domain Lookup] API returned ${response.status} for domain: "${normalizedDomain}"`);
       return null;
     }
 
-    const data = await res.json();
-    const slug: string | null = data.slug ?? null;
-    setCachedSlug(normalizedDomain, slug);
-    return slug;
+    const data = await response.json();
+    
+    if (!data.store) {
+      console.log(`[Domain Lookup] No store found with domain: "${normalizedDomain}"`);
+      return null;
+    }
+
+    console.log(`[Domain Lookup] Found store: slug="${data.store.subdomainSlug}", status="${data.store.domainStatus}"`);
+    
+    return data.store.subdomainSlug;
   } catch (error) {
-    console.error("[Domain Lookup] Error:", error);
+    console.error("[Domain Lookup] Exception looking up store by domain:", error);
     return null;
   }
 }
@@ -117,7 +125,7 @@ export async function middleware(request: NextRequest) {
   // If we get here, this is a custom domain (e.g., www.example.com)
   // We need to find which store it belongs to and rewrite to /stores/[username]
 
-  const storeSlug = await getStoreByDomain(hostname, request);
+  const storeSlug = await getStoreByDomain(hostname);
 
   if (storeSlug) {
     // Build the rewrite path
