@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2, CheckCircle } from "lucide-react";
+import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2, CheckCircle, Copy, Check } from "lucide-react";
 import { markOrderAsShipped } from "@/lib/actions";
 
 function formatCurrency(amount: number | string, currency = "usd") {
@@ -70,8 +70,15 @@ export function OrderDetailsModal({
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [shippingSuccess, setShippingSuccess] = useState<{ trackingNumber: string } | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
+  const [copiedOrderId, setCopiedOrderId] = useState(false);
 
   if (!isOpen) return null;
+
+  const copyOrderId = () => {
+    navigator.clipboard.writeText(order.id);
+    setCopiedOrderId(true);
+    setTimeout(() => setCopiedOrderId(false), 2000);
+  };
 
   const handleMarkAsShipped = async () => {
     setIsShipping(true);
@@ -138,9 +145,26 @@ export function OrderDetailsModal({
           <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white px-6 py-6 flex items-start justify-between gap-4">
             <div className="flex-1">
               <h2 className="text-2xl font-bold">Order Details</h2>
-              <p className="text-blue-100 text-sm mt-2 font-mono break-all">
-                ID: {order.id}
-              </p>
+              <div className="mt-4 bg-white/15 rounded-lg p-3 backdrop-blur-sm">
+                <p className="text-xs text-blue-100 uppercase tracking-widest font-semibold mb-2">Order ID</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-mono text-white break-all flex-1">
+                    {order.id}
+                  </p>
+                  <button
+                    onClick={copyOrderId}
+                    className="flex-shrink-0 p-2 rounded-lg hover:bg-white/20 transition-colors"
+                    title="Copy order ID"
+                    aria-label="Copy order ID"
+                  >
+                    {copiedOrderId ? (
+                      <Check className="h-5 w-5 text-green-300" />
+                    ) : (
+                      <Copy className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
             <button
               onClick={onClose}
