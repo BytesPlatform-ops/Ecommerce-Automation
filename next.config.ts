@@ -71,6 +71,10 @@ const nextConfig: NextConfig = {
   },
   // Disable x-powered-by header
   poweredByHeader: false,
+  // Optimize barrel-file imports for large icon/component libraries
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

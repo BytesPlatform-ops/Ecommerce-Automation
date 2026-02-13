@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { ContactSection } from "@/components/storefront/contact-section";
+import { getStoreBySlug } from "@/lib/store-cache";
 
 export default async function StorefrontContactPage({
   params,
@@ -9,9 +9,8 @@ export default async function StorefrontContactPage({
 }) {
   const { username } = await params;
 
-  const store = await prisma.store.findUnique({
-    where: { subdomainSlug: username },
-  });
+  // Fetch store (cached — shared with layout.tsx)
+  const store = await getStoreBySlug(username);
 
   if (!store) {
     notFound();

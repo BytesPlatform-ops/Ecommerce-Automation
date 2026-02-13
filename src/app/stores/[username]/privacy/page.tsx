@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import { getStoreBySlug } from "@/lib/store-cache";
 
 export default async function StorefrontPrivacyPage({
   params,
@@ -11,9 +12,8 @@ export default async function StorefrontPrivacyPage({
 }) {
   const { username } = await params;
 
-  const store = await prisma.store.findUnique({
-    where: { subdomainSlug: username },
-  });
+  // Fetch store (cached — shared with layout.tsx)
+  const store = await getStoreBySlug(username);
 
   if (!store) {
     notFound();

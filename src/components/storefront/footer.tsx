@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Heart, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 
 /** Only allow http/https URLs to prevent javascript: injection */
@@ -18,6 +19,7 @@ function safeSocialUrl(url: string | undefined): string | null {
 interface StorefrontFooterProps {
   storeName: string;
   slug: string;
+  homePath: string;
   aboutPath: string;
   contactPath: string;
   faqPath?: string;
@@ -36,6 +38,7 @@ interface StorefrontFooterProps {
 export function StorefrontFooter({ 
   storeName, 
   slug, 
+  homePath,
   aboutPath,
   contactPath,
   faqPath,
@@ -105,19 +108,19 @@ export function StorefrontFooter({
             <p className="text-overline mb-4">Navigation</p>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={homePath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#products" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={`${homePath}#products`} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Shop
-                </a>
+                </Link>
               </li>
               <li>
-                <a href={aboutPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={aboutPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   About
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -128,29 +131,29 @@ export function StorefrontFooter({
             <ul className="space-y-3">
               {showShippingReturns && shippingReturnsPath && (
                 <li>
-                  <a href={shippingReturnsPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link href={shippingReturnsPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                     Shipping & Returns
-                  </a>
+                  </Link>
                 </li>
               )}
               {showFaq && faqPath && (
                 <li>
-                  <a href={faqPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link href={faqPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                     FAQ
-                  </a>
+                  </Link>
                 </li>
               )}
               {showPrivacy && privacyPath && (
                 <li>
-                  <a href={privacyPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <Link href={privacyPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
               )}
               <li>
-                <a href={contactPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={contactPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

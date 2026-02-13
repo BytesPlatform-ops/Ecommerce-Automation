@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { prisma } from "@/lib/prisma";
 
 // Platform domains - these are YOUR main domains where the landing page lives
 const PLATFORM_DOMAINS = [
@@ -13,25 +14,29 @@ const PLATFORM_DOMAINS = [
     : []),
 ];
 
-// Get the platform URL for internal API calls
-function getPlatformUrl(): string {
-  // Check for explicit platform URL first
-  if (process.env.NEXT_PUBLIC_PLATFORM_URL) {
-    const url = process.env.NEXT_PUBLIC_PLATFORM_URL;
-    return url.startsWith("http") ? url : `https://${url}`;
+// ─── In-memory domain → slug cache (TTL: 5 minutes) ───
+const DOMAIN_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const domainCache = new Map<string, { slug: string | null; expires: number }>();
+
+function getCachedSlug(domain: string): string | null | undefined {
+  const entry = domainCache.get(domain);
+  if (!entry) return undefined; // cache miss
+  if (Date.now() > entry.expires) {
+    domainCache.delete(domain);
+    return undefined; // expired
   }
-  
-  // Check if we're in production (Render environment)
-  if (process.env.RENDER === "true" || process.env.NODE_ENV === "production") {
-    // Use the configured app URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (appUrl) {
-      return appUrl.startsWith("http") ? appUrl : `https://${appUrl}`;
+  return entry.slug;
+}
+
+function setCachedSlug(domain: string, slug: string | null) {
+  domainCache.set(domain, { slug, expires: Date.now() + DOMAIN_CACHE_TTL });
+  // Evict stale entries periodically (keep cache small)
+  if (domainCache.size > 200) {
+    const now = Date.now();
+    for (const [key, val] of domainCache) {
+      if (now > val.expires) domainCache.delete(key);
     }
   }
-  
-  // Default to localhost for development
-  return "http://localhost:3000";
 }
 
 // Check if this is a platform domain
@@ -56,44 +61,35 @@ function normalizeDomainForLookup(domain: string): string {
   return normalized;
 }
 
-// Lookup store by custom domain using internal API (Prisma - bypasses RLS)
+// Lookup store by custom domain — direct Prisma query with in-memory cache
 async function getStoreByDomain(domain: string): Promise<string | null> {
   try {
     const normalizedDomain = normalizeDomainForLookup(domain);
-    console.log(`[Domain Lookup] Looking up domain: "${normalizedDomain}" (original: "${domain}")`);
 
-    // Call the internal API endpoint which uses Prisma (bypasses RLS issues)
-    const platformUrl = getPlatformUrl();
-    const apiUrl = `${platformUrl}/api/stores/by-domain?domain=${encodeURIComponent(normalizedDomain)}`;
-    
-    console.log(`[Domain Lookup] Calling API: ${apiUrl}`);
-    
-    const response = await fetch(apiUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    // Check in-memory cache first
+    const cached = getCachedSlug(normalizedDomain);
+    if (cached !== undefined) {
+      return cached;
+    }
+
+    // Direct DB query (no HTTP self-fetch)
+    const store = await prisma.store.findFirst({
+      where: {
+        domainStatus: "Live",
+        OR: [
+          { domain: normalizedDomain },
+          { domain: `www.${normalizedDomain}` },
+          { domain: domain },
+        ],
       },
-      // Short timeout to avoid blocking
-      signal: AbortSignal.timeout(5000),
+      select: { subdomainSlug: true },
     });
 
-    if (!response.ok) {
-      console.log(`[Domain Lookup] API returned ${response.status} for domain: "${normalizedDomain}"`);
-      return null;
-    }
-
-    const data = await response.json();
-    
-    if (!data.store) {
-      console.log(`[Domain Lookup] No store found with domain: "${normalizedDomain}"`);
-      return null;
-    }
-
-    console.log(`[Domain Lookup] Found store: slug="${data.store.subdomainSlug}", status="${data.store.domainStatus}"`);
-    
-    return data.store.subdomainSlug;
+    const slug = store?.subdomainSlug ?? null;
+    setCachedSlug(normalizedDomain, slug);
+    return slug;
   } catch (error) {
-    console.error("[Domain Lookup] Exception looking up store by domain:", error);
+    console.error("[Domain Lookup] Error:", error);
     return null;
   }
 }

@@ -1,21 +1,11 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Shield, Truck, RotateCcw } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 import { ProductSearch } from "@/components/storefront/product-search";
 import { ContactSection } from "@/components/storefront/contact-section";
-
-// Check if we're on a custom domain
-async function isCustomDomain() {
-  const headersList = await headers();
-  const host = headersList.get("host") || "";
-  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
-  const isRender = host.includes("ecommerce-automation-wt2l.onrender.com");
-  return !isLocal && !isRender;
-}
+import { getStoreBySlug, checkIsCustomDomain } from "@/lib/store-cache";
 
 export default async function StorefrontHomePage({
   params,
@@ -23,23 +13,10 @@ export default async function StorefrontHomePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  const onCustomDomain = await isCustomDomain();
+  const onCustomDomain = await checkIsCustomDomain();
 
-  // Fetch store with products
-  const store = await prisma.store.findUnique({
-    where: { subdomainSlug: username },
-    include: { 
-      products: {
-        orderBy: { createdAt: "desc" },
-        include: { images: { orderBy: { sortOrder: "asc" } } },
-      },
-      testimonials: {
-        where: { isPublished: true },
-        orderBy: { sortOrder: "asc" },
-      },
-      theme: true,
-    },
-  });
+  // Fetch store with products (cached — shared with layout.tsx, single DB hit)
+  const store = await getStoreBySlug(username);
 
   if (!store) {
     notFound();
@@ -90,6 +67,7 @@ export default async function StorefrontHomePage({
               src={heroImageUrl}
               alt={store.storeName}
               fill
+              sizes="100vw"
               className="object-cover object-center"
               priority
             />
@@ -304,6 +282,7 @@ export default async function StorefrontHomePage({
                               src={primaryImageUrl}
                               alt={product.name}
                               fill
+                              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                               className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
                             />
                             {secondaryImageUrl && (
@@ -311,6 +290,7 @@ export default async function StorefrontHomePage({
                                 src={secondaryImageUrl}
                                 alt={`${product.name} alternate view`}
                                 fill
+                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                 className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
                               />
                             )}

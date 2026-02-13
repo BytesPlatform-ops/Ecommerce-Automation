@@ -1,22 +1,10 @@
 import { notFound } from "next/navigation";
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
 import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
 import { CartProvider } from "@/components/storefront/cart-context";
 import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success-handler";
 import { sanitizeHexColor, sanitizeFontFamily } from "@/lib/security";
-
-// Check if we're on a custom domain
-async function isCustomDomain() {
-  const headersList = await headers();
-  const host = headersList.get("host") || "";
-  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
-  // Check against configured app URL instead of hardcoded domain
-  const appDomain = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "";
-  const isPlatform = isLocal || (appDomain && host.includes(appDomain));
-  return !isPlatform;
-}
+import { getStoreBySlug, getStoreSectionCounts, checkIsCustomDomain } from "@/lib/store-cache";
 
 export default async function StorefrontLayout({
   children,
@@ -26,16 +14,10 @@ export default async function StorefrontLayout({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  const onCustomDomain = await isCustomDomain();
+  const onCustomDomain = await checkIsCustomDomain();
 
-  // Fetch store with theme and products
-  const store = await prisma.store.findUnique({
-    where: { subdomainSlug: username },
-    include: { 
-      theme: true,
-      products: { orderBy: { createdAt: "desc" } },
-    },
-  });
+  // Fetch store with theme and products (cached — shared with page.tsx)
+  const store = await getStoreBySlug(username);
 
   if (!store) {
     notFound();
@@ -50,17 +32,8 @@ export default async function StorefrontLayout({
   const shippingReturnsPath = onCustomDomain ? "/shipping-returns" : `/stores/${username}/shipping-returns`;
   const contactPath = onCustomDomain ? "/contact" : `/stores/${username}/contact`;
 
-  const faqCount = await prisma.storeFaq.count({
-    where: { storeId: store.id, isPublished: true },
-  });
-
-  const privacyCount = await prisma.storePrivacySection.count({
-    where: { storeId: store.id },
-  });
-
-  const shippingReturnsCount = await prisma.storeShippingReturnsSection.count({
-    where: { storeId: store.id },
-  });
+  // Parallelized & cached section counts
+  const { faqCount, privacyCount, shippingReturnsCount } = await getStoreSectionCounts(store.id);
 
   // Convert Decimal prices to numbers for client component
   const plainProducts = store.products.map(p => ({
@@ -134,6 +107,7 @@ export default async function StorefrontLayout({
           <StorefrontFooter 
             storeName={store.storeName} 
             slug={username} 
+            homePath={homePath}
             aboutPath={aboutPath}
             contactPath={contactPath}
             faqPath={faqPath}
