@@ -300,14 +300,3 @@ input[type="radio"] {
     line-height: 1.6;
   }
 }
-
-/* Prevent layout shifts and scroll jumping */
-html {
-  scroll-padding-top: 0;
-  overflow-anchor: none;
-}
-
-/* Smooth page transitions */
-* {
-  -webkit-tap-highlight-color: transparent;
-}

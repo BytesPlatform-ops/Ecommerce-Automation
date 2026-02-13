@@ -9,11 +9,23 @@ import { sanitizeUrl, secureLog, sanitizeString } from "@/lib/security";
 import { logAudit, AuditAction } from "@/lib/audit";
 import { z } from "zod";
 import crypto from "crypto";
+import { revalidateTag } from "next/cache";
+import { CacheTags } from "@/lib/prisma";
 import {
   getConnectedAccount,
   getAccountBalance,
   getAccountPayouts,
 } from "@/lib/stripe";
+
+// ==================== CACHE REVALIDATION HELPER ====================
+
+/** Invalidate all storefront caches for a store after any mutation */
+function revalidateStore(slug: string, storeId: string) {
+  revalidateTag(CacheTags.store(slug), "default");
+  revalidateTag(CacheTags.storeById(storeId), "default");
+  revalidateTag(CacheTags.sections(storeId), "default");
+  revalidateTag(CacheTags.products(storeId), "default");
+}
 
 // ==================== ZOD SCHEMAS ====================
 
@@ -143,6 +155,10 @@ export async function createProduct(
     resourceId: product.id,
     metadata: { name: product.name },
   });
+
+  // Invalidate storefront cache so new product appears
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+  revalidateTag(CacheTags.products(storeId), "default");
   
   return {
     ...product,
@@ -245,6 +261,10 @@ export async function updateProduct(
     resourceId: product.id,
     metadata: { name: product.name },
   });
+
+  // Invalidate storefront cache
+  revalidateTag(CacheTags.store(existingProduct.store.subdomainSlug), "default");
+  revalidateTag(CacheTags.products(existingProduct.storeId), "default");
   
   return {
     ...product,
@@ -282,6 +302,10 @@ export async function deleteProduct(productId: string) {
     resourceId: productId,
     metadata: { name: product.name },
   });
+
+  // Invalidate storefront cache
+  revalidateTag(CacheTags.store(product.store.subdomainSlug), "default");
+  revalidateTag(CacheTags.products(product.storeId), "default");
 
   return {
     ...deletedProduct,
@@ -405,6 +429,10 @@ export async function updateStore(
     resourceId: storeId,
   });
 
+  // Invalidate storefront cache
+  revalidateTag(CacheTags.store(updatedStore.subdomainSlug), "default");
+  revalidateTag(CacheTags.storeById(storeId), "default");
+
   return updatedStore;
 }
 
@@ -457,6 +485,7 @@ export async function createStoreFaq(
     resourceId: faq.id,
   });
 
+  revalidateTag(CacheTags.sections(storeId), "default");
   return faq;
 }
 
@@ -515,6 +544,7 @@ export async function updateStoreFaq(
     resourceId: faqId,
   });
 
+  revalidateTag(CacheTags.sections(faq.storeId), "default");
   return updatedFaq;
 }
 
@@ -547,6 +577,7 @@ export async function deleteStoreFaq(faqId: string) {
     resourceId: faqId,
   });
 
+  revalidateTag(CacheTags.sections(faq.storeId), "default");
   return deleted;
 }
 
@@ -638,6 +669,7 @@ export async function createStorePrivacySection(
     resourceId: section.id,
   });
 
+  revalidateTag(CacheTags.sections(storeId), "default");
   return section;
 }
 
@@ -1131,6 +1163,17 @@ export async function reorderStoreTestimonials(
 export async function getProduct(productId: string) {
   return await prisma.product.findUnique({
     where: { id: productId },
+    select: {
+      id: true,
+      storeId: true,
+      name: true,
+      description: true,
+      sku: true,
+      price: true,
+      imageUrl: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 }
 
@@ -1456,10 +1499,12 @@ export async function getStripeAccountStatus() {
     };
   }
 
-  // Get Stripe account details
-  const account = await getConnectedAccount(store.stripeConnectId);
-  const balance = await getAccountBalance(store.stripeConnectId);
-  const payouts = await getAccountPayouts(store.stripeConnectId, 5);
+  // Get Stripe account details — parallelize independent API calls
+  const [account, balance, payouts] = await Promise.all([
+    getConnectedAccount(store.stripeConnectId),
+    getAccountBalance(store.stripeConnectId),
+    getAccountPayouts(store.stripeConnectId, 5),
+  ]);
 
   return {
     storeId: store.id,
@@ -1595,23 +1640,30 @@ export async function createOrder(data: {
 
     // Reduce stock when order is created as Completed (e.g., via verify-session)
     if (data.initialStatus === "Completed") {
-      for (const item of order.items) {
-        if (item.variantId) {
-          // Check stock floor before decrementing
-          const variant = await prisma.productVariant.findUnique({
-            where: { id: item.variantId },
-            select: { stock: true },
-          });
-          if (variant) {
-            const decrementBy = Math.min(item.quantity, variant.stock);
-            if (decrementBy > 0) {
-              await prisma.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { decrement: decrementBy } },
+      const variantItems = order.items.filter((item) => item.variantId);
+      if (variantItems.length > 0) {
+        // Batch fetch all variant stocks in one query
+        const variants = await prisma.productVariant.findMany({
+          where: { id: { in: variantItems.map((i) => i.variantId!) } },
+          select: { id: true, stock: true },
+        });
+        const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
+
+        // Batch update all stocks in a single transaction
+        await prisma.$transaction(
+          variantItems
+            .filter((item) => {
+              const stock = stockMap.get(item.variantId!) ?? 0;
+              return Math.min(item.quantity, stock) > 0;
+            })
+            .map((item) => {
+              const stock = stockMap.get(item.variantId!) ?? 0;
+              return prisma.productVariant.update({
+                where: { id: item.variantId! },
+                data: { stock: { decrement: Math.min(item.quantity, stock) } },
               });
-            }
-          }
-        }
+            })
+        );
       }
       secureLog.info("[Order Created] Stock reduced for Completed order", { orderId: order.id });
     }
@@ -1675,24 +1727,30 @@ export async function updateOrderStatus(
       itemCount: updatedOrder.items.length,
     });
 
-    // Reduce stock when order is completed (with floor check)
+    // Reduce stock when order is completed (batched — avoids N+1)
     if (status === "Completed") {
-      for (const item of updatedOrder.items) {
-        if (item.variantId) {
-          const variant = await prisma.productVariant.findUnique({
-            where: { id: item.variantId },
-            select: { stock: true },
-          });
-          if (variant) {
-            const decrementBy = Math.min(item.quantity, variant.stock);
-            if (decrementBy > 0) {
-              await prisma.productVariant.update({
-                where: { id: item.variantId },
-                data: { stock: { decrement: decrementBy } },
+      const variantItems = updatedOrder.items.filter((item) => item.variantId);
+      if (variantItems.length > 0) {
+        const variants = await prisma.productVariant.findMany({
+          where: { id: { in: variantItems.map((i) => i.variantId!) } },
+          select: { id: true, stock: true },
+        });
+        const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
+
+        await prisma.$transaction(
+          variantItems
+            .filter((item) => {
+              const stock = stockMap.get(item.variantId!) ?? 0;
+              return Math.min(item.quantity, stock) > 0;
+            })
+            .map((item) => {
+              const stock = stockMap.get(item.variantId!) ?? 0;
+              return prisma.productVariant.update({
+                where: { id: item.variantId! },
+                data: { stock: { decrement: Math.min(item.quantity, stock) } },
               });
-            }
-          }
-        }
+            })
+        );
       }
       secureLog.info("[Order Status Update] Stock reduced for completed order", { orderId: updatedOrder.id });
     }
@@ -1949,24 +2007,27 @@ export async function getOrderStats() {
   const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  // Single query to get all completed orders with dates for stats
-  const allOrders = await prisma.order.findMany({
-    where: { storeId: store.id, status: OrderStatus.Completed },
-    select: { total: true, createdAt: true },
-  });
-
-  const totalOrders = allOrders.length;
-  const totalRevenue = allOrders.reduce((sum, order) => {
-    const numValue = typeof order.total === "string" ? parseFloat(order.total) : Number(order.total);
-    return sum + numValue;
-  }, 0);
-  const last7DaysOrders = allOrders.filter(o => o.createdAt >= last7Days).length;
-  const last30DaysOrders = allOrders.filter(o => o.createdAt >= last30Days).length;
+  // Use aggregation + count queries instead of loading all orders into memory
+  const [aggregate, totalCount, last7Count, last30Count] = await Promise.all([
+    prisma.order.aggregate({
+      where: { storeId: store.id, status: OrderStatus.Completed },
+      _sum: { total: true },
+    }),
+    prisma.order.count({
+      where: { storeId: store.id, status: OrderStatus.Completed },
+    }),
+    prisma.order.count({
+      where: { storeId: store.id, status: OrderStatus.Completed, createdAt: { gte: last7Days } },
+    }),
+    prisma.order.count({
+      where: { storeId: store.id, status: OrderStatus.Completed, createdAt: { gte: last30Days } },
+    }),
+  ]);
 
   return {
-    totalOrders,
-    totalRevenue: totalRevenue.toFixed(2),
-    last7DaysOrders,
-    last30DaysOrders,
+    totalOrders: totalCount,
+    totalRevenue: (Number(aggregate._sum.total) || 0).toFixed(2),
+    last7DaysOrders: last7Count,
+    last30DaysOrders: last30Count,
   };
 }

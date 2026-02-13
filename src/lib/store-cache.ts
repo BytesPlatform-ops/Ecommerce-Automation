@@ -1,45 +1,86 @@
 import { cache } from "react";
-import { prisma } from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+import { prisma, CacheTags } from "@/lib/prisma";
 import { headers } from "next/headers";
 
+// ==================== CROSS-REQUEST CACHED QUERIES ====================
+// unstable_cache persists data across requests (ISR-like).
+// React cache() deduplicates within a single request.
+
+const STORE_CACHE_TTL = 60; // seconds — revalidate every 60s
+
 /**
- * Cached store fetcher — React `cache()` deduplicates this across
- * layout.tsx and page.tsx within the same request, so the DB is hit only once.
+ * Fetch store by slug — cached across requests for up to STORE_CACHE_TTL seconds.
+ * Products are limited to the latest 50 with their first 5 images each.
+ */
+const _getStoreBySlug = (slug: string) =>
+  unstable_cache(
+    async () => {
+      return prisma.store.findUnique({
+        where: { subdomainSlug: slug },
+        include: {
+          theme: true,
+          products: {
+            orderBy: { createdAt: "desc" },
+            take: 50, // cap products per store
+            include: {
+              images: {
+                orderBy: { sortOrder: "asc" },
+                take: 5, // cap images per product
+              },
+            },
+          },
+          testimonials: {
+            where: { isPublished: true },
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+      });
+    },
+    [`store-${slug}`],
+    {
+      tags: [CacheTags.store(slug)],
+      revalidate: STORE_CACHE_TTL,
+    }
+  )();
+
+/**
+ * Public wrapper — React `cache()` deduplicates within a single request
+ * so layout.tsx and page.tsx share the same promise.
  */
 export const getStoreBySlug = cache(async (slug: string) => {
-  return prisma.store.findUnique({
-    where: { subdomainSlug: slug },
-    include: {
-      theme: true,
-      products: {
-        orderBy: { createdAt: "desc" },
-        include: { images: { orderBy: { sortOrder: "asc" } } },
-      },
-      testimonials: {
-        where: { isPublished: true },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
+  return _getStoreBySlug(slug);
 });
 
 /**
- * Cached section counts — fetched once per request, shared across layout + pages.
+ * Cached section counts — deduped per request, cached across requests.
  */
-export const getStoreSectionCounts = cache(async (storeId: string) => {
-  const [faqCount, privacyCount, shippingReturnsCount] = await Promise.all([
-    prisma.storeFaq.count({
-      where: { storeId, isPublished: true },
-    }),
-    prisma.storePrivacySection.count({
-      where: { storeId },
-    }),
-    prisma.storeShippingReturnsSection.count({
-      where: { storeId },
-    }),
-  ]);
+const _getStoreSectionCounts = (storeId: string) =>
+  unstable_cache(
+    async () => {
+      const [faqCount, privacyCount, shippingReturnsCount] = await Promise.all([
+        prisma.storeFaq.count({
+          where: { storeId, isPublished: true },
+        }),
+        prisma.storePrivacySection.count({
+          where: { storeId },
+        }),
+        prisma.storeShippingReturnsSection.count({
+          where: { storeId },
+        }),
+      ]);
 
-  return { faqCount, privacyCount, shippingReturnsCount };
+      return { faqCount, privacyCount, shippingReturnsCount };
+    },
+    [`sections-${storeId}`],
+    {
+      tags: [CacheTags.sections(storeId)],
+      revalidate: STORE_CACHE_TTL,
+    }
+  )();
+
+export const getStoreSectionCounts = cache(async (storeId: string) => {
+  return _getStoreSectionCounts(storeId);
 });
 
 /**

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { Package, Palette, Eye, Plus, TrendingUp, Clock, ArrowUpRight } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -22,17 +23,24 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  // Get product count
-  const productCount = await prisma.product.count({
-    where: { storeId: store.id },
-  });
-
-  // Get recent products
-  const recentProducts = await prisma.product.findMany({
-    where: { storeId: store.id },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-  });
+  // Parallelize independent queries
+  const [productCount, recentProducts] = await Promise.all([
+    prisma.product.count({
+      where: { storeId: store.id },
+    }),
+    prisma.product.findMany({
+      where: { storeId: store.id },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        imageUrl: true,
+        createdAt: true,
+      },
+    }),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -198,12 +206,13 @@ export default async function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 bg-gray-200 rounded-lg overflow-hidden">
                       {product.imageUrl ? (
-                        <img 
+                        <Image 
                           src={product.imageUrl} 
                           alt={product.name}
+                          width={40}
+                          height={40}
                           className="h-full w-full object-cover"
-                        />
-                      ) : (
+                        />) : (
                         <div className="h-full w-full flex items-center justify-center">
                           <Package className="h-4 w-4 text-gray-400" />
                         </div>

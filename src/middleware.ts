@@ -56,17 +56,26 @@ function normalizeDomainForLookup(domain: string): string {
   return normalized;
 }
 
+// ==================== IN-MEMORY DOMAIN CACHE ====================
+// Avoids hitting the internal API on every single request for custom domains.
+// Entries expire after 60 seconds. The cache lives in middleware's edge runtime.
+const domainCache = new Map<string, { slug: string | null; expiresAt: number }>();
+const DOMAIN_CACHE_TTL_MS = 60_000; // 60 seconds
+
 // Lookup store by custom domain using internal API (Prisma - bypasses RLS)
 async function getStoreByDomain(domain: string): Promise<string | null> {
   try {
     const normalizedDomain = normalizeDomainForLookup(domain);
-    console.log(`[Domain Lookup] Looking up domain: "${normalizedDomain}" (original: "${domain}")`);
+
+    // Check in-memory cache first
+    const cached = domainCache.get(normalizedDomain);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.slug;
+    }
 
     // Call the internal API endpoint which uses Prisma (bypasses RLS issues)
     const platformUrl = getPlatformUrl();
     const apiUrl = `${platformUrl}/api/stores/by-domain?domain=${encodeURIComponent(normalizedDomain)}`;
-    
-    console.log(`[Domain Lookup] Calling API: ${apiUrl}`);
     
     const response = await fetch(apiUrl, {
       method: "GET",
@@ -74,24 +83,24 @@ async function getStoreByDomain(domain: string): Promise<string | null> {
         "Content-Type": "application/json",
       },
       // Short timeout to avoid blocking
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(3000),
     });
 
     if (!response.ok) {
-      console.log(`[Domain Lookup] API returned ${response.status} for domain: "${normalizedDomain}"`);
+      domainCache.set(normalizedDomain, { slug: null, expiresAt: Date.now() + DOMAIN_CACHE_TTL_MS });
       return null;
     }
 
     const data = await response.json();
     
     if (!data.store) {
-      console.log(`[Domain Lookup] No store found with domain: "${normalizedDomain}"`);
+      domainCache.set(normalizedDomain, { slug: null, expiresAt: Date.now() + DOMAIN_CACHE_TTL_MS });
       return null;
     }
 
-    console.log(`[Domain Lookup] Found store: slug="${data.store.subdomainSlug}", status="${data.store.domainStatus}"`);
-    
-    return data.store.subdomainSlug;
+    const slug = data.store.subdomainSlug;
+    domainCache.set(normalizedDomain, { slug, expiresAt: Date.now() + DOMAIN_CACHE_TTL_MS });
+    return slug;
   } catch (error) {
     console.error("[Domain Lookup] Exception looking up store by domain:", error);
     return null;

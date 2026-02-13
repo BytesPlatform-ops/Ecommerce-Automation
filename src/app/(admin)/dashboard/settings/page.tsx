@@ -19,25 +19,25 @@ export default async function SettingsPage() {
     redirect("/onboarding");
   }
 
-  const faqs = await prisma.storeFaq.findMany({
-    where: { storeId: store.id },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  const privacySections = await prisma.storePrivacySection.findMany({
-    where: { storeId: store.id },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  const shippingReturnsSections = await prisma.storeShippingReturnsSection.findMany({
-    where: { storeId: store.id },
-    orderBy: { sortOrder: "asc" },
-  });
-
-  const testimonials = await prisma.storeTestimonial.findMany({
-    where: { storeId: store.id },
-    orderBy: { sortOrder: "asc" },
-  });
+  // Parallelize independent section queries
+  const [faqs, privacySections, shippingReturnsSections, testimonials] = await Promise.all([
+    prisma.storeFaq.findMany({
+      where: { storeId: store.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.storePrivacySection.findMany({
+      where: { storeId: store.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.storeShippingReturnsSection.findMany({
+      where: { storeId: store.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.storeTestimonial.findMany({
+      where: { storeId: store.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+  ]);
 
   // Prepare store data for domain settings component
   const domainStore = {

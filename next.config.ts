@@ -71,10 +71,17 @@ const nextConfig: NextConfig = {
   },
   // Disable x-powered-by header
   poweredByHeader: false,
+  // Compress responses
+  compress: true,
   // Optimize barrel-file imports for large icon/component libraries
   experimental: {
-    optimizePackageImports: ["lucide-react"],
+    optimizePackageImports: ["lucide-react", "react-hook-form", "@hookform/resolvers"],
   },
+  // Logging config — reduce noise in production
+  logging:
+    process.env.NODE_ENV === "production"
+      ? { fetches: { fullUrl: false } }
+      : undefined,
 };
 
 export default nextConfig;
