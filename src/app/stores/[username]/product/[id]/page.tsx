@@ -22,7 +22,7 @@ export default async function ProductDetailPage({
     },
     include: {
       store: {
-        select: { id: true },
+        select: { id: true, domain: true },
       },
       variants: {
         orderBy: { createdAt: 'asc' },
@@ -45,12 +45,17 @@ export default async function ProductDetailPage({
 
   const mainImageUrl = imageUrls[0];
 
+  // Determine the correct back-to-shop URL
+  // If store has a custom domain, we're on that domain and root is the shop page
+  // Otherwise, we're on /stores/[username] path
+  const backUrl = product.store.domain ? "/" : `/stores/${username}`;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 sm:py-12 md:py-16">
         {/* Breadcrumb */}
         <Link
-          href={`/stores/${username}`}
+          href={backUrl}
           className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-300 mb-8 sm:mb-12 group"
         >
           <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
