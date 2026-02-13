@@ -13,8 +13,8 @@ const PLATFORM_DOMAINS = [
     : []),
 ];
 
-// ─── In-memory domain → slug cache (TTL: 5 minutes) ───
-const DOMAIN_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// ─── In-memory domain → slug cache (TTL: 24 hours) ───
+const DOMAIN_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours (domain mappings are stable)
 const domainCache = new Map<string, { slug: string | null; expires: number }>();
 
 function getCachedSlug(domain: string): string | null | undefined {
@@ -73,16 +73,7 @@ async function getStoreByDomain(domain: string, request: NextRequest): Promise<s
 
     // Build absolute URL pointed at the same origin
     const apiUrl = new URL(`/api/domain-lookup?hostname=${encodeURIComponent(domain)}`, request.url);
-    
-    // Add 5 second timeout to prevent hanging
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const res = await fetch(apiUrl, {
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+    const res = await fetch(apiUrl, { cache: "no-store" });
 
     if (!res.ok) {
       console.error("[Domain Lookup] API returned", res.status);

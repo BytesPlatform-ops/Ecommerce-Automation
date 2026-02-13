@@ -157,6 +157,8 @@ model Store {
 
   @@index([ownerId])
   @@index([themeId])
+  @@index([domainStatus])
+  @@index([domainStatus, domain])
   @@map("stores")
 }
 
