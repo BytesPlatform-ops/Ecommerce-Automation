@@ -69,6 +69,7 @@ export function OrderDetailsModal({
   const [isShipping, setIsShipping] = useState(false);
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [shippingSuccess, setShippingSuccess] = useState<{ trackingNumber: string } | null>(null);
+  const [trackingInput, setTrackingInput] = useState("");
 
   if (!isOpen) return null;
 
@@ -77,12 +78,12 @@ export function OrderDetailsModal({
     setShippingError(null);
     
     try {
-      const result = await markOrderAsShipped(order.id);
+      const result = await markOrderAsShipped(order.id, trackingInput || undefined);
       
       if (result.success) {
-        setShippingSuccess({ trackingNumber: result.trackingNumber! });
+        setShippingSuccess({ trackingNumber: trackingInput });
         onOrderShipped?.({
-          trackingNumber: result.trackingNumber!,
+          trackingNumber: trackingInput,
           shippedAt: result.shippedAt!,
         });
         
@@ -391,6 +392,30 @@ export function OrderDetailsModal({
                 </div>
               </div>
 
+              {/* Tracking Input - Show when not yet shipped */}
+              {!isAlreadyShipped && (
+                <div className="bg-blue-50 rounded-xl p-5 border border-blue-200 shadow-sm space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Truck className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <h3 className="text-base font-bold text-gray-900">
+                      Shipping Information
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Enter a tracking number, shipping link, or any tracking information for the customer. This is optional.
+                  </p>
+                  <input
+                    type="text"
+                    value={trackingInput}
+                    onChange={(e) => setTrackingInput(e.target.value)}
+                    placeholder="e.g., TRK-123456789 or https://track.example.com/123456"
+                    className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  />
+                </div>
+              )}
+
               {/* Tracking Information - Show when shipped */}
               {displayTrackingNumber && (
                 <div className="bg-purple-50 rounded-xl p-5 border border-purple-200 shadow-sm flex items-center gap-4">
@@ -399,13 +424,35 @@ export function OrderDetailsModal({
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-purple-600 uppercase tracking-widest font-bold mb-1">
-                      Tracking Number
+                      Tracking Information
                     </p>
                     <p className="text-base font-semibold text-gray-900 font-mono">
                       {displayTrackingNumber}
                     </p>
                     {(order.shippedAt || shippingSuccess) && (
                       <p className="text-xs text-purple-500 mt-1">
+                        Shipped on {formatDate(order.shippedAt || new Date())}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Marked as Shipped Message - Show when shipped without tracking info */}
+              {isAlreadyShipped && !displayTrackingNumber && (
+                <div className="bg-green-50 rounded-xl p-5 border border-green-200 shadow-sm flex items-center gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Truck className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-green-600 uppercase tracking-widest font-bold mb-1">
+                      Shipment Status
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      Order marked as shipped
+                    </p>
+                    {(order.shippedAt || shippingSuccess) && (
+                      <p className="text-xs text-green-600 mt-1">
                         Shipped on {formatDate(order.shippedAt || new Date())}
                       </p>
                     )}
@@ -434,6 +481,7 @@ export function OrderDetailsModal({
                   onClick={handleMarkAsShipped}
                   disabled={isShipping}
                   className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                  title="Mark order as shipped (tracking info is optional)"
                 >
                   {isShipping ? (
                     <>

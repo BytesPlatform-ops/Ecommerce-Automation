@@ -1716,17 +1716,11 @@ export async function updateOrderStatus(
 }
 
 /**
- * Generate a cryptographically secure tracking number for shipped orders
- */
-function generateTrackingNumber(): string {
-  const bytes = crypto.randomBytes(6);
-  return "TRK-" + bytes.toString("hex").toUpperCase().slice(0, 8);
-}
-
-/**
  * Mark an order as shipped and send shipping confirmation email
+ * @param orderId The order ID to mark as shipped
+ * @param trackingNumber Optional tracking number/information provided by the owner
  */
-export async function markOrderAsShipped(orderId: string) {
+export async function markOrderAsShipped(orderId: string, trackingNumber?: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -1765,8 +1759,6 @@ export async function markOrderAsShipped(orderId: string) {
       return { success: false, message: "Order is already marked as shipped" };
     }
 
-    // Generate tracking number
-    const trackingNumber = generateTrackingNumber();
     const shippedAt = new Date();
 
     // Update the order
@@ -1774,7 +1766,7 @@ export async function markOrderAsShipped(orderId: string) {
       where: { id: orderId },
       data: {
         status: OrderStatus.Shipped,
-        trackingNumber,
+        trackingNumber: trackingNumber || null,
         shippedAt,
       },
     });
@@ -1828,7 +1820,7 @@ export async function markOrderAsShipped(orderId: string) {
     return {
       success: true,
       message: "Order marked as shipped",
-      trackingNumber,
+      trackingNumber: trackingNumber || null,
       shippedAt: shippedAt.toISOString(),
       emailSent: emailResult.success,
     };

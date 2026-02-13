@@ -631,7 +631,7 @@ interface ShippingConfirmationDetails {
   customerName?: string | null;
   customerEmail: string;
   storeName: string;
-  trackingNumber: string;
+  trackingNumber?: string;
   items: OrderItem[];
   shippingAddress?: {
     firstName?: string;
@@ -737,10 +737,14 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
         </div>
 
         <!-- Tracking Number Box -->
-        <div style="background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 100%); border: 1px solid #e8e0d0; padding: 30px; text-align: center; margin-bottom: 40px;">
+        ${
+          trackingNumber
+            ? `<div style="background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 100%); border: 1px solid #e8e0d0; padding: 30px; text-align: center; margin-bottom: 40px;">
           <div style="font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #8b7355; margin-bottom: 12px;">Tracking Number</div>
           <div style="font-size: 20px; font-weight: 600; color: #1a1a1a; letter-spacing: 2px; font-family: 'Courier New', monospace;">${escapeHtml(trackingNumber)}</div>
-        </div>
+        </div>`
+            : ""
+        }
 
         <!-- Order Details -->
         <div style="margin-bottom: 40px;">
