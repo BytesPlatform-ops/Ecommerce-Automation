@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   CreditCard,
   AlertCircle,
@@ -128,6 +128,8 @@ export default function PaymentsContent({
   const [itemsPerPage] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingPendingCharges, setIsLoadingPendingCharges] = useState(false);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check for URL params (success/error from OAuth)
   useEffect(() => {
@@ -143,35 +145,46 @@ export default function PaymentsContent({
     }
   }, []);
 
-  // Fetch data on mount and when filter changes
+  // Debounced filter changes - wait 500ms after filter change before fetching
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      setCurrentPage(1); // Reset to page 1 on filter change
+      loadData();
+    }, 300); // 300ms debounce
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFilter, statusFilter]);
+
+  // Initial data load
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateFilter, isConnected, statusFilter]);
+  }, [isConnected]);
+
+  // Lazy load pending charges after main data loads
+  useEffect(() => {
+    if (accountDetails?.isConnected && accountDetails?.account?.id && !isLoading) {
+      setIsLoadingPendingCharges(true);
+      getStripePendingCharges(accountDetails.account.id, 50)
+        .then(charges => setPendingCharges(charges || []))
+        .catch(err => console.error("Failed to load pending charges:", err))
+        .finally(() => setIsLoadingPendingCharges(false));
+    }
+  }, [accountDetails?.isConnected, accountDetails?.account?.id, isLoading]);
 
   async function loadData() {
     setIsLoading(true);
     try {
-      // Load account details
-      const accountStatus = await getStripeAccountStatus();
-      if (accountStatus) {
-        setAccountDetails(accountStatus as unknown as StripeAccountDetails);
-        setIsConnected(accountStatus.isConnected);
-
-        // Fetch pending charges if connected
-        if (accountStatus.isConnected && accountStatus.account?.id) {
-          const charges = await getStripePendingCharges(accountStatus.account.id, 50);
-          setPendingCharges(charges || []);
-        }
-      }
-
-      // Load stats
-      const orderStats = await getOrderStats();
-      if (orderStats) {
-        setStats(orderStats);
-      }
-
-      // Load orders based on filter
+      // Determine date filter
       let startDate: Date | undefined;
       const now = new Date();
 
@@ -187,13 +200,29 @@ export default function PaymentsContent({
           startDate = undefined;
       }
 
-      const orderList = await getStoreOrders({
-        startDate,
-        limit: 50,
-      });
+      // Load core data in parallel (faster initial load - only fetch what's needed)
+      const [accountStatus, orderStats, orderList] = await Promise.all([
+        getStripeAccountStatus(),
+        getOrderStats(),
+        getStoreOrders({
+          startDate,
+          limit: 50, // Core data load
+        }),
+      ]);
+
+      // Update account details (don't fetch pending charges here - lazy load them)
+      if (accountStatus) {
+        setAccountDetails(accountStatus as unknown as StripeAccountDetails);
+        setIsConnected(accountStatus.isConnected);
+      }
+
+      // Update stats
+      if (orderStats) {
+        setStats(orderStats);
+      }
+
+      // Update orders and analytics
       setOrders(orderList as unknown as Order[]);
-      
-      // Calculate analytics
       calculateAnalytics(orderList as unknown as Order[]);
     } catch (err) {
       console.error("Error loading payment data:", err);
@@ -363,7 +392,8 @@ export default function PaymentsContent({
     });
   }
 
-  function getDisplayTransactions() {
+  // Memoize expensive calculations to avoid recalculating on every render
+  const displayTransactions = useMemo(() => {
     // Convert pending charges to display format
     const pendingTransactions = pendingCharges.map((charge: any) => ({
       id: charge.id,
@@ -408,25 +438,19 @@ export default function PaymentsContent({
     return filtered.sort((a, b) => 
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }
+  }, [orders, pendingCharges, searchQuery, statusFilter]);
 
-  function getPaginatedTransactions() {
-    const allTransactions = getDisplayTransactions();
+  const paginatedTransactions = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return allTransactions.slice(startIndex, endIndex);
-  }
+    return displayTransactions.slice(startIndex, endIndex);
+  }, [displayTransactions, currentPage, itemsPerPage]);
 
-  function getTotalPages() {
-    return Math.ceil(getDisplayTransactions().length / itemsPerPage);
-  }
+  const totalPages = useMemo(() => {
+    return Math.ceil(displayTransactions.length / itemsPerPage);
+  }, [displayTransactions.length, itemsPerPage]);
 
-  // Reset to page 1 when search or filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter, dateFilter]);
-
-  function getOrderStatusCounts() {
+  const orderStatusCounts = useMemo(() => {
     return {
       all: orders.length,
       pending: orders.filter((o) => o.status === "Pending").length,
@@ -435,6 +459,15 @@ export default function PaymentsContent({
       failed: orders.filter((o) => o.status === "Failed").length,
       refunded: orders.filter((o) => o.status === "Refunded").length,
     };
+  }, [orders]);
+
+  // Optimistic update for a single order (when shipped)
+  function updateOrderOptimistically(orderId: string, updatedData: Partial<Order>) {
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order.id === orderId ? { ...order, ...updatedData } : order
+      )
+    );
   }
 
   return (
@@ -697,15 +730,15 @@ export default function PaymentsContent({
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-700">Completed:</span>
-                  <span className="font-semibold text-green-700">{getOrderStatusCounts().completed}</span>
+                  <span className="font-semibold text-green-700">{orderStatusCounts.completed}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">Failed:</span>
-                  <span className="font-semibold text-red-700">{getOrderStatusCounts().failed}</span>
+                  <span className="font-semibold text-red-700">{orderStatusCounts.failed}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">Refunded:</span>
-                  <span className="font-semibold text-gray-700">{getOrderStatusCounts().refunded}</span>
+                  <span className="font-semibold text-gray-700">{orderStatusCounts.refunded}</span>
                 </div>
               </div>
             </div>
@@ -1096,7 +1129,7 @@ export default function PaymentsContent({
               </tbody>
             </table>
           </div>
-        ) : getDisplayTransactions().length === 0 ? (
+        ) : displayTransactions.length === 0 ? (
           <div className="p-12 text-center">
             <div className="flex justify-center mb-4">
               <div className="p-4 bg-gray-100 rounded-full">
@@ -1139,7 +1172,7 @@ export default function PaymentsContent({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {getPaginatedTransactions().map((transaction: any, index) => (
+                {paginatedTransactions.map((transaction: any, index) => (
                   <tr
                     key={transaction.id}
                     onClick={() => {
@@ -1232,12 +1265,12 @@ export default function PaymentsContent({
         )}
 
         {/* Pagination Controls */}
-        {!isLoading && getDisplayTransactions().length > 0 && (
+        {!isLoading && displayTransactions.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
             <div className="text-sm text-gray-600">
               Showing {((currentPage - 1) * itemsPerPage) + 1} to{" "}
-              {Math.min(currentPage * itemsPerPage, getDisplayTransactions().length)} of{" "}
-              {getDisplayTransactions().length} transactions
+              {Math.min(currentPage * itemsPerPage, displayTransactions.length)} of{" "}
+              {displayTransactions.length} transactions
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -1250,12 +1283,12 @@ export default function PaymentsContent({
               </button>
               
               <div className="flex items-center gap-1">
-                {Array.from({ length: getTotalPages() }, (_, i) => i + 1)
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter((page) => {
                     // Show first page, last page, current page, and pages around current
                     return (
                       page === 1 ||
-                      page === getTotalPages() ||
+                      page === totalPages ||
                       Math.abs(page - currentPage) <= 1
                     );
                   })
@@ -1279,8 +1312,8 @@ export default function PaymentsContent({
               </div>
 
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(getTotalPages(), prev + 1))}
-                disabled={currentPage === getTotalPages()}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
                 className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 Next
@@ -1300,8 +1333,17 @@ export default function PaymentsContent({
             setIsModalOpen(false);
             setSelectedOrder(null);
           }}
-          onOrderShipped={() => {
-            loadData();
+          onOrderShipped={(updatedOrder) => {
+            // Optimistically update the order in the table immediately
+            const updatedOrderData = {
+              status: "Shipped" as const,
+              trackingNumber: updatedOrder?.trackingNumber,
+              shippedAt: updatedOrder?.shippedAt ? new Date(updatedOrder.shippedAt) : null,
+            };
+            updateOrderOptimistically(selectedOrder.id, updatedOrderData);
+            // Also update the modal's selected order with fresh data
+            setSelectedOrder((prev) => prev ? { ...prev, ...updatedOrderData } : null);
+            // Optimistic updates ensure the table and modal stay in sync instantly
           }}
         />
       )}

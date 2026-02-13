@@ -1888,17 +1888,39 @@ export async function getStoreOrders(options?: {
 
   const orders = await prisma.order.findMany({
     where: whereClause,
-    include: {
+    select: {
+      id: true,
+      customerEmail: true,
+      customerName: true,
+      total: true,
+      currency: true,
+      status: true,
+      paymentStatus: true,
+      createdAt: true,
+      trackingNumber: true,
+      shippedAt: true,
+      shippingFirstName: true,
+      shippingLastName: true,
+      shippingCompany: true,
+      shippingAddress: true,
+      shippingApartment: true,
+      shippingCity: true,
+      shippingState: true,
+      shippingZipCode: true,
+      shippingCountry: true,
+      shippingPhone: true,
       items: {
-        include: {
-          product: {
-            select: { id: true, name: true, imageUrl: true },
-          },
+        select: {
+          id: true,
+          productName: true,
+          quantity: true,
+          unitPrice: true,
+          variantInfo: true,
         },
       },
     },
     orderBy: { createdAt: "desc" },
-    take: options?.limit,
+    take: options?.limit || 50,
   });
 
   return orders.map((order) => ({
@@ -1935,34 +1957,23 @@ export async function getOrderStats() {
   const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const [totalOrders, totalRevenue, last7DaysOrders, last30DaysOrders] =
-    await Promise.all([
-      prisma.order.count({
-        where: { storeId: store.id, status: OrderStatus.Completed },
-      }),
-      prisma.order.aggregate({
-        where: { storeId: store.id, status: OrderStatus.Completed },
-        _sum: { total: true },
-      }),
-      prisma.order.count({
-        where: {
-          storeId: store.id,
-          status: OrderStatus.Completed,
-          createdAt: { gte: last7Days },
-        },
-      }),
-      prisma.order.count({
-        where: {
-          storeId: store.id,
-          status: OrderStatus.Completed,
-          createdAt: { gte: last30Days },
-        },
-      }),
-    ]);
+  // Single query to get all completed orders with dates for stats
+  const allOrders = await prisma.order.findMany({
+    where: { storeId: store.id, status: OrderStatus.Completed },
+    select: { total: true, createdAt: true },
+  });
+
+  const totalOrders = allOrders.length;
+  const totalRevenue = allOrders.reduce((sum, order) => {
+    const numValue = typeof order.total === "string" ? parseFloat(order.total) : Number(order.total);
+    return sum + numValue;
+  }, 0);
+  const last7DaysOrders = allOrders.filter(o => o.createdAt >= last7Days).length;
+  const last30DaysOrders = allOrders.filter(o => o.createdAt >= last30Days).length;
 
   return {
     totalOrders,
-    totalRevenue: totalRevenue._sum.total?.toString() || "0",
+    totalRevenue: totalRevenue.toFixed(2),
     last7DaysOrders,
     last30DaysOrders,
   };

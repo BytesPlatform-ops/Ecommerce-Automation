@@ -307,6 +307,8 @@ model Order {
   @@index([storeId])
   @@index([status])
   @@index([paymentStatus])
+  @@index([storeId, status, createdAt])
+  @@index([storeId, createdAt])
   @@map("orders")
 }
 

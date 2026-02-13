@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2 } from "lucide-react";
+import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2, CheckCircle } from "lucide-react";
 import { markOrderAsShipped } from "@/lib/actions";
 
 function formatCurrency(amount: number | string, currency = "usd") {
@@ -57,7 +57,7 @@ interface OrderDetailsModalProps {
   };
   isOpen: boolean;
   onClose: () => void;
-  onOrderShipped?: () => void;
+  onOrderShipped?: (updatedOrder?: { trackingNumber: string; shippedAt: string }) => void;
 }
 
 export function OrderDetailsModal({
@@ -81,7 +81,15 @@ export function OrderDetailsModal({
       
       if (result.success) {
         setShippingSuccess({ trackingNumber: result.trackingNumber! });
-        onOrderShipped?.();
+        onOrderShipped?.({
+          trackingNumber: result.trackingNumber!,
+          shippedAt: result.shippedAt!,
+        });
+        
+        // Close modal after showing success for just a moment
+        setTimeout(() => {
+          onClose?.();
+        }, 1500);
       } else {
         setShippingError(result.message || "Failed to mark as shipped");
       }
@@ -412,6 +420,12 @@ export function OrderDetailsModal({
             {shippingError && (
               <div className="mb-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
                 {shippingError}
+              </div>
+            )}
+            {shippingSuccess && (
+              <div className="mb-3 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                Order marked as shipped! Closing in a moment...
               </div>
             )}
             <div className="flex gap-3 justify-end">
