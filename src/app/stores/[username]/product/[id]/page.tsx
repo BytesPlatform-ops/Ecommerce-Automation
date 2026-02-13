@@ -45,10 +45,8 @@ export default async function ProductDetailPage({
 
   const mainImageUrl = imageUrls[0];
 
-  // Determine the correct back-to-shop URL
-  // If store has a custom domain, we're on that domain and root is the shop page
-  // Otherwise, we're on /stores/[username] path
-  const backUrl = product.store.domain ? "/" : `/stores/${username}`;
+  // Always redirect back to the store page we're on
+  const backUrl = `/stores/${username}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,12 +84,14 @@ export default async function ProductDetailPage({
               <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl leading-tight text-foreground mb-4 tracking-tight">
                 {product.name}
               </h1>
-              <p 
-                className="text-xl sm:text-2xl font-medium"
-                style={{ color: "var(--primary)" }}
-              >
-                ${Number(product.price).toFixed(2)}
-              </p>
+              {product.variants.length === 0 && (
+                <p 
+                  className="text-xl sm:text-2xl font-medium"
+                  style={{ color: "var(--primary)" }}
+                >
+                  ${Number(product.price).toFixed(2)}
+                </p>
+              )}
             </div>
 
             {/* Variant Selection / Add to Cart */}
