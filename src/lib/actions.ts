@@ -48,11 +48,11 @@ const updateStoreSchema = z.object({
   storeName: z.string().min(1).max(100).optional(),
   aboutText: z.string().max(10000).optional(),
   themeId: z.string().max(100).optional(),
-  heroImageUrl: z.string().url().max(2048).nullable().optional(),
+  heroImageUrl: z.union([z.literal(""), z.string().url().max(2048), z.null()]).optional(),
   heroHeadline: z.string().max(200).nullable().optional(),
   heroDescription: z.string().max(1000).nullable().optional(),
   heroTextAlign: z.string().max(20).optional(),
-  storeLogoUrl: z.string().url().max(2048).nullable().optional(),
+  storeLogoUrl: z.union([z.literal(""), z.string().url().max(2048), z.null()]).optional(),
   contactEmail: z.string().email().max(254).nullable().optional(),
   contactPhone: z.string().max(30).nullable().optional(),
   instagramUrl: z.string().max(2048).nullable().optional(),
@@ -361,7 +361,7 @@ export async function updateStore(
   };
 
   if (validated.heroImageUrl !== undefined) {
-    updateData.heroImageUrl = validated.heroImageUrl;
+    updateData.heroImageUrl = validated.heroImageUrl === "" ? null : validated.heroImageUrl;
   }
 
   if (validated.heroHeadline !== undefined) {
@@ -377,7 +377,7 @@ export async function updateStore(
   }
 
   if (validated.storeLogoUrl !== undefined) {
-    updateData.storeLogoUrl = validated.storeLogoUrl;
+    updateData.storeLogoUrl = validated.storeLogoUrl === "" ? null : validated.storeLogoUrl;
   }
 
   if (validated.contactEmail !== undefined) {

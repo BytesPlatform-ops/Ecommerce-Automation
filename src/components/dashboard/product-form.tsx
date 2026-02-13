@@ -150,6 +150,13 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
       setError("Please enter a valid price");
       return;
     }
+    
+    // Round to 2 decimal places to prevent floating-point precision issues
+    const roundedPrice = Math.round(priceNum * 100) / 100;
+    if (roundedPrice > 999999.99) {
+      setError("Price cannot exceed $999,999.99");
+      return;
+    }
 
     // Validate variants
     for (const variant of variants) {
@@ -168,6 +175,12 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           setError("Please enter a valid price for all variants or leave empty to use base price");
           return;
         }
+        // Round to 2 decimal places
+        const roundedVariantPrice = Math.round(variantPrice * 100) / 100;
+        if (roundedVariantPrice > 999999.99) {
+          setError("Variant price cannot exceed $999,999.99");
+          return;
+        }
       }
     }
 
@@ -178,14 +191,14 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         await updateProduct(product.id, {
           name: name.trim(),
           description: description.trim() || undefined,
-          price: priceNum,
+          price: roundedPrice,
           imageUrls,
           variants: variants.map(v => ({
             id: v.id,
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
             unit: v.unit as Unit,
-            price: v.price ? parseFloat(v.price) : undefined,
+            price: v.price ? Math.round(parseFloat(v.price) * 100) / 100 : undefined,
             stock: v.stock,
           })),
         });
@@ -193,13 +206,13 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         const result = await createProduct(storeId, {
           name: name.trim(),
           description: description.trim() || undefined,
-          price: priceNum,
+          price: roundedPrice,
           imageUrls,
           variants: variants.map(v => ({
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
             unit: v.unit as Unit,
-            price: v.price ? parseFloat(v.price) : undefined,
+            price: v.price ? Math.round(parseFloat(v.price) * 100) / 100 : undefined,
             stock: v.stock,
           })),
         });
@@ -281,8 +294,13 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             type="number"
             step="0.01"
             min="0"
+            max="999999.99"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            onChange={(e) => {
+              // Preserve the input value as-is to avoid browser rounding
+              const inputValue = e.target.value;
+              setPrice(inputValue);
+            }}
             required
             className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
             placeholder="29.99"
@@ -454,10 +472,13 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                         type="number"
                         step="0.01"
                         min="0"
+                        max="999999.99"
                         value={variant.price || ""}
-                        onChange={(e) =>
-                          updateVariant(index, "price", e.target.value)
-                        }
+                        onChange={(e) => {
+                          // Preserve the input value as-is to avoid browser rounding
+                          const inputValue = e.target.value;
+                          updateVariant(index, "price", inputValue);
+                        }}
                         placeholder="Leave empty for base price"
                         className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none placeholder:text-gray-400"
                       />
