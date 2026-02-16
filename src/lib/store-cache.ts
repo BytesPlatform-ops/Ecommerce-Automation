@@ -21,6 +21,7 @@ const _getStoreBySlug = (slug: string) =>
         include: {
           theme: true,
           products: {
+            where: { deletedAt: null }, // Exclude soft-deleted products
             orderBy: { createdAt: "desc" },
             take: 50, // cap products per store
             include: {

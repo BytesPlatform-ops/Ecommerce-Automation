@@ -33,6 +33,7 @@ export default async function ProductsPage() {
       createdAt: true,
       updatedAt: true,
       storeId: true,
+      deletedAt: true,
     },
   });
 
@@ -40,6 +41,7 @@ export default async function ProductsPage() {
   const serializedProducts = products.map((product) => ({
     ...product,
     price: product.price.toString(),
+    deletedAt: product.deletedAt ? product.deletedAt.toISOString() : null,
   }));
 
   return <ProductsPageContent products={serializedProducts} />;

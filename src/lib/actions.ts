@@ -290,17 +290,83 @@ export async function deleteProduct(productId: string) {
     throw new Error("Product not found or unauthorized");
   }
 
-  const deletedProduct = await prisma.product.delete({
+  try {
+    // Soft delete: set deletedAt timestamp instead of removing the record.
+    // This preserves order history while hiding the product from the storefront.
+    const softDeletedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: { deletedAt: new Date() },
+    });
+
+    await logAudit({
+      action: AuditAction.ProductDeleted,
+      actorId: user.id,
+      storeId: product.storeId,
+      resourceType: "Product",
+      resourceId: productId,
+      metadata: { name: product.name, softDelete: true },
+    });
+
+    // Invalidate storefront cache
+    revalidateTag(CacheTags.store(product.store.subdomainSlug), "default");
+    revalidateTag(CacheTags.products(product.storeId), "default");
+
+    return {
+      ...softDeletedProduct,
+      price: softDeletedProduct.price.toString(),
+    };
+  } catch (error: any) {
+    // Handle database connection errors
+    if (error.message?.includes("database server") || error.message?.includes("connection") || error.message?.includes("ECONNREFUSED")) {
+      throw new Error(
+        "Database connection error. Please check your database is running and try again."
+      );
+    }
+    
+    // Handle other Prisma errors
+    if (error.code) {
+      console.error(`Prisma error code ${error.code}:`, error.message);
+      throw new Error("An error occurred while deleting the product. Please try again.");
+    }
+    
+    throw error;
+  }
+}
+
+export async function restoreProduct(productId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  // Verify product ownership via store
+  const product = await prisma.product.findFirst({
     where: { id: productId },
+    include: { store: true },
+  });
+
+  if (!product || product.store.ownerId !== user.id) {
+    throw new Error("Product not found or unauthorized");
+  }
+
+  if (!product.deletedAt) {
+    throw new Error("Product is not deleted");
+  }
+
+  const restoredProduct = await prisma.product.update({
+    where: { id: productId },
+    data: { deletedAt: null },
   });
 
   await logAudit({
-    action: AuditAction.ProductDeleted,
+    action: AuditAction.ProductUpdated,
     actorId: user.id,
     storeId: product.storeId,
     resourceType: "Product",
     resourceId: productId,
-    metadata: { name: product.name },
+    metadata: { name: product.name, action: "restored" },
   });
 
   // Invalidate storefront cache
@@ -308,8 +374,8 @@ export async function deleteProduct(productId: string) {
   revalidateTag(CacheTags.products(product.storeId), "default");
 
   return {
-    ...deletedProduct,
-    price: deletedProduct.price.toString(),
+    ...restoredProduct,
+    price: restoredProduct.price.toString(),
   };
 }
 

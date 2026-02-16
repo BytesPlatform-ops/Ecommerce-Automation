@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: { in: productIds },
         storeId: storeId,
+        deletedAt: null, // Prevent checkout with soft-deleted products
       },
       include: {
         variants: true,

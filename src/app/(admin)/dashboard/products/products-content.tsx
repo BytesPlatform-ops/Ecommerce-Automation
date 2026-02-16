@@ -2,15 +2,17 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Package, Search } from "lucide-react";
+import { Plus, Pencil, Package, Search, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
+import { RestoreProductButton } from "@/components/dashboard/restore-product-button";
 
 interface Product {
   id: string;
   name: string;
   price: string | number;
   imageUrl: string | null;
+  deletedAt: string | Date | null;
 }
 
 interface ProductsPageContentProps {
@@ -72,16 +74,25 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
               filteredProducts.map((product) => (
                 <div 
                   key={product.id} 
-                  className="group bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all"
+                  className={`group rounded-xl border overflow-hidden hover:shadow-md transition-all ${
+                    product.deletedAt
+                      ? 'bg-red-50 border-red-200'
+                      : 'bg-gray-50 border-gray-100 hover:border-gray-200'
+                  }`}
                 >
                   {/* Product Image */}
                   <div className="aspect-video relative bg-gray-100 overflow-hidden">
+                    {product.deletedAt && (
+                      <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
+                        Deleted
+                      </div>
+                    )}
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`object-cover group-hover:scale-105 transition-transform duration-300 ${product.deletedAt ? 'grayscale' : ''}`}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
@@ -94,8 +105,8 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900 line-clamp-1">{product.name}</h3>
-                        <p className="text-lg font-bold text-blue-600 mt-1">
+                        <h3 className={`font-semibold line-clamp-1 ${product.deletedAt ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{product.name}</h3>
+                        <p className={`text-lg font-bold mt-1 ${product.deletedAt ? 'text-gray-400' : 'text-blue-600'}`}>
                           ${Number(product.price).toFixed(2)}
                         </p>
                       </div>
@@ -103,14 +114,20 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
-                      <Link
-                        href={`/dashboard/products/${product.id}/edit`}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </Link>
-                      <DeleteProductButton productId={product.id} />
+                      {product.deletedAt ? (
+                        <RestoreProductButton productId={product.id} />
+                      ) : (
+                        <>
+                          <Link
+                            href={`/dashboard/products/${product.id}/edit`}
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit
+                          </Link>
+                          <DeleteProductButton productId={product.id} />
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

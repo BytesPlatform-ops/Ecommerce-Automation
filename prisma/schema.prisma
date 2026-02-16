@@ -235,12 +235,14 @@ model Product {
   imageUrl    String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?   // Soft delete: null = active, timestamp = deleted
 
   variants   ProductVariant[]
   images     ProductImage[]
   orderItems OrderItem[]
 
   @@index([storeId])
+  @@index([deletedAt])
   @@map("products")
 }
 

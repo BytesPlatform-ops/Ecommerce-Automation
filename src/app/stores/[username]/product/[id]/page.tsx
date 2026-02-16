@@ -18,6 +18,7 @@ export default async function ProductDetailPage({
   const product = await prisma.product.findFirst({
     where: {
       id,
+      deletedAt: null, // Exclude soft-deleted products
       store: { subdomainSlug: username },
     },
     include: {

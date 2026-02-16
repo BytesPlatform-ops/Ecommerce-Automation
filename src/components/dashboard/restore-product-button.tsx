@@ -2,27 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteProduct } from "@/lib/actions";
-import { Trash2, AlertCircle, CheckCircle } from "lucide-react";
+import { restoreProduct } from "@/lib/actions";
+import { RotateCcw, CheckCircle } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 
-interface DeleteProductButtonProps {
+interface RestoreProductButtonProps {
   productId: string;
 }
 
-export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
+export function RestoreProductButton({ productId }: RestoreProductButtonProps) {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
-  const handleDelete = async () => {
+  const handleRestore = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      await deleteProduct(productId);
+      await restoreProduct(productId);
       setSuccess(true);
       setTimeout(() => {
         setIsOpen(false);
@@ -30,15 +30,13 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
         router.refresh();
       }, 1500);
     } catch (err: any) {
-      console.error("Error deleting product:", err);
-      // Extract clean error message
-      let errorMessage = err.message || "Failed to delete product. Please try again.";
-      
-      // Remove Turbopack wrapper text if present
+      console.error("Error restoring product:", err);
+      let errorMessage = err.message || "Failed to restore product. Please try again.";
+
       if (errorMessage.includes("__TURBOPACK__")) {
         errorMessage = errorMessage.split("→").pop()?.trim() || errorMessage;
       }
-      
+
       setError(errorMessage);
       setLoading(false);
     }
@@ -49,9 +47,10 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
       <button
         onClick={() => setIsOpen(true)}
         disabled={loading}
-        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-green-200 rounded-lg text-sm font-medium text-green-700 hover:bg-green-50 hover:border-green-300 transition-colors disabled:opacity-50"
       >
-        <Trash2 className="h-4 w-4" />
+        <RotateCcw className="h-4 w-4" />
+        Restore
       </button>
 
       <Dialog
@@ -61,20 +60,20 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
           setError(null);
           setSuccess(false);
         }}
-        title={success ? "Success" : error ? "Error" : "Delete Product"}
+        title={success ? "Restored!" : error ? "Error" : "Restore Product"}
         description={
           success
-            ? "Product has been removed from your store. It will no longer be visible to customers. You can restore it anytime from your products page."
+            ? "Product has been restored and is now visible to customers again."
             : error
               ? error
-              : "This will remove the product from your store so customers can no longer see or purchase it. Your order history will be preserved. You can restore it later if needed."
+              : "This will make the product visible on your store again. Customers will be able to see and purchase it."
         }
         children={
-          success && (
+          success ? (
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
-          )
+          ) : null
         }
         actions={
           success
@@ -97,9 +96,9 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
                     variant: "secondary",
                   },
                   {
-                    label: "Delete",
-                    onClick: handleDelete,
-                    variant: "danger",
+                    label: "Restore Product",
+                    onClick: handleRestore,
+                    variant: "primary",
                     loading,
                   },
                 ]

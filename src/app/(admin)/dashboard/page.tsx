@@ -26,10 +26,10 @@ export default async function DashboardPage() {
   // Parallelize independent queries
   const [productCount, recentProducts] = await Promise.all([
     prisma.product.count({
-      where: { storeId: store.id },
+      where: { storeId: store.id, deletedAt: null },
     }),
     prisma.product.findMany({
-      where: { storeId: store.id },
+      where: { storeId: store.id, deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
