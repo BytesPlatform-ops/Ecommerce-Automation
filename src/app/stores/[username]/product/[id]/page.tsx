@@ -55,10 +55,10 @@ export default async function ProductDetailPage({
         {/* Breadcrumb */}
         <Link
           href={backUrl}
-          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-300 mb-8 sm:mb-12 group"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-300 mb-8 sm:mb-12 group px-4 py-2 rounded-xl hover:bg-muted"
         >
           <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
-          <span className="uppercase tracking-[0.08em]">Back to shop</span>
+          <span className="uppercase tracking-[0.08em] font-medium">Back to shop</span>
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-start">
@@ -67,12 +67,12 @@ export default async function ProductDetailPage({
             <ProductImageGallery name={product.name} imageUrls={imageUrls} />
 
             {/* Product trust badges — inline */}
-            <div className="flex gap-3">
-              <div className="flex-1 py-3 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Authentic</p>
+            <div className="flex gap-3 mt-4">
+              <div className="flex-1 py-3.5 border border-border rounded-xl text-center bg-muted/30">
+                <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">Authentic</p>
               </div>
-              <div className="flex-1 py-3 border border-border text-center">
-                <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Brand New</p>
+              <div className="flex-1 py-3.5 border border-border rounded-xl text-center bg-muted/30">
+                <p className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground font-medium">Brand New</p>
               </div>
             </div>
           </div>
@@ -131,25 +131,31 @@ export default async function ProductDetailPage({
             </div>
 
             {/* Trust Badges */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Truck className="h-4 w-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
+            <div className="space-y-3">
+              <div className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 border border-border/50">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-background shadow-sm shrink-0">
+                  <Truck className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="text-sm text-foreground">Complimentary Shipping</p>
+                  <p className="text-sm font-medium text-foreground">Complimentary Shipping</p>
                   <p className="text-xs text-muted-foreground">On orders over $50</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
+              <div className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 border border-border/50">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-background shadow-sm shrink-0">
+                  <Shield className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="text-sm text-foreground">Secure Checkout</p>
+                  <p className="text-sm font-medium text-foreground">Secure Checkout</p>
                   <p className="text-xs text-muted-foreground">Encrypted payment processing</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <RotateCcw className="h-4 w-4 text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
+              <div className="flex items-center gap-4 p-3.5 rounded-xl bg-muted/30 border border-border/50">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-background shadow-sm shrink-0">
+                  <RotateCcw className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                </div>
                 <div>
-                  <p className="text-sm text-foreground">Easy Returns</p>
+                  <p className="text-sm font-medium text-foreground">Easy Returns</p>
                   <p className="text-xs text-muted-foreground">30-day return policy</p>
                 </div>
               </div>
@@ -158,8 +164,8 @@ export default async function ProductDetailPage({
         </div>
 
         {/* Product Description */}
-        <div className="mt-16 sm:mt-20 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 border-t border-border pt-10">
+        <div className="mt-16 sm:mt-24 grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="lg:col-span-2 border-t border-border/60 pt-10">
             <p className="text-overline mb-4">Details</p>
             <div className="prose max-w-none">
               {product.description ? (
@@ -175,18 +181,18 @@ export default async function ProductDetailPage({
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
-              <div className="border border-border p-4">
+              <div className="border border-border p-4 rounded-xl bg-muted/20">
                 <p className="text-overline mb-1">SKU</p>
-                <p className="text-sm text-foreground">{product.id.slice(0, 8).toUpperCase()}</p>
+                <p className="text-sm font-medium text-foreground">{product.id.slice(0, 8).toUpperCase()}</p>
               </div>
-              <div className="border border-border p-4">
+              <div className="border border-border p-4 rounded-xl bg-muted/20">
                 <p className="text-overline mb-1">Availability</p>
-                <p className="text-sm text-green-700">In Stock</p>
+                <p className="text-sm font-medium text-green-700">In Stock</p>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-border pt-10">
+          <div className="border-t border-border/60 pt-10">
             <p className="text-overline mb-4">Why This Product</p>
             <ul className="space-y-3">
               {[
@@ -196,8 +202,10 @@ export default async function ProductDetailPage({
                 "Great value for money",
                 "Satisfaction guaranteed",
               ].map((item, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <Check className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+                <li key={idx} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="h-3 w-3 text-foreground" strokeWidth={2} />
+                  </div>
                   <span className="text-sm text-muted-foreground">{item}</span>
                 </li>
               ))}

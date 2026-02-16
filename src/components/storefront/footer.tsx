@@ -63,39 +63,39 @@ export function StorefrontFooter({
   const safeYoutube = safeSocialUrl(youtubeUrl);
 
   return (
-    <footer className="border-t border-border bg-background mt-24">
+    <footer className="footer-section mt-24">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-8 mb-16">
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="font-serif text-lg tracking-tight mb-4">{storeName}</h3>
+            <h3 className="font-serif text-xl tracking-tight mb-4 font-medium">{storeName}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Curated with intention. Every product selected for quality, design, and lasting value.
             </p>
             {hasSocials && (
-              <div className="flex gap-4 mt-6">
+              <div className="flex gap-2.5 mt-6">
                 {safeInstagram && (
-                  <a href={safeInstagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <a href={safeInstagram} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
                     <Instagram className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeFacebook && (
-                  <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
                     <Facebook className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeTwitter && (
-                  <a href={safeTwitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <a href={safeTwitter} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
                     <Twitter className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeLinkedin && (
-                  <a href={safeLinkedin} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <a href={safeLinkedin} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
                     <Linkedin className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeYoutube && (
-                  <a href={safeYoutube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors duration-300">
+                  <a href={safeYoutube} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
                     <Youtube className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
@@ -105,8 +105,8 @@ export function StorefrontFooter({
 
           {/* Navigation */}
           <div>
-            <p className="text-overline mb-4">Navigation</p>
-            <ul className="space-y-3">
+            <p className="text-overline mb-5">Navigation</p>
+            <ul className="space-y-3.5">
               <li>
                 <Link href={homePath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
                   Home
@@ -127,8 +127,8 @@ export function StorefrontFooter({
 
           {/* Support */}
           <div>
-            <p className="text-overline mb-4">Support</p>
-            <ul className="space-y-3">
+            <p className="text-overline mb-5">Support</p>
+            <ul className="space-y-3.5">
               {showShippingReturns && shippingReturnsPath && (
                 <li>
                   <Link href={shippingReturnsPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
@@ -160,18 +160,18 @@ export function StorefrontFooter({
 
           {/* Newsletter */}
           <div>
-            <p className="text-overline mb-4">Stay Updated</p>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-overline mb-5">Stay Updated</p>
+            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
               New arrivals and exclusive offers, delivered to your inbox.
             </p>
-            <div className="flex gap-0">
+            <div className="flex">
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="flex-1 px-3 py-2.5 bg-background border border-border border-r-0 text-sm placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200 min-w-0"
+                className="flex-1 px-4 py-3 bg-background border border-border text-sm placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200 min-w-0 footer-newsletter-input"
               />
               <button
-                className="btn-luxury btn-primary-luxury !py-2.5 !px-4 !text-[11px] shrink-0"
+                className="btn-luxury btn-primary-luxury !py-3 !px-5 !text-[11px] shrink-0 footer-newsletter-btn !rounded-l-none"
                 style={{ backgroundColor: "var(--primary)" }}
               >
                 Join
@@ -181,7 +181,7 @@ export function StorefrontFooter({
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-border pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="border-t border-border/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} {storeName}
           </p>
@@ -190,7 +190,7 @@ export function StorefrontFooter({
             <a
               href="/"
               target="_blank"
-              className="text-foreground hover:opacity-70 transition-opacity duration-300 font-medium"
+              className="text-foreground hover:opacity-70 transition-opacity duration-300 font-semibold"
             >
               Chameleon
             </a>

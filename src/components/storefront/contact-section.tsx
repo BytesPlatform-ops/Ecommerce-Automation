@@ -103,9 +103,9 @@ export function ContactSection({
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12 sm:mb-16">
-            <p className="text-overline mb-3">Contact</p>
-            <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-3">Get in Touch</h2>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Contact</p>
+            <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-4 font-medium">Get in Touch</h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
               We&apos;d love to hear from you. Reach out through any of our contact channels.
             </p>
           </div>
@@ -117,10 +117,12 @@ export function ContactSection({
 
               {/* Email */}
               {contactEmail && (
-                <div className="flex gap-3 py-4 border-b border-border group">
-                  <Mail className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                <div className="contact-info-card flex gap-4">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
+                    <Mail className="h-4 w-4" strokeWidth={1.5} />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">Email</p>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">Email</p>
                     <a
                       href={`mailto:${contactEmail}`}
                       className="text-sm text-foreground hover:opacity-70 transition-opacity duration-200 break-all"
@@ -133,10 +135,12 @@ export function ContactSection({
 
               {/* Phone */}
               {contactPhone && (
-                <div className="flex gap-3 py-4 border-b border-border group">
-                  <Phone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                <div className="contact-info-card flex gap-4">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
+                    <Phone className="h-4 w-4" strokeWidth={1.5} />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">Phone</p>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">Phone</p>
                     <a
                       href={`tel:${contactPhone}`}
                       className="text-sm text-foreground hover:opacity-70 transition-opacity duration-200"
@@ -149,10 +153,12 @@ export function ContactSection({
 
               {/* WhatsApp */}
               {whatsappNumber && (
-                <div className="flex gap-3 py-4 border-b border-border group">
-                  <Smartphone className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" strokeWidth={1.5} />
+                <div className="contact-info-card flex gap-4">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
+                    <Smartphone className="h-4 w-4" strokeWidth={1.5} />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground mb-1">WhatsApp</p>
+                    <p className="text-xs text-muted-foreground mb-1 font-medium">WhatsApp</p>
                     <a
                       href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
                       target="_blank"
@@ -169,17 +175,17 @@ export function ContactSection({
             {/* Contact Form */}
             {contactEmail && (
               <div className="lg:col-span-2">
-                <div className="border border-border p-6 sm:p-8">
+                <div className="contact-form-card">
                   <h3 className="text-overline mb-6">Send a Message</h3>
 
                   {error && (
-                    <div className="mb-4 p-3 border border-red-200 bg-red-50 text-red-700 text-xs">
+                    <div className="mb-5 p-4 border border-red-200 bg-red-50 text-red-700 text-xs rounded-xl">
                       {error}
                     </div>
                   )}
 
                   {success && (
-                    <div className="mb-4 p-3 border border-green-200 bg-green-50 text-green-700 text-xs">
+                    <div className="mb-5 p-4 border border-green-200 bg-green-50 text-green-700 text-xs rounded-xl">
                       Thank you! Your message has been sent successfully.
                     </div>
                   )}
@@ -188,7 +194,7 @@ export function ContactSection({
                     <div className="grid sm:grid-cols-2 gap-5">
                       {/* Name */}
                       <div>
-                        <label htmlFor="name" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                        <label htmlFor="name" className="block text-xs text-muted-foreground mb-2.5 uppercase tracking-wider font-medium">
                           Name *
                         </label>
                         <input
@@ -197,13 +203,13 @@ export function ContactSection({
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="Your name"
-                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
                         />
                       </div>
 
                       {/* Email */}
                       <div>
-                        <label htmlFor="email" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                        <label htmlFor="email" className="block text-xs text-muted-foreground mb-2.5 uppercase tracking-wider font-medium">
                           Email *
                         </label>
                         <input
@@ -212,7 +218,7 @@ export function ContactSection({
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           placeholder="your@email.com"
-                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
                         />
                       </div>
                     </div>
@@ -220,14 +226,14 @@ export function ContactSection({
                     {/* Query Type */}
                     {queryTypes.length > 0 && (
                       <div>
-                        <label htmlFor="queryType" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                        <label htmlFor="queryType" className="block text-xs text-muted-foreground mb-2.5 uppercase tracking-wider font-medium">
                           Inquiry Type
                         </label>
                         <select
                           id="queryType"
                           value={formData.queryType}
                           onChange={(e) => setFormData({ ...formData, queryType: e.target.value })}
-                          className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
                         >
                           <option value="">Select inquiry type</option>
                           {queryTypes.map((type: string) => (
@@ -242,7 +248,7 @@ export function ContactSection({
 
                     {/* Subject */}
                     <div>
-                      <label htmlFor="subject" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                      <label htmlFor="subject" className="block text-xs text-muted-foreground mb-2.5 uppercase tracking-wider font-medium">
                         Subject
                       </label>
                       <input
@@ -251,13 +257,13 @@ export function ContactSection({
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         placeholder="Message subject"
-                        className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
+                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
                       />
                     </div>
 
                     {/* Message */}
                     <div>
-                      <label htmlFor="message" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                      <label htmlFor="message" className="block text-xs text-muted-foreground mb-2.5 uppercase tracking-wider font-medium">
                         Message *
                       </label>
                       <textarea
@@ -266,7 +272,7 @@ export function ContactSection({
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Your message..."
                         rows={4}
-                        className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200 resize-none"
+                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 resize-none rounded-xl"
                       />
                     </div>
 

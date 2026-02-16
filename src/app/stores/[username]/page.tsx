@@ -71,11 +71,11 @@ export default async function StorefrontHomePage({
               className="object-cover object-center"
               priority
             />
-            <div className="absolute inset-0 bg-black/30" />
-            <div className={`relative px-4 sm:px-6 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/10" />
+            <div className={`relative px-6 sm:px-8 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
               <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
-                <p className="text-overline !text-white/70 mb-4 sm:mb-6">Welcome to {store.storeName}</p>
-                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] mb-6 tracking-tight">
+                <p className="text-overline !text-white/60 mb-5 sm:mb-7 tracking-[0.2em]">Welcome to {store.storeName}</p>
+                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.08] mb-7 tracking-tight font-medium">
                   {heroHeadlineLines.map((line, index) => (
                     <span key={`${line}-${index}`}>
                       {line}
@@ -83,12 +83,12 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-white/80 mb-8 sm:mb-10 leading-relaxed font-light">
+                <p className="text-base sm:text-lg text-white/75 mb-10 sm:mb-12 leading-relaxed font-light max-w-xl">
                   {heroDescription}
                 </p>
                 <a 
                   href="#products"
-                  className="btn-luxury btn-primary-luxury !bg-white !text-foreground hover:!opacity-90"
+                  className="btn-luxury !bg-white !text-foreground hover:!opacity-90 !rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Explore Collection
                   <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
@@ -97,11 +97,11 @@ export default async function StorefrontHomePage({
             </div>
           </div>
         ) : (
-          <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center border-b border-border ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
-            <div className={`px-4 sm:px-6 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
+          <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
+            <div className={`px-6 sm:px-8 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
               <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
-                <p className="text-overline mb-4 sm:mb-6">Welcome to {store.storeName}</p>
-                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.1] mb-6 tracking-tight">
+                <p className="text-overline mb-5 sm:mb-7 tracking-[0.2em]">Welcome to {store.storeName}</p>
+                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.08] mb-7 tracking-tight font-medium">
                   {heroHeadlineLines.map((line, index) => (
                     <span key={`${line}-${index}`}>
                       {line}
@@ -109,10 +109,10 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 leading-relaxed">
+                <p className="text-base sm:text-lg text-muted-foreground mb-10 sm:mb-12 leading-relaxed max-w-xl">
                   {heroDescription}
                 </p>
-                <div className={`flex ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : "flex-col sm:flex-row"} gap-3`}>
+                <div className={`flex ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : "flex-col sm:flex-row"} gap-4`}>
                   <a 
                     href="#products"
                     className="btn-luxury btn-primary-luxury"
@@ -135,20 +135,35 @@ export default async function StorefrontHomePage({
       </section>
 
       {/* ─── Trust Bar ─── */}
-      <section className="border-b border-border py-8 sm:py-10">
+      <section className="py-10 sm:py-14">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-            <div className="flex items-center gap-3 justify-center">
-              <Truck className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
-              <span className="text-sm text-muted-foreground">Complimentary Shipping</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <div className="trust-badge">
+              <span className="trust-icon">
+                <Truck className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+              </span>
+              <div>
+                <span className="text-sm font-medium text-foreground">Free Shipping</span>
+                <p className="text-xs text-muted-foreground mt-0.5">On all orders</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3 justify-center">
-              <Shield className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
-              <span className="text-sm text-muted-foreground">Secure Checkout</span>
+            <div className="trust-badge">
+              <span className="trust-icon">
+                <Shield className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+              </span>
+              <div>
+                <span className="text-sm font-medium text-foreground">Secure Checkout</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Encrypted payments</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3 justify-center">
-              <RotateCcw className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
-              <span className="text-sm text-muted-foreground">30-Day Returns</span>
+            <div className="trust-badge">
+              <span className="trust-icon">
+                <RotateCcw className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+              </span>
+              <div>
+                <span className="text-sm font-medium text-foreground">30-Day Returns</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Hassle-free policy</p>
+              </div>
             </div>
           </div>
         </div>
@@ -156,26 +171,27 @@ export default async function StorefrontHomePage({
 
       {/* ─── Featured Products ─── */}
       {featuredProducts.length > 0 && (
-        <section className="py-16 sm:py-20 lg:py-24">
+        <section className="py-16 sm:py-20 lg:py-28">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-            <div className="flex items-end justify-between mb-10 sm:mb-12">
+            <div className="flex items-end justify-between mb-10 sm:mb-14">
               <div>
-                <p className="text-overline mb-2">Featured</p>
-                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight">
+                <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Featured</p>
+                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight font-medium">
                   New Arrivals
                 </h2>
               </div>
               {products.length > 4 && (
                 <Link
                   href="#products"
-                  className="text-sm text-muted-foreground hover:text-foreground link-underline transition-colors duration-300 hidden sm:block"
+                  className="text-sm text-muted-foreground hover:text-foreground link-underline transition-colors duration-300 hidden sm:flex items-center gap-1.5"
                 >
                   View All
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </Link>
               )}
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-7 stagger-children">
               {featuredProducts.map((product) => {
                 const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
                 const secondaryImageUrl = product.images?.[1]?.url;
@@ -183,10 +199,10 @@ export default async function StorefrontHomePage({
                 return (
                   <div
                     key={product.id}
-                    className="product-card group border border-border bg-background overflow-hidden"
+                    className="product-card group border border-border/60 bg-background overflow-hidden"
                   >
                     <Link href={`${productPath}/${product.id}`} className="block">
-                      <div className="aspect-[3/4] relative bg-muted overflow-hidden">
+                      <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
                         {primaryImageUrl ? (
                           <>
                             <Image
@@ -205,16 +221,16 @@ export default async function StorefrontHomePage({
                             )}
                           </>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
                             <span className="text-xs text-muted-foreground">No image</span>
                           </div>
                         )}
                       </div>
                       <div className="p-4 sm:p-5">
-                        <h3 className="text-sm sm:text-base text-foreground mb-1.5 line-clamp-1">
+                        <h3 className="text-sm sm:text-base text-foreground mb-2 line-clamp-1 font-medium">
                           {product.name}
                         </h3>
-                        <p className="text-sm text-muted-foreground font-medium">
+                        <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                           ${Number(product.price).toFixed(2)}
                         </p>
                       </div>
@@ -238,14 +254,14 @@ export default async function StorefrontHomePage({
       )}
 
       {/* ─── All Products ─── */}
-      <section id="products" className="py-16 sm:py-20 lg:py-24 border-t border-border">
+      <section id="products" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-14">
-            <p className="text-overline mb-2" style={{ color: "var(--primary)" }}>Collection</p>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight mb-4">
+            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Collection</p>
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight mb-4 font-medium">
               All Products
             </h2>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
               Browse our complete selection of carefully curated items
             </p>
           </div>
@@ -264,7 +280,7 @@ export default async function StorefrontHomePage({
           </div>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 stagger-children">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 stagger-children">
               {products.map((product) => {
                 const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
                 const secondaryImageUrl = product.images?.[1]?.url;
@@ -272,10 +288,10 @@ export default async function StorefrontHomePage({
                 return (
                   <div
                     key={product.id}
-                    className="product-card group border border-border bg-background overflow-hidden"
+                    className="product-card group border border-border/60 bg-background overflow-hidden"
                   >
                     <Link href={`${productPath}/${product.id}`} className="block">
-                      <div className="aspect-[3/4] relative bg-muted overflow-hidden">
+                      <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
                         {primaryImageUrl ? (
                           <>
                             <Image
@@ -296,21 +312,21 @@ export default async function StorefrontHomePage({
                             )}
                           </>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
                             <span className="text-xs text-muted-foreground">No image</span>
                           </div>
                         )}
                       </div>
-                      <div className="p-3 sm:p-4">
-                        <h3 className="text-sm text-foreground mb-1 line-clamp-1">
+                      <div className="p-4 sm:p-5">
+                        <h3 className="text-sm text-foreground mb-1.5 line-clamp-1 font-medium">
                           {product.name}
                         </h3>
-                        <p className="text-sm text-muted-foreground font-medium">
+                        <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                           ${Number(product.price).toFixed(2)}
                         </p>
                       </div>
                     </Link>
-                    <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                    <div className="px-4 sm:px-5 pb-4 sm:pb-5">
                       <AddToCartButton 
                         product={{
                           ...product,
@@ -325,7 +341,7 @@ export default async function StorefrontHomePage({
               })}
             </div>
           ) : (
-            <div className="text-center py-20 border border-border">
+            <div className="text-center py-20 rounded-2xl border border-border bg-background">
               <p className="text-muted-foreground text-sm mb-1">No products yet</p>
               <p className="text-xs text-muted-foreground">Check back soon for new arrivals</p>
             </div>
@@ -335,27 +351,40 @@ export default async function StorefrontHomePage({
 
       {/* ─── Testimonials ─── */}
       {store.testimonials && store.testimonials.length > 0 && (
-        <section id="testimonials" className="py-16 sm:py-20 lg:py-24 border-t border-border">
+        <section id="testimonials" className="py-16 sm:py-20 lg:py-28">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
             <div className="text-center mb-12 sm:mb-16">
-              <p className="text-overline mb-2" style={{ color: "var(--primary)" }}>Testimonials</p>
-              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight">
+              <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Testimonials</p>
+              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight font-medium">
                 What Our Clients Say
               </h2>
             </div>
 
-            <div className={store.testimonials.length === 1 ? "flex justify-center" : store.testimonials.length === 2 ? "grid grid-cols-2 gap-6 sm:gap-8 mx-auto w-fit" : "grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"}>
+            <div className={store.testimonials.length === 1 ? "flex justify-center" : store.testimonials.length === 2 ? "grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto" : "grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"}>
               {store.testimonials.map((testimonial, idx) => (
                 <div
                   key={idx}
-                  className={`border border-border p-6 sm:p-8 transition-colors duration-400 hover:border-foreground ${store.testimonials.length === 1 ? 'w-full md:w-1/2 lg:w-2/5' : ''}`}
+                  className={`testimonial-card ${store.testimonials.length === 1 ? 'w-full md:w-1/2 lg:w-2/5' : ''}`}
                 >
+                  {/* Star Rating */}
+                  <div className="flex gap-1 mb-5">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-4 h-4" viewBox="0 0 20 20" fill="var(--primary)" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
                   <p className="text-sm text-foreground leading-relaxed mb-6">
-                    &ldquo;{testimonial.content}&rdquo;
+                    {testimonial.content}
                   </p>
-                  <div>
-                    <p className="text-overline !text-foreground">{testimonial.customerName}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Verified Buyer</p>
+                  <div className="flex items-center gap-3 pt-5 border-t border-border/60">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white" style={{ backgroundColor: "var(--primary)" }}>
+                      {testimonial.customerName?.charAt(0)?.toUpperCase() || "?"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{testimonial.customerName}</p>
+                      <p className="text-xs text-muted-foreground">Verified Buyer</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -382,23 +411,25 @@ export default async function StorefrontHomePage({
       </div>
 
       {/* ─── CTA Section ─── */}
-      <section className="py-20 sm:py-28 lg:py-32 border-t" style={{ borderTopColor: "var(--primary)" }}>
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 text-center">
-          <div className="w-12 h-px mx-auto mb-8" style={{ backgroundColor: "var(--primary)" }} />
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight mb-5">
-            Begin your journey
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-8 sm:mb-10 max-w-md mx-auto">
-            Explore our collection and find something exceptional
-          </p>
-          <a 
-            href="#products"
-            className="btn-luxury btn-primary-luxury"
-            style={{ backgroundColor: "var(--primary)" }}
-          >
-            Shop Now
-            <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
-          </a>
+      <section className="py-20 sm:py-28 lg:py-36">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="text-center py-16 sm:py-20 px-6 sm:px-12 rounded-3xl bg-muted/50">
+            <div className="w-10 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight mb-5 font-medium">
+              Begin your journey
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-10 sm:mb-12 max-w-md mx-auto leading-relaxed">
+              Explore our collection and find something exceptional
+            </p>
+            <a 
+              href="#products"
+              className="btn-luxury btn-primary-luxury"
+              style={{ backgroundColor: "var(--primary)" }}
+            >
+              Shop Now
+              <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
+            </a>
+          </div>
         </div>
       </section>
     </div>

@@ -88,17 +88,17 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
       <div className="h-16 sm:h-[72px]" />
       
       <div className="relative">
-        <nav className="border-b bg-background/95 backdrop-blur-sm fixed top-0 left-0 right-0 z-50 transition-transform duration-300 w-full" style={{ borderBottomColor: "var(--primary)", overflowAnchor: "none", transform: isNavbarVisible ? 'translateY(0)' : 'translateY(-100%)' }}>
+        <nav className="navbar-glass fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full" style={{ overflowAnchor: "none", transform: isNavbarVisible ? 'translateY(0)' : 'translateY(-100%)' }}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 sm:h-[72px] min-h-16 sm:min-h-[72px]">
             {/* Logo */}
             <Link
               href={homePath}
-              className="flex items-center gap-3 hover:opacity-70 transition-opacity duration-300 flex-shrink-0"
+              className="flex items-center gap-3 hover:opacity-80 transition-all duration-300 flex-shrink-0 group"
               style={{ color: "var(--primary)" }}
             >
               {storeLogoUrl && (
-                <span className="relative h-8 w-8 sm:h-9 sm:w-9">
+                <span className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-lg overflow-hidden group-hover:scale-105 transition-transform duration-300">
                   <Image
                     src={storeLogoUrl}
                     alt={`${storeName} logo`}
@@ -107,35 +107,35 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
                   />
                 </span>
               )}
-              <span className="font-serif text-lg sm:text-xl tracking-tight">
+              <span className="font-serif text-lg sm:text-xl tracking-tight font-medium">
                 {storeName}
               </span>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-1">
               <Link
                 href={homePath}
-                className="text-overline link-underline text-muted-foreground hover:text-foreground transition-colors duration-300"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
               >
                 Shop
               </Link>
               <Link
                 href={aboutPath}
-                className="text-overline link-underline text-muted-foreground hover:text-foreground transition-colors duration-300"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
               >
                 About
               </Link>
               <Link
                 href={contactPath}
-                className="text-overline link-underline text-muted-foreground hover:text-foreground transition-colors duration-300"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
               >
                 Contact
               </Link>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* Desktop Search */}
               <div className={styles.desktopSearch}>
                 <NavbarSearch 
@@ -148,10 +148,10 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
               <button
                 id="mobile-search-button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="md:hidden p-2 hover:bg-muted rounded-sm transition-colors duration-200 flex items-center justify-center"
+                className="md:hidden p-2.5 hover:bg-muted/80 rounded-xl transition-all duration-200 flex items-center justify-center"
                 aria-label="Search"
               >
-                <Search className="h-[18px] w-[18px] text-foreground relative -top-[1px]" strokeWidth={1.5} />
+                <Search className="h-[18px] w-[18px] text-foreground" strokeWidth={1.5} />
               </button>
 
               {/* Cart */}
@@ -160,7 +160,7 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
               {/* Mobile Menu Toggle */}
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 hover:bg-muted rounded-sm transition-colors duration-200"
+                className="md:hidden p-2.5 hover:bg-muted/80 rounded-xl transition-all duration-200"
                 aria-label="Menu"
               >
                 {isMenuOpen ? (
@@ -176,7 +176,7 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
 
         {/* Mobile Search - Fixed dropdown below navbar */}
         {isSearchOpen && (
-          <div id="mobile-search-container" className="md:hidden fixed top-16 sm:top-[72px] left-0 right-0 bg-background border-b border-border px-4 sm:px-6 py-4 z-40 shadow-lg transition-all" style={{ overflowAnchor: 'none', opacity: isNavbarVisible ? 1 : 0, pointerEvents: isNavbarVisible ? 'auto' : 'none' }}>
+          <div id="mobile-search-container" className="md:hidden fixed top-16 sm:top-[72px] left-0 right-0 bg-background/95 backdrop-blur-lg border-b border-border/50 px-4 sm:px-6 py-4 z-40 shadow-lg transition-all" style={{ overflowAnchor: 'none', opacity: isNavbarVisible ? 1 : 0, pointerEvents: isNavbarVisible ? 'auto' : 'none' }}>
             <NavbarSearch 
               products={products}
               productPath={productPath}
@@ -188,26 +188,26 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-background" style={{ overflowAnchor: 'none' }}>
-          <div className="flex flex-col items-center justify-center h-full gap-8">
+        <div className="md:hidden fixed inset-0 z-40 bg-background/98 backdrop-blur-sm" style={{ overflowAnchor: 'none' }}>
+          <div className="flex flex-col items-center justify-center h-full gap-10">
             <Link
               href={homePath}
               onClick={() => setIsMenuOpen(false)}
-              className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity"
+              className="text-3xl font-serif tracking-tight hover:opacity-70 transition-all duration-300"
             >
               Shop
             </Link>
             <Link
               href={aboutPath}
               onClick={() => setIsMenuOpen(false)}
-              className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity"
+              className="text-3xl font-serif tracking-tight hover:opacity-70 transition-all duration-300"
             >
               About
             </Link>
             <Link
               href={contactPath}
               onClick={() => setIsMenuOpen(false)}
-              className="text-2xl font-serif tracking-tight hover:opacity-70 transition-opacity"
+              className="text-3xl font-serif tracking-tight hover:opacity-70 transition-all duration-300"
             >
               Contact
             </Link>
