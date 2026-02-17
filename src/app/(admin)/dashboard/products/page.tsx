@@ -35,6 +35,16 @@ export default async function ProductsPage() {
       updatedAt: true,
       storeId: true,
       deletedAt: true,
+      variants: {
+        select: {
+          id: true,
+          sizeType: true,
+          value: true,
+          unit: true,
+          stock: true,
+          price: true,
+        },
+      },
     },
   });
 
@@ -43,6 +53,10 @@ export default async function ProductsPage() {
     ...product,
     price: product.price.toString(),
     deletedAt: product.deletedAt ? product.deletedAt.toISOString() : null,
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      price: variant.price ? variant.price.toString() : null,
+    })),
   }));
 
   return <ProductsPageContent products={serializedProducts} />;

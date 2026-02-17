@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Package, Palette, Eye, Plus, TrendingUp, Clock, ArrowUpRight } from "lucide-react";
+import { StockNotificationAlert } from "@/components/dashboard/stock-notification-alert";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -62,6 +63,9 @@ export default async function DashboardPage() {
           Add Product
         </Link>
       </div>
+
+      {/* Stock Notifications */}
+      <StockNotificationAlert />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

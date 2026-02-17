@@ -27,6 +27,120 @@ function revalidateStore(slug: string, storeId: string) {
   revalidateTag(CacheTags.products(storeId), "default");
 }
 
+// ==================== STOCK NOTIFICATION HELPER ====================
+
+interface LowStockItem {
+  productId: string;
+  productName: string;
+  currentStock: number;
+  variantInfo?: string;
+}
+
+/**
+ * Check if any products have fallen to 10 or below stock
+ * Creates or updates an aggregated notification if low stock items exist
+ */
+async function checkAndNotifyLowStock(storeId: string) {
+  try {
+    // Get all products and variants for this store with stock <= 10
+    const lowStockProducts = await prisma.product.findMany({
+      where: {
+        storeId,
+        stock: { lte: 10 },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        stock: true,
+      },
+    });
+
+    const lowStockVariants = await prisma.productVariant.findMany({
+      where: {
+        product: { storeId, deletedAt: null },
+        stock: { lte: 10 },
+      },
+      select: {
+        id: true,
+        product: { select: { id: true, name: true } },
+        sizeType: true,
+        value: true,
+        unit: true,
+        stock: true,
+      },
+    });
+
+    // Compile affected items
+    const affectedItems: LowStockItem[] = [];
+
+    // Add base products
+    lowStockProducts.forEach((product) => {
+      affectedItems.push({
+        productId: product.id,
+        productName: product.name,
+        currentStock: product.stock,
+      });
+    });
+
+    // Add variants
+    lowStockVariants.forEach((variant) => {
+      const variantInfo = variant.sizeType ? `${variant.sizeType}${variant.value ? `: ${variant.value}` : ''}${variant.unit ? ` ${variant.unit}` : ''}` : undefined;
+      affectedItems.push({
+        productId: variant.product.id,
+        productName: `${variant.product.name}${variantInfo ? ` (${variantInfo})` : ''}`,
+        currentStock: variant.stock,
+        variantInfo,
+      });
+    });
+
+    // If there are low stock items, create or update notification
+    if (affectedItems.length > 0) {
+      // Find existing non-dismissed notification
+      const existingNotification = await prisma.stockNotification.findFirst({
+        where: {
+          storeId,
+          isDismissed: false,
+        },
+      });
+
+      if (existingNotification) {
+        // Update existing notification with new affected items
+        await prisma.stockNotification.update({
+          where: { id: existingNotification.id },
+          data: {
+            affectedItems: affectedItems,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // Create new notification
+        await prisma.stockNotification.create({
+          data: {
+            storeId,
+            affectedItems: affectedItems,
+          },
+        });
+      }
+    } else {
+      // No low stock items - auto-dismiss any existing notification
+      await prisma.stockNotification.updateMany({
+        where: {
+          storeId,
+          isDismissed: false,
+        },
+        data: {
+          isDismissed: true,
+          dismissedAt: new Date(),
+        },
+      });
+    }
+  } catch (error) {
+    secureLog.error("[Stock Notification] Error checking stock levels", error, { storeId });
+    // Don't throw - notifications should not block order processing
+  }
+}
+
 // ==================== ZOD SCHEMAS ====================
 
 const createProductSchema = z.object({
@@ -166,6 +280,10 @@ export async function createProduct(
   return {
     ...product,
     price: product.price.toString(),
+    variants: product.variants.map(v => ({
+      ...v,
+      price: v.price ? v.price.toString() : null,
+    })),
   };
 }
 
@@ -212,12 +330,77 @@ export async function updateProduct(
     ? (data.imageUrls[0] ?? null)
     : (data.imageUrl ?? undefined);
 
-  // Handle variant updates (delete old ones and create new ones for simplicity)
+  // Handle variant updates only if variants data has actually changed
   if (data.variants !== undefined) {
-    // Delete existing variants
-    await prisma.productVariant.deleteMany({
-      where: { productId },
-    });
+    // Check if variants have actually changed
+    const existingVariantIds = new Set(existingProduct.variants.map(v => v.id));
+    const newVariantIds = new Set(data.variants.filter(v => v.id).map(v => v.id));
+    
+    // Only process if variants have been added, removed, or modified
+    const hasVariantsChanged = 
+      data.variants.length !== existingProduct.variants.length ||
+      data.variants.some(nv => {
+        if (!nv.id) return true; // New variant added
+        const existing = existingProduct.variants.find(ev => ev.id === nv.id);
+        // Check if any property changed
+        return !existing || 
+               existing.sizeType !== nv.sizeType ||
+               existing.value !== (nv.value || null) ||
+               existing.unit !== nv.unit ||
+               Number(existing.price || 0) !== (nv.price || 0) ||
+               existing.stock !== nv.stock;
+      });
+
+    if (hasVariantsChanged) {
+      const newVariantIdsSet = new Set(data.variants.filter(v => v.id).map(v => v.id));
+      
+      // Update existing variants that are being modified
+      for (const variantData of data.variants.filter(v => v.id)) {
+        await prisma.productVariant.update({
+          where: { id: variantData.id },
+          data: {
+            sizeType: variantData.sizeType,
+            value: variantData.value || null,
+            unit: variantData.unit,
+            price: variantData.price ?? null,
+            stock: variantData.stock,
+          },
+        });
+      }
+      
+      // Create new variants (those without an id)
+      const newVariants = data.variants.filter(v => !v.id);
+      if (newVariants.length > 0) {
+        await prisma.productVariant.createMany({
+          data: newVariants.map(v => ({
+            productId,
+            sizeType: v.sizeType,
+            value: v.value || null,
+            unit: v.unit,
+            price: v.price ?? null,
+            stock: v.stock,
+          })),
+        });
+      }
+      
+      // Only delete variants that exist in the product but aren't in the new list
+      // AND don't have any order items referencing them
+      const variantsToDelete = existingProduct.variants.filter(v => !newVariantIdsSet.has(v.id));
+      
+      for (const variant of variantsToDelete) {
+        // Check if this variant has any order items
+        const orderItemCount = await prisma.orderItem.count({
+          where: { variantId: variant.id },
+        });
+        
+        // Only delete if no orders reference it
+        if (orderItemCount === 0) {
+          await prisma.productVariant.delete({
+            where: { id: variant.id },
+          });
+        }
+      }
+    }
   }
 
   if (data.imageUrls !== undefined) {
@@ -243,15 +426,6 @@ export async function updateProduct(
           sortOrder: index,
         })),
       } : undefined,
-      variants: validated.variants && validated.variants.length > 0 ? {
-        create: validated.variants.map(v => ({
-          sizeType: v.sizeType,
-          value: v.value || null,
-          unit: v.unit,
-          price: v.price ?? null,
-          stock: v.stock,
-        })),
-      } : undefined,
     },
     include: {
       variants: true,
@@ -274,6 +448,10 @@ export async function updateProduct(
   return {
     ...product,
     price: product.price.toString(),
+    variants: product.variants.map(v => ({
+      ...v,
+      price: v.price ? v.price.toString() : null,
+    })),
   };
 }
 
@@ -1711,32 +1889,121 @@ export async function createOrder(data: {
 
     // Reduce stock when order is created as Completed (e.g., via verify-session)
     if (data.initialStatus === "Completed") {
-      const variantItems = order.items.filter((item) => item.variantId);
-      if (variantItems.length > 0) {
-        // Batch fetch all variant stocks in one query
-        const variants = await prisma.productVariant.findMany({
-          where: { id: { in: variantItems.map((i) => i.variantId!) } },
-          select: { id: true, stock: true },
+      try {
+        const variantItems = order.items.filter((item) => item.variantId);
+        const baseProductItems = order.items.filter((item) => !item.variantId);
+        
+        secureLog.info("[Order Created] Stock reduction started", {
+          orderId: order.id,
+          variantItems: variantItems.length,
+          baseProductItems: baseProductItems.length,
+          allItems: order.items.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
         });
-        const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
+        
+        // Update variant stocks
+        if (variantItems.length > 0) {
+          // Batch fetch all variant stocks in one query
+          const variants = await prisma.productVariant.findMany({
+            where: { id: { in: variantItems.map((i) => i.variantId!) } },
+            select: { id: true, stock: true },
+          });
+          const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
 
-        // Batch update all stocks in a single transaction
-        await prisma.$transaction(
-          variantItems
+          secureLog.info("[Order Created] Variants found", {
+            orderId: order.id,
+            variantCount: variants.length,
+            variants: variants.map((v) => ({ id: v.id, stock: v.stock })),
+          });
+
+          const updatesToApply = variantItems
             .filter((item) => {
               const stock = stockMap.get(item.variantId!) ?? 0;
               return Math.min(item.quantity, stock) > 0;
             })
             .map((item) => {
               const stock = stockMap.get(item.variantId!) ?? 0;
+              const decrementBy = Math.min(item.quantity, stock);
+              secureLog.info("[Stock Update] Decrementing variant", {
+                variantId: item.variantId,
+                currentStock: stock,
+                quantity: item.quantity,
+                decrementBy,
+              });
               return prisma.productVariant.update({
                 where: { id: item.variantId! },
-                data: { stock: { decrement: Math.min(item.quantity, stock) } },
+                data: { stock: { decrement: decrementBy } },
               });
+            });
+
+          if (updatesToApply.length > 0) {
+            await prisma.$transaction(updatesToApply);
+            secureLog.info("[Order Created] Variant stock reduced", {
+              orderId: order.id,
+              updatesApplied: updatesToApply.length,
+            });
+          }
+        }
+        
+        // Update base product stocks
+        if (baseProductItems.length > 0) {
+          const products = await prisma.product.findMany({
+            where: { id: { in: baseProductItems.map((i) => i.productId) } },
+            select: { id: true, stock: true },
+          });
+          const stockMap = new Map(products.map((p) => [p.id, p.stock]));
+
+          secureLog.info("[Order Created] Base products found", {
+            orderId: order.id,
+            productCount: products.length,
+            products: products.map((p) => ({ id: p.id, stock: p.stock })),
+          });
+
+          const updatesToApply = baseProductItems
+            .filter((item) => {
+              const stock = stockMap.get(item.productId) ?? 0;
+              return Math.min(item.quantity, stock) > 0;
             })
-        );
+            .map((item) => {
+              const stock = stockMap.get(item.productId) ?? 0;
+              const decrementBy = Math.min(item.quantity, stock);
+              secureLog.info("[Stock Update] Decrementing base product", {
+                productId: item.productId,
+                currentStock: stock,
+                quantity: item.quantity,
+                decrementBy,
+              });
+              return prisma.product.update({
+                where: { id: item.productId },
+                data: { stock: { decrement: decrementBy } },
+              });
+            });
+
+          if (updatesToApply.length > 0) {
+            await prisma.$transaction(updatesToApply);
+            secureLog.info("[Order Created] Base product stock reduced", {
+              orderId: order.id,
+              updatesApplied: updatesToApply.length,
+            });
+          }
+        }
+        secureLog.info("[Order Created] Stock reduction completed", {
+          orderId: order.id,
+          baseProducts: baseProductItems.length,
+          variants: variantItems.length,
+        });
+      } catch (stockError) {
+        secureLog.error("[Order Created] Stock reduction error", stockError, {
+          orderId: order.id,
+        });
+        throw stockError;
       }
-      secureLog.info("[Order Created] Stock reduced for Completed order", { orderId: order.id });
+      
+      // Check for low stock and create notification if needed
+      await checkAndNotifyLowStock(order.storeId);
     }
 
     await logAudit({
@@ -1800,30 +2067,120 @@ export async function updateOrderStatus(
 
     // Reduce stock when order is completed (batched — avoids N+1)
     if (status === "Completed") {
-      const variantItems = updatedOrder.items.filter((item) => item.variantId);
-      if (variantItems.length > 0) {
-        const variants = await prisma.productVariant.findMany({
-          where: { id: { in: variantItems.map((i) => i.variantId!) } },
-          select: { id: true, stock: true },
+      try {
+        const variantItems = updatedOrder.items.filter((item) => item.variantId);
+        const baseProductItems = updatedOrder.items.filter((item) => !item.variantId);
+        
+        secureLog.info("[Order Status Update] Stock reduction started", {
+          orderId: updatedOrder.id,
+          variantItems: variantItems.length,
+          baseProductItems: baseProductItems.length,
+          allItems: updatedOrder.items.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+          })),
         });
-        const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
+        
+        // Update variant stocks
+        if (variantItems.length > 0) {
+          const variants = await prisma.productVariant.findMany({
+            where: { id: { in: variantItems.map((i) => i.variantId!) } },
+            select: { id: true, stock: true },
+          });
+          const stockMap = new Map(variants.map((v) => [v.id, v.stock]));
 
-        await prisma.$transaction(
-          variantItems
+          secureLog.info("[Order Status Update] Variants found", {
+            orderId: updatedOrder.id,
+            variantCount: variants.length,
+            variants: variants.map((v) => ({ id: v.id, stock: v.stock })),
+          });
+
+          const updatesToApply = variantItems
             .filter((item) => {
               const stock = stockMap.get(item.variantId!) ?? 0;
               return Math.min(item.quantity, stock) > 0;
             })
             .map((item) => {
               const stock = stockMap.get(item.variantId!) ?? 0;
+              const decrementBy = Math.min(item.quantity, stock);
+              secureLog.info("[Stock Update] Decrementing variant", {
+                variantId: item.variantId,
+                currentStock: stock,
+                quantity: item.quantity,
+                decrementBy,
+              });
               return prisma.productVariant.update({
                 where: { id: item.variantId! },
-                data: { stock: { decrement: Math.min(item.quantity, stock) } },
+                data: { stock: { decrement: decrementBy } },
               });
+            });
+
+          if (updatesToApply.length > 0) {
+            await prisma.$transaction(updatesToApply);
+            secureLog.info("[Order Status Update] Variant stock reduced", {
+              orderId: updatedOrder.id,
+              updatesApplied: updatesToApply.length,
+            });
+          }
+        }
+        
+        // Update base product stocks
+        if (baseProductItems.length > 0) {
+          const products = await prisma.product.findMany({
+            where: { id: { in: baseProductItems.map((i) => i.productId) } },
+            select: { id: true, stock: true },
+          });
+          const stockMap = new Map(products.map((p) => [p.id, p.stock]));
+
+          secureLog.info("[Order Status Update] Base products found", {
+            orderId: updatedOrder.id,
+            productCount: products.length,
+            products: products.map((p) => ({ id: p.id, stock: p.stock })),
+          });
+
+          const updatesToApply = baseProductItems
+            .filter((item) => {
+              const stock = stockMap.get(item.productId) ?? 0;
+              return Math.min(item.quantity, stock) > 0;
             })
-        );
+            .map((item) => {
+              const stock = stockMap.get(item.productId) ?? 0;
+              const decrementBy = Math.min(item.quantity, stock);
+              secureLog.info("[Stock Update] Decrementing base product", {
+                productId: item.productId,
+                currentStock: stock,
+                quantity: item.quantity,
+                decrementBy,
+              });
+              return prisma.product.update({
+                where: { id: item.productId },
+                data: { stock: { decrement: decrementBy } },
+              });
+            });
+
+          if (updatesToApply.length > 0) {
+            await prisma.$transaction(updatesToApply);
+            secureLog.info("[Order Status Update] Base product stock reduced", {
+              orderId: updatedOrder.id,
+              updatesApplied: updatesToApply.length,
+            });
+          }
+        }
+        secureLog.info("[Order Status Update] Stock reduction completed", {
+          orderId: updatedOrder.id,
+          baseProducts: baseProductItems.length,
+          variants: variantItems.length,
+        });
+      } catch (stockError) {
+        secureLog.error("[Order Status Update] Stock reduction error", stockError, {
+          orderId: updatedOrder.id,
+        });
+        throw stockError;
       }
-      secureLog.info("[Order Status Update] Stock reduced for completed order", { orderId: updatedOrder.id });
+      
+      // Check for low stock and create notification if needed
+      await checkAndNotifyLowStock(updatedOrder.storeId);
     }
 
     await logAudit({

@@ -154,6 +154,7 @@ model Store {
   privacySections StorePrivacySection[]
   shippingReturnsSections StoreShippingReturnsSection[]
   testimonials StoreTestimonial[]
+  stockNotifications StockNotification[]
 
   @@index([ownerId])
   @@index([themeId])
@@ -397,4 +398,28 @@ model AuditLog {
   @@index([createdAt])
   @@index([resourceType, resourceId])
   @@map("audit_logs")
+}
+
+// ==================== STOCK NOTIFICATIONS ====================
+
+enum NotificationType {
+  LowStock
+}
+
+model StockNotification {
+  id           String             @id @default(cuid())
+  storeId      String
+  store        Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  type         NotificationType   @default(LowStock)
+  // JSON array of {productId, productName, currentStock, variantInfo?}
+  affectedItems Json              // Track which products triggered the notification
+  isDismissed  Boolean            @default(false)
+  dismissedAt  DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([storeId])
+  @@index([storeId, isDismissed])
+  @@index([storeId, createdAt])
+  @@map("stock_notifications")
 }

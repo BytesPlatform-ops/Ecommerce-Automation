@@ -237,6 +237,7 @@ export default async function StorefrontHomePage({
                         }}
                         storeId={store.id}
                         storeSlug={username}
+                        stock={product.stock}
                       />
                     </div>
                   </div>
@@ -328,6 +329,7 @@ export default async function StorefrontHomePage({
                         }}
                         storeId={store.id}
                         storeSlug={username}
+                        stock={product.stock}
                       />
                     </div>
                   </div>

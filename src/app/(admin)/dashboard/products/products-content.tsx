@@ -14,6 +14,14 @@ interface Product {
   stock: number;
   imageUrl: string | null;
   deletedAt: string | Date | null;
+  variants?: Array<{
+    id: string;
+    sizeType: string | null;
+    value: string | null;
+    unit: string | null;
+    stock: number;
+    price: string | null;
+  }>;
 }
 
 interface ProductsPageContentProps {
@@ -113,6 +121,18 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
                         <p className={`text-sm mt-1 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {product.stock} in stock
                         </p>
+                        {product.variants && product.variants.length > 0 && (
+                          <div className="mt-2 text-xs text-gray-600 space-y-1">
+                            {product.variants.map((variant) => (
+                              <div key={variant.id} className="flex items-center justify-between">
+                                <span className="font-medium">{variant.value} {variant.unit}</span>
+                                <span className={variant.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                                  {variant.stock} stock
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
