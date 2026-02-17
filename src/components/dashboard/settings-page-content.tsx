@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Store, StoreFaq, StorePrivacySection, StoreShippingReturnsSection, StoreTestimonial } from "@/types/database";
+import { Store, StoreFaq, StorePrivacySection, StoreShippingReturnsSection, StoreTestimonial, StoreShippingLocation } from "@/types/database";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { DomainSettings } from "@/components/dashboard/domain-settings";
 import { ContactSettings } from "@/components/dashboard/contact-settings";
@@ -9,7 +9,8 @@ import { FaqSettings } from "@/components/dashboard/faq-settings";
 import { PrivacyPolicySettings } from "@/components/dashboard/privacy-policy-settings";
 import { ShippingReturnsSettings } from "@/components/dashboard/shipping-returns-settings";
 import { TestimonialsSettings } from "@/components/dashboard/testimonials-settings";
-import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield, MessageCircle, Truck } from "lucide-react";
+import { ShippingLocationsSettings } from "@/components/dashboard/shipping-locations-settings";
+import { Store as StoreIcon, Globe, Phone, HelpCircle, Shield, MessageCircle, Truck, MapPin } from "lucide-react";
 import type { DomainStatus } from "@/lib/domain-utils";
 
 interface SettingsPageContentProps {
@@ -18,6 +19,7 @@ interface SettingsPageContentProps {
   privacySections: StorePrivacySection[];
   shippingReturnsSections: StoreShippingReturnsSection[];
   testimonials: StoreTestimonial[];
+  shippingLocations: StoreShippingLocation[];
   domainStore: {
     id: string;
     domain: string | null;
@@ -64,6 +66,12 @@ const tabs = [
     description: "Manage shipping and return policies for your store",
   },
   {
+    id: "locations",
+    label: "Shipping Locations",
+    icon: MapPin,
+    description: "Define countries and cities where your products can be shipped",
+  },
+  {
     id: "privacy",
     label: "Privacy Policy",
     icon: Shield,
@@ -78,6 +86,7 @@ export function SettingsPageContent({
   privacySections,
   shippingReturnsSections,
   testimonials,
+  shippingLocations,
 }: SettingsPageContentProps) {
   const [activeTab, setActiveTab] = useState("store");
 
@@ -149,6 +158,9 @@ export function SettingsPageContent({
           )}
           {activeTab === "shipping" && (
             <ShippingReturnsSettings storeId={store.id} sections={shippingReturnsSections} />
+          )}
+          {activeTab === "locations" && (
+            <ShippingLocationsSettings storeId={store.id} locations={shippingLocations} />
           )}
           {activeTab === "privacy" && (
             <PrivacyPolicySettings storeId={store.id} sections={privacySections} />

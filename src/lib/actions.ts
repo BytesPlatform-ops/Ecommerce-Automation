@@ -1423,6 +1423,191 @@ export async function reorderStoreTestimonials(
   return { success: true };
 }
 
+// ==================== SHIPPING LOCATIONS ====================
+
+const shippingLocationSchema = z.object({
+  country: z.string().min(1, "Country is required").max(100),
+  cities: z.array(z.string().min(1).max(100)).default([]),
+});
+
+export async function createStoreShippingLocation(
+  storeId: string,
+  data: {
+    country: string;
+    cities: string[];
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  // Validate input
+  const validated = shippingLocationSchema.parse(data);
+
+  // Check if country already exists for this store
+  const existing = await prisma.storeShippingLocation.findUnique({
+    where: { storeId_country: { storeId, country: validated.country } },
+  });
+
+  if (existing) {
+    throw new Error("This country is already added. Edit it to add more cities.");
+  }
+
+  const lastLocation = await prisma.storeShippingLocation.findFirst({
+    where: { storeId },
+    orderBy: { sortOrder: "desc" },
+  });
+
+  const location = await prisma.storeShippingLocation.create({
+    data: {
+      storeId,
+      country: sanitizeString(validated.country, 100),
+      cities: validated.cities.map(c => sanitizeString(c, 100)),
+      sortOrder: lastLocation ? lastLocation.sortOrder + 1 : 0,
+    },
+  });
+
+  revalidateStore(store.subdomainSlug, storeId);
+  return location;
+}
+
+export async function updateStoreShippingLocation(
+  locationId: string,
+  data: {
+    country?: string;
+    cities?: string[];
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const location = await prisma.storeShippingLocation.findFirst({
+    where: { id: locationId },
+    include: { store: true },
+  });
+
+  if (!location || location.store.ownerId !== user.id) {
+    throw new Error("Shipping location not found or unauthorized");
+  }
+
+  const updateData: { country?: string; cities?: string[] } = {};
+
+  if (data.country !== undefined) {
+    const sanitized = sanitizeString(data.country, 100);
+    if (!sanitized) {
+      throw new Error("Country is required");
+    }
+    // Check if the new country name conflicts with another entry
+    if (sanitized !== location.country) {
+      const existing = await prisma.storeShippingLocation.findUnique({
+        where: { storeId_country: { storeId: location.storeId, country: sanitized } },
+      });
+      if (existing) {
+        throw new Error("This country is already added.");
+      }
+    }
+    updateData.country = sanitized;
+  }
+
+  if (data.cities !== undefined) {
+    updateData.cities = data.cities.map(c => sanitizeString(c, 100));
+  }
+
+  const updated = await prisma.storeShippingLocation.update({
+    where: { id: locationId },
+    data: updateData,
+  });
+
+  revalidateStore(location.store.subdomainSlug, location.storeId);
+  return updated;
+}
+
+export async function deleteStoreShippingLocation(locationId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const location = await prisma.storeShippingLocation.findFirst({
+    where: { id: locationId },
+    include: { store: true },
+  });
+
+  if (!location || location.store.ownerId !== user.id) {
+    throw new Error("Shipping location not found or unauthorized");
+  }
+
+  const deleted = await prisma.storeShippingLocation.delete({
+    where: { id: locationId },
+  });
+
+  revalidateStore(location.store.subdomainSlug, location.storeId);
+  return deleted;
+}
+
+export async function reorderStoreShippingLocations(
+  storeId: string,
+  orderedIds: string[]
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+    select: { id: true, subdomainSlug: true },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  if (orderedIds.length === 0) {
+    return { success: true };
+  }
+
+  const locations = await prisma.storeShippingLocation.findMany({
+    where: { id: { in: orderedIds }, storeId },
+    select: { id: true },
+  });
+
+  if (locations.length !== orderedIds.length) {
+    throw new Error("One or more locations could not be reordered");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.storeShippingLocation.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  revalidateStore(store.subdomainSlug, storeId);
+  return { success: true };
+}
+
 export async function getProduct(productId: string) {
   return await prisma.product.findUnique({
     where: { id: productId },

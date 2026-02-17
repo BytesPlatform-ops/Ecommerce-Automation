@@ -5,6 +5,7 @@ import { ArrowRight, Shield, Truck, RotateCcw } from "lucide-react";
 import { AddToCartButton } from "@/components/storefront/add-to-cart-button";
 import { ProductSearch } from "@/components/storefront/product-search";
 import { ContactSection } from "@/components/storefront/contact-section";
+import { ShippingLocationsDisplay } from "@/components/storefront/shipping-locations-display";
 import { getStoreBySlug, checkIsCustomDomain } from "@/lib/store-cache";
 
 export default async function StorefrontHomePage({
@@ -387,6 +388,11 @@ export default async function StorefrontHomePage({
             </div>
           </div>
         </section>
+      )}
+
+      {/* ─── Shipping Locations ─── */}
+      {store.shippingLocations && store.shippingLocations.length > 0 && (
+        <ShippingLocationsDisplay locations={store.shippingLocations} />
       )}
 
       {/* ─── Contact Section ─── */}

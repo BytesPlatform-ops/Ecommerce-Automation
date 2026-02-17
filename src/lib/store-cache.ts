@@ -35,6 +35,9 @@ const _getStoreBySlug = (slug: string) =>
             where: { isPublished: true },
             orderBy: { sortOrder: "asc" },
           },
+          shippingLocations: {
+            orderBy: { sortOrder: "asc" },
+          },
         },
       });
     },

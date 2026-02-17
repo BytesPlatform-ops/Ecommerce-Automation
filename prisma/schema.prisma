@@ -155,6 +155,7 @@ model Store {
   shippingReturnsSections StoreShippingReturnsSection[]
   testimonials StoreTestimonial[]
   stockNotifications StockNotification[]
+  shippingLocations StoreShippingLocation[]
 
   @@index([ownerId])
   @@index([themeId])
@@ -223,6 +224,22 @@ model StoreTestimonial {
   @@index([storeId])
   @@index([storeId, sortOrder])
   @@map("store_testimonials")
+}
+
+model StoreShippingLocation {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  country   String
+  cities    String[] // Array of cities for this country
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, country])
+  @@index([storeId])
+  @@index([storeId, sortOrder])
+  @@map("store_shipping_locations")
 }
 
 model Product {

@@ -20,7 +20,7 @@ export default async function SettingsPage() {
   }
 
   // Parallelize independent section queries
-  const [faqs, privacySections, shippingReturnsSections, testimonials] = await Promise.all([
+  const [faqs, privacySections, shippingReturnsSections, testimonials, shippingLocations] = await Promise.all([
     prisma.storeFaq.findMany({
       where: { storeId: store.id },
       orderBy: { sortOrder: "asc" },
@@ -34,6 +34,10 @@ export default async function SettingsPage() {
       orderBy: { sortOrder: "asc" },
     }),
     prisma.storeTestimonial.findMany({
+      where: { storeId: store.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.storeShippingLocation.findMany({
       where: { storeId: store.id },
       orderBy: { sortOrder: "asc" },
     }),
@@ -55,6 +59,7 @@ export default async function SettingsPage() {
       privacySections={privacySections}
       shippingReturnsSections={shippingReturnsSections}
       testimonials={testimonials}
+      shippingLocations={shippingLocations}
     />
   );
 }
