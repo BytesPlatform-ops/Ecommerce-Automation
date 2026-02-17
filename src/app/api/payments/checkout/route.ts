@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
         subdomainSlug: true,
         stripeConnectId: true,
         stripeConnectStatus: true,
+        shippingLocations: true,
       },
     });
 
@@ -107,6 +108,22 @@ export async function POST(request: NextRequest) {
         { error: "This store has not set up payments yet" },
         { status: 400 }
       );
+    }
+
+    // Validate shipping country against store's available shipping locations
+    if (shippingInfo && shippingInfo.country) {
+      if (store.shippingLocations && store.shippingLocations.length > 0) {
+        const availableCountries = store.shippingLocations.map((loc) => loc.country);
+        if (!availableCountries.includes(shippingInfo.country)) {
+          return NextResponse.json(
+            { 
+              error: "This country is not available for shipping",
+              availableCountries: availableCountries
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Get products with their prices

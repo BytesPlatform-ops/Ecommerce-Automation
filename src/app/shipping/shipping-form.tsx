@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, MapPin, User, Building2, Phone, Package, ArrowLeft, ShoppingBag, AlertCircle, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
 import Image from "next/image";
-import { validateAddress, validateAddressField, type AddressValidationResult } from "@/lib/address-validation";
+import { isValidPhoneNumber, validateAddressField, type AddressValidationResult } from "@/lib/address-validation";
 
 interface ShippingFormData {
   country: string;
@@ -128,19 +128,26 @@ export default function ShippingForm() {
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [storeShippingLocations, setStoreShippingLocations] = useState<{ country: string; cities: string[] }[]>([]);
+  const [locationsLoaded, setLocationsLoaded] = useState(false);
 
   const [formData, setFormData] = useState<ShippingFormData>({
-    country: "United States",
+    country: "",
     firstName: "",
     lastName: "",
     company: "",
     address: "",
     apartment: "",
     city: "",
-    state: "Nevada",
+    state: "",
     zipCode: "",
     phone: "",
   });
+
+  // Compute available countries from store shipping locations or fallback to COUNTRY_CONFIGS
+  const availableCountries = storeShippingLocations.length > 0
+    ? storeShippingLocations.map(loc => loc.country)
+    : Object.keys(COUNTRY_CONFIGS);
 
   useEffect(() => {
     // Load cart data from localStorage
@@ -148,23 +155,54 @@ export default function ShippingForm() {
     if (cart) {
       const parsedCart = JSON.parse(cart);
       setCartData(parsedCart);
+      
+      // Fetch store shipping locations
+      const sid = storeId || parsedCart[0]?.storeId;
+      if (sid) {
+        fetch(`/api/stores/shipping-locations?storeId=${sid}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.locations && data.locations.length > 0) {
+              setStoreShippingLocations(data.locations);
+              // Set first available country as default
+              const firstCountry = data.locations[0].country;
+              setFormData(prev => ({ ...prev, country: firstCountry, state: "", city: "" }));
+            } else {
+              // Fallback to first COUNTRY_CONFIGS country
+              const firstCountry = Object.keys(COUNTRY_CONFIGS)[0];
+              setFormData(prev => ({ ...prev, country: firstCountry, state: "" }));
+            }
+            setLocationsLoaded(true);
+          })
+          .catch(() => {
+            const firstCountry = Object.keys(COUNTRY_CONFIGS)[0];
+            setFormData(prev => ({ ...prev, country: firstCountry, state: "" }));
+            setLocationsLoaded(true);
+          });
+      }
     } else {
       // No cart data, redirect back
       router.back();
     }
-  }, [router]);
+  }, [router, storeId]);
 
   // Load cities for selected country
   useEffect(() => {
     try {
-      const cities = CITIES_BY_COUNTRY[formData.country] || [];
-      setAvailableCities(cities);
+      // Use store shipping location cities if available
+      const locationMatch = storeShippingLocations.find(loc => loc.country === formData.country);
+      if (locationMatch && locationMatch.cities.length > 0) {
+        setAvailableCities(locationMatch.cities);
+      } else {
+        const cities = CITIES_BY_COUNTRY[formData.country] || [];
+        setAvailableCities(cities);
+      }
       setCitySuggestions([]);
     } catch (err) {
       console.error("Error loading cities:", err);
       setAvailableCities([]);
     }
-  }, [formData.country]);
+  }, [formData.country, storeShippingLocations]);
 
   const validateField = (fieldName: string, value: string) => {
     const validation = validateAddressField(
@@ -226,13 +264,10 @@ export default function ShippingForm() {
     const { name, value } = e.target;
     
     if (name === "country") {
-      const countryConfig = COUNTRY_CONFIGS[value];
-      const firstStateOption = countryConfig?.options[0]?.value || "";
-      
       setFormData({
         ...formData,
         country: value,
-        state: firstStateOption,
+        state: "",
         zipCode: "",
         city: "",
       });
@@ -273,31 +308,39 @@ export default function ShippingForm() {
       return;
     }
 
-    const allFields = ["firstName", "lastName", "address", "city", "state", "zipCode", "phone"];
+    const allFields = ["firstName", "lastName", "address", "city", "state", "phone"];
     setTouchedFields(new Set(allFields));
 
-    const validation = validateAddress(
-      formData.firstName,
-      formData.lastName,
-      formData.address,
-      formData.city,
-      formData.state,
-      formData.zipCode,
-      formData.phone,
-      formData.country
-    );
+    // Inline validation (without postal code)
+    const newErrors: FieldErrors = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
+    if (!formData.state.trim()) newErrors.state = "State/Province is required";
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!isValidPhoneNumber(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+    if (!formData.country) newErrors.country = "Country is required";
 
-    if (!validation.isValid) {
-      const newErrors: FieldErrors = {};
-      validation.errors.forEach((error) => {
-        if (error.toLowerCase().includes("first name")) newErrors.firstName = error;
-        else if (error.toLowerCase().includes("last name")) newErrors.lastName = error;
-        else if (error.toLowerCase().includes("address")) newErrors.address = error;
-        else if (error.toLowerCase().includes("city")) newErrors.city = error;
-        else if (error.toLowerCase().includes("state")) newErrors.state = error;
-        else if (error.toLowerCase().includes("zip")) newErrors.zipCode = error;
-        else if (error.toLowerCase().includes("phone")) newErrors.phone = error;
-      });
+    // Validate country against store shipping locations
+    if (storeShippingLocations.length > 0 && formData.country) {
+      const locationMatch = storeShippingLocations.find(loc => loc.country === formData.country);
+      if (!locationMatch) {
+        newErrors.country = "This store does not ship to " + formData.country;
+      } else if (locationMatch.cities.length > 0 && formData.city.trim()) {
+        const cityMatch = locationMatch.cities.some(
+          c => c.toLowerCase() === formData.city.trim().toLowerCase()
+        );
+        if (!cityMatch) {
+          newErrors.city = `This store does not ship to ${formData.city} in ${formData.country}. Available cities: ${locationMatch.cities.join(", ")}`;
+        }
+      }
+    }
+
+    if (Object.values(newErrors).some(e => e)) {
       setFieldErrors(newErrors);
       setError("Please fix the errors below before continuing");
       return;
@@ -396,7 +439,8 @@ export default function ShippingForm() {
                     className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
                     required
                   >
-                    {Object.keys(COUNTRY_CONFIGS).map((country) => (
+                    <option value="">Select a country</option>
+                    {availableCountries.map((country) => (
                       <option key={country} value={country}>
                         {country}
                       </option>
@@ -543,25 +587,27 @@ export default function ShippingForm() {
                     <label htmlFor="state" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                       {COUNTRY_CONFIGS[formData.country]?.stateLabel || "State"}
                     </label>
-                    <select
+                    <input
+                      type="text"
                       id="state"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      className={`w-full px-4 py-3 bg-background border text-sm text-foreground focus:outline-none transition-colors duration-200 ${
+                      placeholder="e.g. California"
+                      className={`w-full px-4 py-3 bg-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
                         isFieldInvalid("state")
                           ? "border-red-400"
                           : "border-border focus:border-foreground"
                       }`}
                       required
-                    >
-                      {COUNTRY_CONFIGS[formData.country]?.options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    />
+                    {isFieldInvalid("state") && (
+                      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {fieldErrors.state}
+                      </p>
+                    )}
                   </div>
                   <div className="col-span-3 sm:col-span-2">
                     <label htmlFor="zipCode" className="block text-xs text-muted-foreground mb-2 uppercase tracking-wider">
@@ -574,13 +620,8 @@ export default function ShippingForm() {
                       value={formData.zipCode}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder={COUNTRY_CONFIGS[formData.country]?.postalPlaceholder || "89169"}
-                      className={`w-full px-4 py-3 bg-background border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200 ${
-                        isFieldInvalid("zipCode")
-                          ? "border-red-400"
-                          : "border-border focus:border-foreground"
-                      }`}
-                      required
+                      placeholder="Optional"
+                      className="w-full px-4 py-3 bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors duration-200"
                     />
                   </div>
                 </div>

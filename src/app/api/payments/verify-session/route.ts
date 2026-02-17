@@ -113,7 +113,10 @@ export async function POST(request: NextRequest) {
     // Get store to find the connected account
     const store = await prisma.store.findUnique({
       where: { id: storeId },
-      select: { stripeConnectId: true },
+      select: { 
+        stripeConnectId: true,
+        shippingLocations: true,
+      },
     });
 
     if (!store || !store.stripeConnectId) {
@@ -186,6 +189,26 @@ export async function POST(request: NextRequest) {
         shippingInfo = JSON.parse(shippingInfoJson);
       } catch (error) {
         secureLog.error("[Session Verify] Failed to parse shipping info", error);
+      }
+    }
+
+    // Validate shipping country against store's available shipping locations
+    if (shippingInfo && shippingInfo.country) {
+      if (store.shippingLocations && store.shippingLocations.length > 0) {
+        const availableCountries = store.shippingLocations.map((loc) => loc.country);
+        if (!availableCountries.includes(shippingInfo.country)) {
+          secureLog.error("[Session Verify] Country not available for shipping", undefined, {
+            country: shippingInfo.country,
+            availableCountries
+          });
+          return NextResponse.json(
+            { 
+              error: "This country is not available for shipping",
+              availableCountries: availableCountries
+            },
+            { status: 400 }
+          );
+        }
       }
     }
 
