@@ -16,6 +16,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
+import { Dialog } from "@/components/ui/dialog";
 
 interface TestimonialsSettingsProps {
   storeId: string;
@@ -39,6 +40,9 @@ export function TestimonialsSettings({
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [testimonialToDelete, setTestimonialToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const router = useRouter();
 
   const handleAdd = async () => {
@@ -118,20 +122,24 @@ export function TestimonialsSettings({
     }
   };
 
-  const handleDelete = async (testimonialId: string) => {
-    const confirmed = window.confirm("Delete this testimonial?");
+  const handleDelete = (testimonialId: string) => {
+    setTestimonialToDelete(testimonialId);
+    setDeleteDialogOpen(true);
+  };
 
-    if (!confirmed) {
-      return;
-    }
+  const confirmDelete = async () => {
+    if (!testimonialToDelete) return;
 
     setError(null);
     setSuccess(null);
+    setDeleting(true);
 
     try {
-      await deleteStoreTestimonial(testimonialId);
-      setItems((prev) => prev.filter((item) => item.id !== testimonialId));
+      await deleteStoreTestimonial(testimonialToDelete);
+      setItems((prev) => prev.filter((item) => item.id !== testimonialToDelete));
       setSuccess("Testimonial deleted");
+      setDeleteDialogOpen(false);
+      setTestimonialToDelete(null);
       router.refresh();
 
       setTimeout(() => setSuccess(null), 2000);
@@ -139,7 +147,14 @@ export function TestimonialsSettings({
       setError(
         err instanceof Error ? err.message : "Failed to delete testimonial"
       );
+    } finally {
+      setDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setTestimonialToDelete(null);
   };
 
   const handleReorder = async (
@@ -392,6 +407,26 @@ export function TestimonialsSettings({
           </div>
         ))}
       </div>
+
+      <Dialog
+        isOpen={deleteDialogOpen}
+        onClose={cancelDelete}
+        title="Delete Testimonial"
+        description="Are you sure you want to delete this testimonial? This action cannot be undone."
+        actions={[
+          {
+            label: "Cancel",
+            onClick: cancelDelete,
+            variant: "secondary",
+          },
+          {
+            label: "Delete",
+            onClick: confirmDelete,
+            variant: "danger",
+            loading: deleting,
+          },
+        ]}
+      />
     </div>
   );
 }

@@ -1240,6 +1240,7 @@ export async function createStoreTestimonial(
 
   const store = await prisma.store.findFirst({
     where: { id: storeId, ownerId: user.id },
+    select: { id: true, subdomainSlug: true },
   });
 
   if (!store) {
@@ -1271,6 +1272,9 @@ export async function createStoreTestimonial(
     resourceType: "StoreTestimonial",
     resourceId: testimonial.id,
   });
+
+  // Revalidate store cache so testimonials appear on storefront
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
 
   return testimonial;
 }
@@ -1330,6 +1334,9 @@ export async function updateStoreTestimonial(
     resourceId: testimonialId,
   });
 
+  // Revalidate store cache so testimonials update on storefront
+  revalidateTag(CacheTags.store(testimonial.store.subdomainSlug), "default");
+
   return updatedTestimonial;
 }
 
@@ -1362,6 +1369,9 @@ export async function deleteStoreTestimonial(testimonialId: string) {
     resourceId: testimonialId,
   });
 
+  // Revalidate store cache so testimonials update on storefront
+  revalidateTag(CacheTags.store(testimonial.store.subdomainSlug), "default");
+
   return deleted;
 }
 
@@ -1378,6 +1388,7 @@ export async function reorderStoreTestimonials(
 
   const store = await prisma.store.findFirst({
     where: { id: storeId, ownerId: user.id },
+    select: { id: true, subdomainSlug: true },
   });
 
   if (!store) {
@@ -1405,6 +1416,9 @@ export async function reorderStoreTestimonials(
       })
     )
   );
+
+  // Revalidate store cache so testimonial order updates on storefront
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
 
   return { success: true };
 }
