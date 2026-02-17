@@ -9,7 +9,7 @@ const faqs = [
   {
     question: "How does the store generation work?",
     answer:
-      "You describe your store in natural language — what you sell, your brand aesthetic, target audience. Our AI then generates a complete Next.js application with a database schema, API endpoints, payment integration, product pages, and admin dashboard. The entire process takes about 60 seconds.",
+      "We set up a complete ecommerce store for you in seconds. You get a ready-made dashboard where you can add your products, customize the look and feel, and manage everything yourself. No code needed — just fill in your products and your store is ready to go.",
   },
   {
     question: "Can I customize my store after it's generated?",

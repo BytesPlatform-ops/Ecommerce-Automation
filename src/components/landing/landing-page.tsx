@@ -6,7 +6,6 @@ import { TrustBar } from "./trust-bar";
 import { HowItWorks } from "./how-it-works";
 import { Features } from "./features";
 import { LivePreview } from "./live-preview";
-import { Automation } from "./automation";
 import { Pricing } from "./pricing";
 import { Testimonials } from "./testimonials";
 import { FAQ } from "./faq";
@@ -37,7 +36,6 @@ export function LandingPage() {
         <HowItWorks />
         <Features />
         <LivePreview />
-        <Automation />
         <Pricing />
         <Testimonials />
         <FAQ />

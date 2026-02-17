@@ -7,58 +7,22 @@ import Link from "next/link";
 
 const plans = [
   {
-    name: "Starter",
-    price: "$29",
+    name: "All-in-One",
+    price: "$49",
     period: "/month",
-    description: "Perfect for testing the water with your first online store.",
+    description: "Everything you need to build and grow your online store.",
     features: [
       "1 store",
-      "Up to 50 products",
-      "Basic analytics",
-      "Chameleon subdomain",
-      "Email support",
-      "SSL included",
-    ],
-    cta: "Start Free Trial",
-    highlighted: false,
-  },
-  {
-    name: "Growth",
-    price: "$79",
-    period: "/month",
-    description: "For growing brands that need more power and customization.",
-    features: [
-      "5 stores",
-      "Unlimited products",
+      "50 products",
       "Advanced analytics",
       "Custom domain",
+      "Stripe integration",
       "Priority support",
-      "API access",
       "Custom themes",
       "Abandoned cart recovery",
     ],
     cta: "Start Free Trial",
     highlighted: true,
-    badge: "Most Popular",
-  },
-  {
-    name: "Pro",
-    price: "$199",
-    period: "/month",
-    description: "For agencies and power users who need everything.",
-    features: [
-      "Unlimited stores",
-      "Unlimited products",
-      "Full analytics suite",
-      "Custom domains",
-      "Dedicated support",
-      "Full API access",
-      "White-label",
-      "Custom integrations",
-      "Team collaboration",
-    ],
-    cta: "Contact Sales",
-    highlighted: false,
   },
 ];
 
@@ -94,7 +58,8 @@ export function Pricing() {
         </motion.p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
         {plans.map((plan, i) => (
           <motion.div
             key={plan.name}
@@ -115,14 +80,6 @@ export function Pricing() {
                   : "border-gray-200/60 bg-white/70 hover:shadow-lg hover:shadow-gray-200/50 hover:border-gray-300"
               }`}
             >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1 rounded-full text-[10px] font-semibold bg-gradient-to-r from-purple-500 to-blue-500 text-white uppercase tracking-wider">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
-
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {plan.name}
@@ -156,6 +113,7 @@ export function Pricing() {
             </div>
           </motion.div>
         ))}
+        </div>
       </div>
     </SectionWrapper>
   );

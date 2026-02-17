@@ -51,35 +51,6 @@ const steps = [
 export function Automation() {
   return (
     <SectionWrapper className="py-32">
-      <div className="text-center mb-20">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-xs text-purple-600 uppercase tracking-[0.2em] mb-4 font-semibold"
-        >
-          Full Automation
-        </motion.p>
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 tracking-tight mb-5"
-        >
-          From prompt to production
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="text-gray-500 max-w-lg mx-auto"
-        >
-          Watch the entire pipeline execute automatically. No manual steps, no DevOps, no waiting.
-        </motion.p>
-      </div>
-
       {/* Timeline - horizontal on desktop, vertical on mobile */}
       <div className="relative">
         {/* Desktop horizontal timeline */}
