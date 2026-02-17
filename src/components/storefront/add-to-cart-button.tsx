@@ -13,15 +13,19 @@ interface AddToCartButtonProps {
   };
   storeId: string;
   storeSlug: string;
+  stock?: number;
 }
 
-export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButtonProps) {
+export function AddToCartButton({ product, storeId, storeSlug, stock = 0 }: AddToCartButtonProps) {
   const { addItem, items } = useCart();
   const [isAdded, setIsAdded] = useState(false);
+  const isOutOfStock = stock === 0;
 
   const existingItem = items.find((i) => i.productId === product.id);
 
   function handleAddToCart() {
+    if (isOutOfStock) return;
+    
     addItem({
       productId: product.id,
       name: product.name,
@@ -40,14 +44,19 @@ export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButton
     <div className="space-y-2">
       <button
         onClick={handleAddToCart}
+        disabled={isOutOfStock}
         className={`w-full btn-luxury transition-all duration-300 ${
-          isAdded 
+          isOutOfStock
+            ? "opacity-50 cursor-not-allowed"
+            : isAdded 
             ? "bg-foreground text-background" 
             : "btn-primary-luxury"
         }`}
-        style={isAdded ? {} : { backgroundColor: "var(--primary)" }}
+        style={isAdded ? {} : { backgroundColor: isOutOfStock ? undefined : "var(--primary)" }}
       >
-        {isAdded ? (
+        {isOutOfStock ? (
+          "Out of Stock"
+        ) : isAdded ? (
           <>
             <Check className="h-4 w-4" strokeWidth={1.5} />
             Added
@@ -57,7 +66,13 @@ export function AddToCartButton({ product, storeId, storeSlug }: AddToCartButton
         )}
       </button>
 
-      {existingItem && !isAdded && (
+      {isOutOfStock && (
+        <p className="text-xs text-red-600 text-center font-medium">
+          Out of stock
+        </p>
+      )}
+
+      {existingItem && !isAdded && !isOutOfStock && (
         <p className="text-xs text-muted-foreground text-center">
           {existingItem.quantity} in cart
         </p>

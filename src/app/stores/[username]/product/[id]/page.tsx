@@ -86,12 +86,21 @@ export default async function ProductDetailPage({
                 {product.name}
               </h1>
               {product.variants.length === 0 && (
-                <p 
-                  className="text-xl sm:text-2xl font-medium"
-                  style={{ color: "var(--primary)" }}
-                >
-                  ${Number(product.price).toFixed(2)}
-                </p>
+                <>
+                  <p 
+                    className="text-xl sm:text-2xl font-medium"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    ${Number(product.price).toFixed(2)}
+                  </p>
+                  <p className={`text-sm mt-2 font-medium ${
+                    product.stock > 0 
+                      ? 'text-green-600' 
+                      : 'text-red-600'
+                  }`}>
+                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                  </p>
+                </>
               )}
             </div>
 
@@ -126,6 +135,7 @@ export default async function ProductDetailPage({
                   }}
                   storeId={product.store.id}
                   storeSlug={username}
+                  stock={product.stock}
                 />
               )}
             </div>
@@ -187,7 +197,13 @@ export default async function ProductDetailPage({
               </div>
               <div className="border border-border p-4 rounded-xl bg-muted/20">
                 <p className="text-overline mb-1">Availability</p>
-                <p className="text-sm font-medium text-green-700">In Stock</p>
+                <p className={`text-sm font-medium ${
+                  product.stock > 0 
+                    ? 'text-green-700' 
+                    : 'text-red-700'
+                }`}>
+                  {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                </p>
               </div>
             </div>
           </div>

@@ -85,6 +85,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price?.toString() || "");
+  const [stock, setStock] = useState(product && 'stock' in product ? (product.stock as number) : 0);
   const [imageUrls, setImageUrls] = useState<string[]>(() => {
     if (product?.images && product.images.length > 0) {
       return [...product.images]
@@ -158,6 +159,11 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
       return;
     }
 
+    if (stock < 0 || !Number.isInteger(stock)) {
+      setError("Stock must be a non-negative whole number");
+      return;
+    }
+
     // Validate variants
     for (const variant of variants) {
       if (!variant.sizeType || !variant.unit) {
@@ -192,6 +198,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           name: name.trim(),
           description: description.trim() || undefined,
           price: roundedPrice,
+          stock,
           imageUrls,
           variants: variants.map(v => ({
             id: v.id,
@@ -207,6 +214,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           name: name.trim(),
           description: description.trim() || undefined,
           price: roundedPrice,
+          stock,
           imageUrls,
           variants: variants.map(v => ({
             sizeType: v.sizeType as SizeType,
@@ -306,6 +314,26 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             placeholder="29.99"
           />
         </div>
+      </div>
+
+      {/* Stock */}
+      <div>
+        <label
+          htmlFor="stock"
+          className="block text-sm font-semibold text-gray-700 mb-2"
+        >
+          Stock
+        </label>
+        <input
+          id="stock"
+          type="number"
+          min="0"
+          step="1"
+          value={stock}
+          onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
+          placeholder="0"
+        />
       </div>
 
       {/* Image Upload */}

@@ -121,12 +121,6 @@ export default async function StorefrontHomePage({
                     Explore Collection
                     <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
                   </a>
-                  <a 
-                    href="#about"
-                    className="btn-luxury btn-outline-luxury"
-                  >
-                    Our Story
-                  </a>
                 </div>
               </div>
             </div>

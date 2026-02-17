@@ -33,6 +33,7 @@ const createProductSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(5000).optional(),
   price: z.number().min(0).max(999999.99),
+  stock: z.number().int().min(0).max(999999).optional().default(0),
   imageUrl: z.string().url().max(2048).optional(),
   imageUrls: z.array(z.string().url().max(2048)).max(20).optional(),
   variants: z.array(z.object({
@@ -86,7 +87,8 @@ export async function createProduct(
   data: { 
     name: string; 
     description?: string;
-    price: number; 
+    price: number;
+    stock?: number;
     imageUrl?: string;
     imageUrls?: string[];
     variants?: Array<{
@@ -125,6 +127,7 @@ export async function createProduct(
       name: sanitizeString(validated.name, 200),
       description: validated.description ? sanitizeString(validated.description, 5000) : null,
       price: validated.price,
+      stock: validated.stock ?? 0,
       imageUrl: primaryImageUrl,
       images: validated.imageUrls && validated.imageUrls.length > 0 ? {
         create: validated.imageUrls.map((url, index) => ({
@@ -171,7 +174,8 @@ export async function updateProduct(
   data: { 
     name: string; 
     description?: string;
-    price: number; 
+    price: number;
+    stock?: number;
     imageUrl?: string;
     imageUrls?: string[];
     variants?: Array<{
@@ -231,6 +235,7 @@ export async function updateProduct(
       name: sanitizeString(validated.name, 200),
       description: validated.description ? sanitizeString(validated.description, 5000) : undefined,
       price: validated.price,
+      stock: validated.stock ?? undefined,
       imageUrl: primaryImageUrl,
       images: validated.imageUrls && validated.imageUrls.length > 0 ? {
         create: validated.imageUrls.map((url, index) => ({

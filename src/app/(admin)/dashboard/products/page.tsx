@@ -28,6 +28,7 @@ export default async function ProductsPage() {
       name: true,
       description: true,
       price: true,
+      stock: true,
       imageUrl: true,
       sku: true,
       createdAt: true,

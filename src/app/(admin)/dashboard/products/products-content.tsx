@@ -11,6 +11,7 @@ interface Product {
   id: string;
   name: string;
   price: string | number;
+  stock: number;
   imageUrl: string | null;
   deletedAt: string | Date | null;
 }
@@ -108,6 +109,9 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
                         <h3 className={`font-semibold line-clamp-1 ${product.deletedAt ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{product.name}</h3>
                         <p className={`text-lg font-bold mt-1 ${product.deletedAt ? 'text-gray-400' : 'text-blue-600'}`}>
                           ${Number(product.price).toFixed(2)}
+                        </p>
+                        <p className={`text-sm mt-1 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {product.stock} in stock
                         </p>
                       </div>
                     </div>
