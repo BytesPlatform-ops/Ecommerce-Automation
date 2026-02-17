@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateDomainFormat, normalizeDomain, DOMAIN_STATUS } from "@/lib/domain-utils";
-import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus } from "@prisma/client";
+import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus, Prisma, SizeType, Unit } from "@prisma/client";
 import { sanitizeUrl, secureLog, sanitizeString } from "@/lib/security";
 import { logAudit, AuditAction } from "@/lib/audit";
 import { z } from "zod";
@@ -109,7 +109,7 @@ async function checkAndNotifyLowStock(storeId: string) {
         await prisma.stockNotification.update({
           where: { id: existingNotification.id },
           data: {
-            affectedItems: affectedItems,
+            affectedItems: affectedItems as unknown as Prisma.InputJsonValue,
             updatedAt: new Date(),
           },
         });
@@ -118,7 +118,7 @@ async function checkAndNotifyLowStock(storeId: string) {
         await prisma.stockNotification.create({
           data: {
             storeId,
-            affectedItems: affectedItems,
+            affectedItems: affectedItems as unknown as Prisma.InputJsonValue,
           },
         });
       }
@@ -251,9 +251,9 @@ export async function createProduct(
       } : undefined,
       variants: validated.variants && validated.variants.length > 0 ? {
         create: validated.variants.map(v => ({
-          sizeType: v.sizeType,
+          sizeType: v.sizeType as SizeType,
           value: v.value || null,
-          unit: v.unit,
+          unit: v.unit as Unit,
           price: v.price ?? null,
           stock: v.stock,
         })),
@@ -359,9 +359,9 @@ export async function updateProduct(
         await prisma.productVariant.update({
           where: { id: variantData.id },
           data: {
-            sizeType: variantData.sizeType,
+            sizeType: variantData.sizeType as SizeType,
             value: variantData.value || null,
-            unit: variantData.unit,
+            unit: variantData.unit as Unit,
             price: variantData.price ?? null,
             stock: variantData.stock,
           },
@@ -374,9 +374,9 @@ export async function updateProduct(
         await prisma.productVariant.createMany({
           data: newVariants.map(v => ({
             productId,
-            sizeType: v.sizeType,
+            sizeType: v.sizeType as SizeType,
             value: v.value || null,
-            unit: v.unit,
+            unit: v.unit as Unit,
             price: v.price ?? null,
             stock: v.stock,
           })),
