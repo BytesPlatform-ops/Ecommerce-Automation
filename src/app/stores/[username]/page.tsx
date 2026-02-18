@@ -75,8 +75,7 @@ export default async function StorefrontHomePage({
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/10" />
             <div className={`relative px-6 sm:px-8 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
               <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
-                <p className="text-overline !text-white/60 mb-5 sm:mb-7 tracking-[0.2em]">Welcome to {store.storeName}</p>
-                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-[1.08] mb-7 tracking-tight font-medium">
+                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white leading-[1.08] mb-7 tracking-tight font-medium">
                   {heroHeadlineLines.map((line, index) => (
                     <span key={`${line}-${index}`}>
                       {line}
@@ -84,7 +83,7 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-white/75 mb-10 sm:mb-12 leading-relaxed font-light max-w-xl">
+                <p className="text-lg sm:text-xl text-white/75 mb-10 sm:mb-12 leading-relaxed font-light max-w-xl">
                   {heroDescription}
                 </p>
                 <a 
@@ -101,8 +100,7 @@ export default async function StorefrontHomePage({
           <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center gradient-hero animate-gradient-shift ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
             <div className={`px-6 sm:px-8 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
               <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
-                <p className="text-overline mb-5 sm:mb-7 tracking-[0.2em]">Welcome to {store.storeName}</p>
-                <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground leading-[1.08] mb-7 tracking-tight font-medium">
+                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-foreground leading-[1.08] mb-7 tracking-tight font-medium">
                   {heroHeadlineLines.map((line, index) => (
                     <span key={`${line}-${index}`}>
                       {line}
@@ -110,7 +108,7 @@ export default async function StorefrontHomePage({
                     </span>
                   ))}
                 </h1>
-                <p className="text-base sm:text-lg text-muted-foreground mb-10 sm:mb-12 leading-relaxed max-w-xl">
+                <p className="text-lg sm:text-xl text-muted-foreground mb-10 sm:mb-12 leading-relaxed max-w-xl">
                   {heroDescription}
                 </p>
                 <div className={`flex ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : "flex-col sm:flex-row"} gap-4`}>
