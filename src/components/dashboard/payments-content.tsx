@@ -490,10 +490,10 @@ export default function PaymentsContent({
 
       {/* Stripe Connection Status - Enhanced Card */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all dash-animate-in dash-delay-1">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div className="flex items-center gap-4">
             <div
-              className={`p-4 rounded-xl ${isConnected ? "bg-green-100/80" : "bg-gray-100"}`}
+              className={`p-4 rounded-xl shrink-0 ${isConnected ? "bg-green-100/80" : "bg-gray-100"}`}
             >
               <CreditCard
                 className={`h-6 w-6 ${isConnected ? "text-green-600" : "text-gray-400"}`}
@@ -528,7 +528,7 @@ export default function PaymentsContent({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             {isConnected ? (
               <>
                 <a
@@ -1034,101 +1034,94 @@ export default function PaymentsContent({
               />
             </button>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-[200px] max-w-md">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            <div className="relative flex-1 sm:min-w-[200px] sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by ID, customer, email, status..."
+                placeholder="Search orders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               />
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            >
-              <option value="all">All Status</option>
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Failed">Failed</option>
-              <option value="Refunded">Refunded</option>
-            </select>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-              className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            >
-              <option value="7days">Last 7 days</option>
-              <option value="30days">Last 30 days</option>
-              <option value="all">All time</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              >
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Failed">Failed</option>
+                <option value="Refunded">Refunded</option>
+              </select>
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              >
+                <option value="7days">Last 7 days</option>
+                <option value="30days">Last 30 days</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Items
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Payment Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-                        <div className="h-3 w-40 bg-gray-100 rounded animate-pulse"></div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
-                    </td>
-                    <td className="px-6 py-4">
+          <>
+            {/* Mobile loading skeleton */}
+            <div className="sm:hidden divide-y divide-gray-200">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1.5">
                       <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
+                      <div className="h-3 w-40 bg-gray-100 rounded animate-pulse"></div>
+                    </div>
+                    <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="h-3 w-24 bg-gray-100 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop loading skeleton */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Order ID</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Items</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Payment Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                      <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div></td>
+                      <td className="px-6 py-4"><div className="space-y-2"><div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div><div className="h-3 w-40 bg-gray-100 rounded animate-pulse"></div></div></td>
+                      <td className="px-6 py-4"><div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div></td>
+                      <td className="px-6 py-4"><div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div></td>
+                      <td className="px-6 py-4"><div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div></td>
+                      <td className="px-6 py-4"><div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div></td>
+                      <td className="px-6 py-4"><div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : displayTransactions.length === 0 ? (
           <div className="p-12 text-center">
             <div className="flex justify-center mb-4">
@@ -1144,7 +1137,92 @@ export default function PaymentsContent({
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile card view */}
+            <div className="sm:hidden divide-y divide-gray-200">
+              {paginatedTransactions.map((transaction: any) => (
+                <div
+                  key={transaction.id}
+                  onClick={() => {
+                    setSelectedOrder(transaction);
+                    setIsModalOpen(true);
+                  }}
+                  className={`p-4 cursor-pointer active:bg-gray-100 transition-colors ${
+                    transaction.isPending ? "bg-blue-50/30" : "bg-white"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">
+                        {transaction.customerName}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {transaction.customerEmail}
+                      </p>
+                    </div>
+                    <p className="font-bold text-gray-900 text-sm whitespace-nowrap">
+                      {formatCurrency(transaction.total, transaction.currency)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          transaction.status === "Processing"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : transaction.status === "Shipped"
+                            ? "bg-purple-100 text-purple-800"
+                            : transaction.status === "Failed"
+                            ? "bg-red-100 text-red-800"
+                            : transaction.status === "Refunded"
+                            ? "bg-gray-100 text-gray-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {transaction.isPending ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>
+                            {transaction.status}
+                          </span>
+                        ) : (
+                          transaction.status
+                        )}
+                      </span>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          transaction.paymentStatus === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : transaction.paymentStatus === "Paid"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.paymentStatus === "Settled"
+                            ? "bg-green-100 text-green-800"
+                            : transaction.paymentStatus === "Refunded"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {transaction.paymentStatus}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                      {formatDate(transaction.createdAt)}
+                    </p>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                      #{transaction.id.slice(0, 8)}
+                    </code>
+                    <span className="text-xs text-gray-500">
+                      {transaction.items.length} item{transaction.items.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table view */}
+            <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
@@ -1261,54 +1339,59 @@ export default function PaymentsContent({
                 ))}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
 
         {/* Pagination Controls */}
         {!isLoading && displayTransactions.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-4">
-            <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * itemsPerPage) + 1} to{" "}
-              {Math.min(currentPage * itemsPerPage, displayTransactions.length)} of{" "}
-              {displayTransactions.length} transactions
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
+              Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, displayTransactions.length)} of {displayTransactions.length} transactions
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                <span className="hidden sm:inline">Previous</span>
               </button>
               
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((page) => {
-                    // Show first page, last page, current page, and pages around current
-                    return (
-                      page === 1 ||
-                      page === totalPages ||
-                      Math.abs(page - currentPage) <= 1
-                    );
-                  })
-                  .map((page, index, array) => (
-                    <div key={page} className="flex items-center">
-                      {index > 0 && array[index - 1] !== page - 1 && (
-                        <span className="px-2 text-gray-400">...</span>
-                      )}
-                      <button
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                          currentPage === page
-                            ? "bg-blue-500 text-white font-semibold"
-                            : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    </div>
-                  ))}
+                {/* Mobile: just show current/total */}
+                <span className="sm:hidden text-sm text-gray-600 px-2">
+                  {currentPage} / {totalPages}
+                </span>
+                {/* Desktop: show page buttons */}
+                <div className="hidden sm:flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, index, array) => (
+                      <div key={page} className="flex items-center">
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="px-2 text-gray-400">...</span>
+                        )}
+                        <button
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 text-sm rounded-lg transition-colors ${
+                            currentPage === page
+                              ? "bg-blue-500 text-white font-semibold"
+                              : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </div>
+                    ))}
+                </div>
               </div>
 
               <button
@@ -1316,7 +1399,7 @@ export default function PaymentsContent({
                 disabled={currentPage === totalPages}
                 className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
-                Next
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>

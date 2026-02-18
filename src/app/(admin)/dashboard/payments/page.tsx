@@ -29,7 +29,7 @@ export default async function PaymentsPage() {
   return (
     <div className="space-y-6">
       <div className="dash-animate-in">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">Payments</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">Payments</h1>
         <p className="text-gray-500 mt-1">
           Manage your Stripe account and view transactions
         </p>
