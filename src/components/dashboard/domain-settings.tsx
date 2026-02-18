@@ -260,7 +260,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
       {store.domain && (
         <>
           {/* Status Badge */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex flex-wrap items-center justify-between gap-2 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
               <div
                 className={`flex items-center gap-2 px-3 py-1 rounded-full ${statusColors.bg}`}
@@ -287,12 +287,12 @@ export function DomainSettings({ store }: DomainSettingsProps) {
               <button
                 onClick={checkStatus}
                 disabled={checking}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
               >
                 <RefreshCw
-                  className={`w-4 h-4 ${checking ? "animate-spin" : ""}`}
+                  className={`w-4 h-4 shrink-0 ${checking ? "animate-spin" : ""}`}
                 />
-                {checking ? "Checking..." : "Refresh Status"}
+                <span>{checking ? "Checking..." : "Refresh"}</span>
               </button>
             )}
           </div>
@@ -323,7 +323,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
                     Required
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-500">Host / Name:</span>
                     <div className="flex items-center gap-2 mt-1">
@@ -377,7 +377,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
                     For www subdomain
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="text-gray-500">Host / Name:</span>
                     <div className="flex items-center gap-2 mt-1">
@@ -400,7 +400,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
                   <div>
                     <span className="text-gray-500">Value / Points to:</span>
                     <div className="flex items-center gap-2 mt-1">
-                      <code className="flex-1 bg-gray-100 px-3 py-1.5 rounded font-mono text-gray-800 text-xs">
+                      <code className="flex-1 bg-gray-100 px-3 py-1.5 rounded font-mono text-gray-800 text-xs break-all">
                         {RENDER_CONFIG.CNAME_TARGET}
                       </code>
                       <button
@@ -430,7 +430,7 @@ export function DomainSettings({ store }: DomainSettingsProps) {
 
           {/* Live Domain Link */}
           {currentStatus === DOMAIN_STATUS.LIVE && (
-            <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
               <div>
                 <p className="text-sm font-medium text-green-800">
                   Your store is live at:

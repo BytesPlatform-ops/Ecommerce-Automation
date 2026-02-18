@@ -270,15 +270,15 @@ export function ShippingLocationsSettings({ storeId, locations }: ShippingLocati
                     handleAddCity();
                   }
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                placeholder="e.g. New York, Los Angeles"
+                className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="e.g. New York"
               />
               <button
                 type="button"
                 onClick={handleAddCity}
-                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="shrink-0 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm"
               >
-                Add City
+                Add
               </button>
             </div>
             {newCities.length > 0 && (
@@ -388,13 +388,13 @@ export function ShippingLocationsSettings({ storeId, locations }: ShippingLocati
                       handleAddCityToLocation(location.id);
                     }
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="Add a city"
                 />
                 <button
                   type="button"
                   onClick={() => handleAddCityToLocation(location.id)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="shrink-0 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-sm"
                 >
                   Add
                 </button>

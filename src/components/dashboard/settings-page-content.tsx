@@ -93,13 +93,13 @@ export function SettingsPageContent({
   return (
     <div>
       <div className="mb-8 dash-animate-in">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">Store Settings</h1>
-        <p className="text-gray-500 mt-1">Manage your store details, custom domain, and contact information</p>
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">Store Settings</h1>
+        <p className="text-gray-500 mt-1 text-sm sm:text-base">Manage your store details, custom domain, and contact information</p>
       </div>
 
       {/* Horizontal Tab Navigation */}
       <div className="mb-6 dash-animate-in dash-delay-1">
-        <div className="flex gap-1 p-1 bg-gray-100/80 rounded-xl overflow-x-auto">
+        <div className="flex gap-0.5 sm:gap-1 p-1 bg-gray-100/80 rounded-xl overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -108,9 +108,10 @@ export function SettingsPageContent({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`dash-tab flex items-center gap-2 ${isActive ? 'active bg-white shadow-sm' : ''}`}
+                className={`dash-tab flex items-center gap-1 sm:gap-2 ${isActive ? 'active bg-white shadow-sm' : ''}`}
+                title={tab.label}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             );
@@ -119,7 +120,7 @@ export function SettingsPageContent({
       </div>
 
       {/* Content Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 dash-animate-in dash-delay-2">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-6 dash-animate-in dash-delay-2">
         {/* Tab Header */}
         <div className="mb-6">
           {tabs.map((tab) => {
@@ -132,7 +133,7 @@ export function SettingsPageContent({
                       <Icon className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{tab.label}</h2>
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{tab.label}</h2>
                       <p className="text-sm text-gray-500 mt-0.5">{tab.description}</p>
                     </div>
                   </div>

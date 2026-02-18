@@ -34,10 +34,20 @@ export default async function DashboardPage() {
   const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const last60Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  // Parallelize all data fetching
+  // Batch product queries into one connection
+  const [productCount, recentProducts, lowStockCount] = await prisma.$transaction([
+    prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
+    prisma.product.findMany({
+      where: { storeId: store.id, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { id: true, name: true, price: true, imageUrl: true, stock: true, createdAt: true },
+    }),
+    prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
+  ]);
+
+  // Batch order queries into one connection
   const [
-    productCount,
-    recentProducts,
     totalOrders,
     completedOrders,
     last7DaysOrders,
@@ -46,16 +56,8 @@ export default async function DashboardPage() {
     revenueAggregate,
     prev30Revenue,
     recentOrders,
-    lowStockCount,
     recentOrdersForChart,
-  ] = await Promise.all([
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
-    prisma.product.findMany({
-      where: { storeId: store.id, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: { id: true, name: true, price: true, imageUrl: true, stock: true, createdAt: true },
-    }),
+  ] = await prisma.$transaction([
     prisma.order.count({ where: { storeId: store.id } }),
     prisma.order.count({ where: { storeId: store.id, status: OrderStatus.Completed } }),
     prisma.order.count({ where: { storeId: store.id, createdAt: { gte: last7Days } } }),
@@ -73,7 +75,6 @@ export default async function DashboardPage() {
         items: { select: { quantity: true } },
       },
     }),
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
     prisma.order.findMany({
       where: { storeId: store.id, createdAt: { gte: last7Days } },
       select: { total: true, createdAt: true },
