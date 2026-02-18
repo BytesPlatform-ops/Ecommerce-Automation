@@ -75,9 +75,9 @@ export function ThemeSelector({
             disabled={loading}
             className={`relative rounded-2xl border-2 transition-all text-left overflow-hidden group ${
               selectedTheme === theme.id
-                ? "border-blue-500 shadow-xl ring-2 ring-blue-200 bg-gradient-to-br from-white to-blue-50"
-                : "border-gray-200 hover:border-gray-300 hover:shadow-lg bg-white hover:from-white hover:to-gray-50"
-            } ${loading ? "opacity-50 cursor-wait" : "cursor-pointer"}`}
+                ? "border-blue-500 shadow-xl ring-2 ring-blue-200 bg-gradient-to-br from-white to-blue-50/50"
+                : "border-gray-100 hover:border-gray-200 hover:shadow-lg bg-white"
+            } ${loading ? "opacity-50 cursor-wait" : "cursor-pointer hover:translate-y-[-2px]"}`}
           >
             {selectedTheme === theme.id && (
               <div className="absolute top-4 right-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full p-2 z-10 shadow-lg">

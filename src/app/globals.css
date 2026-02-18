@@ -1074,3 +1074,353 @@ input[type="radio"] {
   color: var(--primary);
   border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DASHBOARD STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Dashboard Animations ─── */
+@keyframes dashSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dashSlideRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dashFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dashPulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.15); }
+}
+
+@keyframes dashCountUp {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes barGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.dash-animate-in {
+  animation: dashSlideUp 0.5s var(--ease-smooth) both;
+}
+
+.dash-animate-in-right {
+  animation: dashSlideRight 0.5s var(--ease-smooth) both;
+}
+
+.dash-fade-in {
+  animation: dashFadeIn 0.4s var(--ease-smooth) both;
+}
+
+.dash-delay-1 { animation-delay: 0.05s; }
+.dash-delay-2 { animation-delay: 0.1s; }
+.dash-delay-3 { animation-delay: 0.15s; }
+.dash-delay-4 { animation-delay: 0.2s; }
+.dash-delay-5 { animation-delay: 0.25s; }
+.dash-delay-6 { animation-delay: 0.3s; }
+.dash-delay-7 { animation-delay: 0.35s; }
+.dash-delay-8 { animation-delay: 0.4s; }
+
+/* ─── Dashboard Stat Card ─── */
+.dash-stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: all 0.3s var(--ease-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--stat-color, #3b82f6), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.dash-stat-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  border-color: #e2e8f0;
+}
+
+.dash-stat-card:hover::before {
+  opacity: 1;
+}
+
+.dash-stat-card .stat-value {
+  animation: dashCountUp 0.6s var(--ease-spring) both;
+}
+
+/* ─── Dashboard Chart Bar ─── */
+.dash-chart-bar {
+  transform-origin: left;
+  animation: barGrow 0.8s var(--ease-smooth) both;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.dash-chart-bar:hover {
+  filter: brightness(1.1);
+}
+
+/* ─── Dashboard Activity Item ─── */
+.dash-activity-item {
+  position: relative;
+  padding-left: 2rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.dash-activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #e2e8f0, transparent);
+}
+
+.dash-activity-item::after {
+  content: '';
+  position: absolute;
+  left: 0.25rem;
+  top: 1rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: white;
+  border: 2px solid #3b82f6;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.dash-activity-item:last-child::before {
+  display: none;
+}
+
+/* ─── Dashboard Section Title ─── */
+.dash-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #111827;
+}
+
+.dash-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, #e2e8f0, transparent);
+  margin-left: 0.75rem;
+}
+
+/* ─── Dashboard Insight Card ─── */
+.dash-insight-card {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s var(--ease-smooth);
+}
+
+.dash-insight-card:hover {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* ─── Dashboard Progress Ring ─── */
+.dash-progress-ring {
+  transition: stroke-dashoffset 1s var(--ease-smooth);
+}
+
+/* ─── Revenue Bar Colors ─── */
+.dash-bar-revenue {
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+}
+
+.dash-bar-orders {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+/* ─── Dashboard Quick Action ─── */
+.dash-quick-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-radius: 0.875rem;
+  transition: all 0.2s var(--ease-smooth);
+  border: 1px solid transparent;
+}
+
+.dash-quick-action:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* ─── Dashboard Tabs ─── */
+.dash-tab {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6b7280;
+  border-radius: 0.75rem;
+  transition: all 0.2s var(--ease-smooth);
+  white-space: nowrap;
+}
+
+.dash-tab:hover {
+  color: #374151;
+  background: #f8fafc;
+}
+
+.dash-tab.active {
+  color: #2563eb;
+  background: #eff6ff;
+  font-weight: 600;
+}
+
+.dash-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  background: #2563eb;
+  border-radius: 1px;
+}
+
+/* ─── Status Badges ─── */
+.dash-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.dash-badge-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.dash-badge-warning {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.dash-badge-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dash-badge-info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.dash-badge-neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* ─── Empty State ─── */
+.dash-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.dash-empty-state .icon-container {
+  width: 5rem;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, #eff6ff, #e0e7ff);
+  margin-bottom: 1.5rem;
+  animation: dashPulseGlow 3s infinite;
+}
+
+/* ─── Shimmer Loading ─── */
+.dash-shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+/* ─── Dashboard Product Card (improved) ─── */
+.dash-product-card {
+  border-radius: 0.875rem;
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+  transition: all 0.3s var(--ease-smooth);
+  background: white;
+}
+
+.dash-product-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.dash-product-card .image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-product-card:hover .image-wrapper img {
+  transform: scale(1.05);
+}
+
+.dash-product-card .image-wrapper img {
+  transition: transform 0.5s var(--ease-smooth);
+}
+
+/* ─── Live Dot Indicator ─── */
+.dash-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  animation: dotPulse 2s infinite;
+}

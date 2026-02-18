@@ -489,7 +489,7 @@ export default function PaymentsContent({
       )}
 
       {/* Stripe Connection Status - Enhanced Card */}
-      <div className="bg-linear-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all dash-animate-in dash-delay-1">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <div
@@ -768,64 +768,64 @@ export default function PaymentsContent({
         </div>
       ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-linear-to-br from-green-50 to-green-100/50 border border-green-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="dash-stat-card" style={{ "--stat-color": "#10b981" } as React.CSSProperties}>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                 Total Revenue
               </p>
-              <div className="p-3 bg-green-200/50 rounded-lg">
-                <DollarSign className="h-5 w-5 text-green-700" />
+              <div className="p-2.5 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-xl">
+                <DollarSign className="h-5 w-5 text-emerald-700" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
               {formatCurrency(stats.totalRevenue)}
             </p>
-            <p className="text-xs text-gray-600 mt-2">All-time revenue</p>
+            <p className="text-xs text-gray-500 mt-2">All-time revenue</p>
           </div>
 
-          <div className="bg-linear-to-br from-blue-50 to-blue-100/50 border border-blue-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="dash-stat-card" style={{ "--stat-color": "#3b82f6" } as React.CSSProperties}>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                 Total Orders
               </p>
-              <div className="p-3 bg-blue-200/50 rounded-lg">
+              <div className="p-2.5 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl">
                 <TrendingUp className="h-5 w-5 text-blue-700" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
               {stats.totalOrders}
             </p>
-            <p className="text-xs text-gray-600 mt-2">Completed transactions</p>
+            <p className="text-xs text-gray-500 mt-2">Completed transactions</p>
           </div>
 
-          <div className="bg-linear-to-br from-purple-50 to-purple-100/50 border border-purple-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="dash-stat-card" style={{ "--stat-color": "#8b5cf6" } as React.CSSProperties}>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                 Last 7 Days
               </p>
-              <div className="p-3 bg-purple-200/50 rounded-lg">
+              <div className="p-2.5 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
                 <Calendar className="h-5 w-5 text-purple-700" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
               {stats.last7DaysOrders}
             </p>
-            <p className="text-xs text-gray-600 mt-2">Orders in past week</p>
+            <p className="text-xs text-gray-500 mt-2">Orders in past week</p>
           </div>
 
-          <div className="bg-linear-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="dash-stat-card" style={{ "--stat-color": "#6366f1" } as React.CSSProperties}>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
                 Last 30 Days
               </p>
-              <div className="p-3 bg-indigo-200/50 rounded-lg">
+              <div className="p-2.5 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl">
                 <Calendar className="h-5 w-5 text-indigo-700" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">
               {stats.last30DaysOrders}
             </p>
-            <p className="text-xs text-gray-600 mt-2">Orders in past month</p>
+            <p className="text-xs text-gray-500 mt-2">Orders in past month</p>
           </div>
         </div>
       ) : null}
@@ -944,9 +944,9 @@ export default function PaymentsContent({
                             {day.date}
                           </span>
                           <div className="flex items-center gap-2 flex-1">
-                            <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
                               <div
-                                className="bg-linear-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all"
+                                className="dash-chart-bar dash-bar-revenue h-full"
                                 style={{ width: `${percentage}%` }}
                               />
                             </div>
@@ -1014,8 +1014,8 @@ export default function PaymentsContent({
       )}
 
       {/* Orders List */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-200 bg-linear-to-r from-white to-gray-50">
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-white to-gray-50/50">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
             <div>
               <h2 className="text-xl font-bold" style={{ color: 'var(--primary)' }}>Transactions</h2>

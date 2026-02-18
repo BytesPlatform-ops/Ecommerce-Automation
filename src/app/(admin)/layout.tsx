@@ -27,13 +27,13 @@ export default async function AdminLayout({
   // This will be handled by individual pages
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50/30 flex">
       {/* Sidebar with Mobile Toggle */}
       <MobileSidebarToggle>
         {/* Logo & Store Info */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-gray-100/80">
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -118,7 +118,7 @@ export default async function AdminLayout({
             <Link
               href={`/stores/${store.subdomainSlug}`}
               target="_blank"
-              className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium text-sm hover:shadow-lg hover:shadow-blue-500/25 transition-all group"
+              className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-sm hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.01] transition-all group"
             >
               <div className="flex items-center gap-2">
                 <StoreIcon className="h-4 w-4" />

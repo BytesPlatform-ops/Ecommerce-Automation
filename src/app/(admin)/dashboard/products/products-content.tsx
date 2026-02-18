@@ -50,9 +50,9 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="dash-animate-in flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">
             Products
           </h1>
           <p className="text-gray-500 mt-1">
@@ -61,7 +61,7 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
         </div>
         <Link
           href="/dashboard/products/new"
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-105"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="h-5 w-5" />
           Add Product
@@ -90,42 +90,45 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
               filteredProducts.map((product) => (
                 <div 
                   key={product.id} 
-                  className="group rounded-xl border overflow-hidden hover:shadow-md transition-all bg-gray-50 border-gray-100 hover:border-gray-200"
+                  className="dash-product-card group"
                 >
                   {/* Product Image */}
-                  <div className="aspect-video relative bg-gray-100 overflow-hidden">
+                  <div className="image-wrapper aspect-video relative bg-gray-100">
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                         <Package className="h-10 w-10 text-gray-300" />
                       </div>
                     )}
+                    {/* Stock indicator overlay */}
+                    <div className="absolute top-2 right-2">
+                      <span className={`dash-badge ${product.stock > 10 ? 'dash-badge-success' : product.stock > 0 ? 'dash-badge-warning' : 'dash-badge-danger'}`}>
+                        {product.stock} in stock
+                      </span>
+                    </div>
                   </div>
 
                   {/* Product Info */}
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="font-semibold line-clamp-1 text-gray-900">{product.name}</h3>
-                        <p className="text-lg font-bold mt-1 text-blue-600">
+                        <p className="text-lg font-bold mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                           ${Number(product.price).toFixed(2)}
-                        </p>
-                        <p className={`text-sm mt-1 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {product.stock} in stock
                         </p>
                         {product.variants && product.variants.length > 0 && (
                           <div className="mt-2 text-xs text-gray-600 space-y-1">
                             {product.variants.map((variant) => (
-                              <div key={variant.id} className="flex items-center justify-between">
+                              <div key={variant.id} className="flex items-center justify-between bg-gray-50 rounded-md px-2 py-1">
                                 <span className="font-medium">{variant.value} {variant.unit}</span>
-                                <span className={variant.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-                                  {variant.stock} stock
+                                <span className={`font-semibold ${variant.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                  {variant.stock}
                                 </span>
                               </div>
                             ))}
@@ -135,10 +138,10 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                       <Link
                         href={`/dashboard/products/${product.id}/edit`}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
                       >
                         <Pencil className="h-4 w-4" />
                         Edit
@@ -164,9 +167,9 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-b from-blue-50/50 to-transparent rounded-2xl border border-gray-100 shadow-sm p-20 text-center">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center mb-8 shadow-md">
-            <Package className="h-12 w-12 text-blue-600" />
+        <div className="dash-empty-state bg-gradient-to-b from-blue-50/50 to-transparent rounded-2xl border border-gray-100 shadow-sm p-16">
+          <div className="icon-container">
+            <Package className="h-10 w-10 text-blue-500" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-3">No products yet</h3>
           <p className="text-gray-600 mb-1 max-w-md mx-auto leading-relaxed">
