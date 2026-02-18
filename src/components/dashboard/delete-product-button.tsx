@@ -8,9 +8,10 @@ import { Dialog } from "@/components/ui/dialog";
 
 interface DeleteProductButtonProps {
   productId: string;
+  onSuccess?: (productId: string) => void;
 }
 
-export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
+export function DeleteProductButton({ productId, onSuccess }: DeleteProductButtonProps) {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +28,11 @@ export function DeleteProductButton({ productId }: DeleteProductButtonProps) {
       setTimeout(() => {
         setIsOpen(false);
         setSuccess(false);
-        router.refresh();
+        if (onSuccess) {
+          onSuccess(productId);
+        } else {
+          router.refresh();
+        }
       }, 1500);
     } catch (err: any) {
       console.error("Error deleting product:", err);

@@ -61,7 +61,7 @@ export default async function StorefrontHomePage({
   return (
     <div className="min-h-screen bg-background">
       {/* ─── Hero Section ─── */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden animate-fade-in">
         {heroImageUrl ? (
           <div className={`relative h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
             <Image
@@ -98,7 +98,7 @@ export default async function StorefrontHomePage({
             </div>
           </div>
         ) : (
-          <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
+          <div className={`h-[calc(100vh-64px)] sm:h-[calc(100vh-72px)] flex items-center gradient-hero animate-gradient-shift ${store.heroTextAlign === "Center" ? "justify-center" : store.heroTextAlign === "Right" ? "justify-end" : ""}`}>
             <div className={`px-6 sm:px-8 ${store.heroTextAlign === "Center" ? "" : store.heroTextAlign === "Right" ? "" : "w-full max-w-[1200px] mx-auto"}`}>
               <div className={`${alignmentClasses.wrapper} ${alignmentClasses.textWidth}`}>
                 <p className="text-overline mb-5 sm:mb-7 tracking-[0.2em]">Welcome to {store.storeName}</p>
@@ -132,28 +132,28 @@ export default async function StorefrontHomePage({
       {/* ─── Trust Bar ─── */}
       <section className="py-10 sm:py-14">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="trust-badge">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 stagger-children">
+            <div className="trust-badge-themed">
               <span className="trust-icon">
-                <Truck className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                <Truck className="h-4 w-4" strokeWidth={1.5} />
               </span>
               <div>
                 <span className="text-sm font-medium text-foreground">Free Shipping</span>
                 <p className="text-xs text-muted-foreground mt-0.5">On all orders</p>
               </div>
             </div>
-            <div className="trust-badge">
+            <div className="trust-badge-themed">
               <span className="trust-icon">
-                <Shield className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                <Shield className="h-4 w-4" strokeWidth={1.5} />
               </span>
               <div>
                 <span className="text-sm font-medium text-foreground">Secure Checkout</span>
                 <p className="text-xs text-muted-foreground mt-0.5">Encrypted payments</p>
               </div>
             </div>
-            <div className="trust-badge">
+            <div className="trust-badge-themed">
               <span className="trust-icon">
-                <RotateCcw className="h-4 w-4 text-foreground" strokeWidth={1.5} />
+                <RotateCcw className="h-4 w-4" strokeWidth={1.5} />
               </span>
               <div>
                 <span className="text-sm font-medium text-foreground">30-Day Returns</span>
@@ -165,12 +165,15 @@ export default async function StorefrontHomePage({
       </section>
 
       {/* ─── Featured Products ─── */}
+      {/* ─── Section Divider ─── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6"><div className="section-divider" /></div>
+
       {featuredProducts.length > 0 && (
-        <section className="py-16 sm:py-20 lg:py-28">
+        <section className="py-16 sm:py-20 lg:py-28 gradient-section">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
             <div className="flex items-end justify-between mb-10 sm:mb-14">
               <div>
-                <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Featured</p>
+                <span className="section-badge mb-4">Featured</span>
                 <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight font-medium">
                   New Arrivals
                 </h2>
@@ -194,7 +197,7 @@ export default async function StorefrontHomePage({
                 return (
                   <div
                     key={product.id}
-                    className="product-card group border border-border/60 bg-background overflow-hidden"
+                    className="product-card-themed group overflow-hidden"
                   >
                     <Link href={`${productPath}/${product.id}`} className="block">
                       <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
@@ -216,7 +219,7 @@ export default async function StorefrontHomePage({
                             )}
                           </>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                          <div className="w-full h-full flex items-center justify-center bg-primary-light">
                             <span className="text-xs text-muted-foreground">No image</span>
                           </div>
                         )}
@@ -250,10 +253,10 @@ export default async function StorefrontHomePage({
       )}
 
       {/* ─── All Products ─── */}
-      <section id="products" className="py-16 sm:py-20 lg:py-28 bg-muted/30">
+      <section id="products" className="py-16 sm:py-20 lg:py-28 gradient-section-alt">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-14">
-            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Collection</p>
+            <span className="section-badge mb-4 mx-auto">Collection</span>
             <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight mb-4 font-medium">
               All Products
             </h2>
@@ -284,7 +287,7 @@ export default async function StorefrontHomePage({
                 return (
                   <div
                     key={product.id}
-                    className="product-card group border border-border/60 bg-background overflow-hidden"
+                    className="product-card-themed group overflow-hidden"
                   >
                     <Link href={`${productPath}/${product.id}`} className="block">
                       <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
@@ -308,7 +311,7 @@ export default async function StorefrontHomePage({
                             )}
                           </>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                          <div className="w-full h-full flex items-center justify-center bg-primary-light">
                             <span className="text-xs text-muted-foreground">No image</span>
                           </div>
                         )}
@@ -347,11 +350,14 @@ export default async function StorefrontHomePage({
       </section>
 
       {/* ─── Testimonials ─── */}
+      {/* ─── Section Divider ─── */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6"><div className="section-divider" /></div>
+
       {store.testimonials && store.testimonials.length > 0 && (
-        <section id="testimonials" className="py-16 sm:py-20 lg:py-28">
+        <section id="testimonials" className="py-16 sm:py-20 lg:py-28 gradient-section">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
             <div className="text-center mb-12 sm:mb-16">
-              <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Testimonials</p>
+              <span className="section-badge mb-4 mx-auto">Testimonials</span>
               <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-tight font-medium">
                 What Our Clients Say
               </h2>
@@ -361,7 +367,7 @@ export default async function StorefrontHomePage({
               {store.testimonials.map((testimonial, idx) => (
                 <div
                   key={idx}
-                  className={`testimonial-card ${store.testimonials.length === 1 ? 'w-full md:w-1/2 lg:w-2/5' : ''}`}
+                  className={`testimonial-card-themed ${store.testimonials.length === 1 ? 'w-full md:w-1/2 lg:w-2/5' : ''}`}
                 >
                   {/* Star Rating */}
                   <div className="flex gap-1 mb-5">
@@ -415,8 +421,8 @@ export default async function StorefrontHomePage({
       {/* ─── CTA Section ─── */}
       <section className="py-20 sm:py-28 lg:py-36">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="text-center py-16 sm:py-20 px-6 sm:px-12 rounded-3xl bg-muted/50">
-            <div className="w-10 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+          <div className="text-center py-16 sm:py-20 px-6 sm:px-12 rounded-3xl gradient-cta border border-primary-light">
+            <div className="accent-line w-12 mx-auto mb-8" />
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl tracking-tight mb-5 font-medium">
               Begin your journey
             </h2>

@@ -25,8 +25,8 @@ export default async function StorefrontFaqPage({
     <div className="min-h-screen bg-background">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="info-page-header mb-10 sm:mb-12">
-            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Support</p>
+          <div className="info-page-header-themed mb-10 sm:mb-12 animate-fade-in-up">
+            <span className="section-badge mb-3">Support</span>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground mt-2 font-medium tracking-tight">
               {store.storeName} FAQ
             </h1>
@@ -36,17 +36,17 @@ export default async function StorefrontFaqPage({
           </div>
 
           {faqs.length === 0 ? (
-            <div className="info-page-card text-center py-12">
+            <div className="info-page-card-themed text-center py-12">
               <p className="text-base text-muted-foreground">
                 This store hasn&apos;t added any FAQs yet.
               </p>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-4 stagger-children">
               {faqs.map((faq, index) => (
                 <details
                   key={faq.id}
-                  className="faq-accordion group"
+                  className="faq-accordion-themed group"
                 >
                   <summary className="flex cursor-pointer items-start gap-5 p-6 list-none">
                     <div
@@ -57,9 +57,9 @@ export default async function StorefrontFaqPage({
                     </div>
                     <div className="flex-1">
                       <h2 className="text-lg sm:text-xl font-semibold text-foreground">{faq.question}</h2>
-                      <p className="text-xs text-muted-foreground mt-1">Click to view the answer</p>
+                      <p className="text-xs mt-1" style={{ color: "var(--secondary)" }}>Click to view the answer</p>
                     </div>
-                    <span className="mt-1.5 w-6 h-6 flex items-center justify-center rounded-full bg-muted text-muted-foreground text-sm transition-transform duration-200 group-open:rotate-45 shrink-0">
+                    <span className="mt-1.5 w-6 h-6 flex items-center justify-center rounded-full text-white text-sm transition-all duration-300 group-open:rotate-45 shrink-0" style={{ backgroundColor: "var(--primary)" }}>
                       +
                     </span>
                   </summary>

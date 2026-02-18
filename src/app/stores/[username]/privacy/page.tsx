@@ -32,8 +32,8 @@ export default async function StorefrontPrivacyPage({
     <div className="min-h-screen bg-background">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="max-w-4xl mx-auto">
-          <div className="info-page-header mb-10 sm:mb-12">
-            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Privacy</p>
+          <div className="info-page-header-themed mb-10 sm:mb-12 animate-fade-in-up">
+            <span className="section-badge mb-3">Privacy</span>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground mt-2 font-medium tracking-tight">
               {store.storeName} Privacy Policy
             </h1>
@@ -42,11 +42,11 @@ export default async function StorefrontPrivacyPage({
             </p>
           </div>
 
-          <div className="grid gap-5">
+          <div className="grid gap-5 stagger-children">
             {sections.map((section, index) => (
               <div
                 key={section.id}
-                className="info-page-card"
+                className="info-page-card-themed"
               >
                 <div className="flex items-start gap-5">
                   <div

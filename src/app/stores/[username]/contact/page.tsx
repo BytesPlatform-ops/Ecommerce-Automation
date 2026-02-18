@@ -26,10 +26,10 @@ export default async function StorefrontContactPage({
     <div className="min-h-screen bg-background">
       <section className="py-12 sm:py-16">
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="info-page-header">
-            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>
+          <div className="info-page-header-themed animate-fade-in-up">
+            <span className="section-badge mb-3">
               Contact
-            </p>
+            </span>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-foreground mb-4 font-medium tracking-tight">
               {store.storeName}
             </h1>
@@ -57,7 +57,7 @@ export default async function StorefrontContactPage({
       ) : (
         <section className="py-16 sm:py-24">
           <div className="max-w-[1200px] mx-auto px-6">
-            <div className="info-page-card text-center py-12">
+            <div className="info-page-card-themed text-center py-12">
               <p className="text-sm text-muted-foreground">
                 This store has not shared contact details yet.
               </p>

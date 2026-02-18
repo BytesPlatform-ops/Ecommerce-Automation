@@ -63,7 +63,7 @@ export function StorefrontFooter({
   const safeYoutube = safeSocialUrl(youtubeUrl);
 
   return (
-    <footer className="footer-section mt-24">
+    <footer className="gradient-footer mt-24">
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 sm:gap-8 mb-16">
           {/* Brand */}
@@ -75,27 +75,27 @@ export function StorefrontFooter({
             {hasSocials && (
               <div className="flex gap-2.5 mt-6">
                 {safeInstagram && (
-                  <a href={safeInstagram} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
+                  <a href={safeInstagram} target="_blank" rel="noopener noreferrer" className="social-icon-btn-themed text-muted-foreground">
                     <Instagram className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeFacebook && (
-                  <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
+                  <a href={safeFacebook} target="_blank" rel="noopener noreferrer" className="social-icon-btn-themed text-muted-foreground">
                     <Facebook className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeTwitter && (
-                  <a href={safeTwitter} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
+                  <a href={safeTwitter} target="_blank" rel="noopener noreferrer" className="social-icon-btn-themed text-muted-foreground">
                     <Twitter className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeLinkedin && (
-                  <a href={safeLinkedin} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
+                  <a href={safeLinkedin} target="_blank" rel="noopener noreferrer" className="social-icon-btn-themed text-muted-foreground">
                     <Linkedin className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
                 {safeYoutube && (
-                  <a href={safeYoutube} target="_blank" rel="noopener noreferrer" className="social-icon-btn text-muted-foreground">
+                  <a href={safeYoutube} target="_blank" rel="noopener noreferrer" className="social-icon-btn-themed text-muted-foreground">
                     <Youtube className="h-4 w-4" strokeWidth={1.5} />
                   </a>
                 )}
@@ -108,17 +108,17 @@ export function StorefrontFooter({
             <p className="text-overline mb-5">Navigation</p>
             <ul className="space-y-3.5">
               <li>
-                <Link href={homePath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={homePath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 link-underline">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href={`${homePath}#products`} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={`${homePath}#products`} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 link-underline">
                   Shop
                 </Link>
               </li>
               <li>
-                <Link href={aboutPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300">
+                <Link href={aboutPath} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 link-underline">
                   About
                 </Link>
               </li>
@@ -168,7 +168,7 @@ export function StorefrontFooter({
               <input
                 type="email"
                 placeholder="your@email.com"
-                className="flex-1 px-4 py-3 bg-background border border-border text-sm placeholder:text-muted-foreground focus:border-foreground transition-colors duration-200 min-w-0 footer-newsletter-input"
+                className="flex-1 px-4 py-3 bg-background border border-border text-sm placeholder:text-muted-foreground transition-colors duration-200 min-w-0 footer-newsletter-input newsletter-input-themed"
               />
               <button
                 className="btn-luxury btn-primary-luxury !py-3 !px-5 !text-[11px] shrink-0 footer-newsletter-btn !rounded-l-none"
@@ -181,7 +181,8 @@ export function StorefrontFooter({
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-border/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="section-divider mb-8" />
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} {storeName}
           </p>

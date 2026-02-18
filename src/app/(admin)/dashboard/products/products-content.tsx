@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Package, Search, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Package, Search } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
-import { RestoreProductButton } from "@/components/dashboard/restore-product-button";
 
 interface Product {
   id: string;
@@ -28,14 +27,22 @@ interface ProductsPageContentProps {
   products: Product[];
 }
 
-export default function ProductsPageContent({ products }: ProductsPageContentProps) {
+export default function ProductsPageContent({ products: initialProducts }: ProductsPageContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [products, setProducts] = useState(initialProducts);
+
+  const handleProductDeleted = (productId: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+  };
 
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products;
+    // Filter out deleted products
+    const activeProducts = products.filter((p) => !p.deletedAt);
+    
+    if (!searchQuery.trim()) return activeProducts;
 
     const query = searchQuery.toLowerCase();
-    return products.filter((product) =>
+    return activeProducts.filter((product) =>
       product.name.toLowerCase().includes(query)
     );
   }, [searchQuery, products]);
@@ -83,25 +90,16 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
               filteredProducts.map((product) => (
                 <div 
                   key={product.id} 
-                  className={`group rounded-xl border overflow-hidden hover:shadow-md transition-all ${
-                    product.deletedAt
-                      ? 'bg-red-50 border-red-200'
-                      : 'bg-gray-50 border-gray-100 hover:border-gray-200'
-                  }`}
+                  className="group rounded-xl border overflow-hidden hover:shadow-md transition-all bg-gray-50 border-gray-100 hover:border-gray-200"
                 >
                   {/* Product Image */}
                   <div className="aspect-video relative bg-gray-100 overflow-hidden">
-                    {product.deletedAt && (
-                      <div className="absolute top-2 left-2 z-10 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
-                        Deleted
-                      </div>
-                    )}
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className={`object-cover group-hover:scale-105 transition-transform duration-300 ${product.deletedAt ? 'grayscale' : ''}`}
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
@@ -114,8 +112,8 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h3 className={`font-semibold line-clamp-1 ${product.deletedAt ? 'text-gray-500 line-through' : 'text-gray-900'}`}>{product.name}</h3>
-                        <p className={`text-lg font-bold mt-1 ${product.deletedAt ? 'text-gray-400' : 'text-blue-600'}`}>
+                        <h3 className="font-semibold line-clamp-1 text-gray-900">{product.name}</h3>
+                        <p className="text-lg font-bold mt-1 text-blue-600">
                           ${Number(product.price).toFixed(2)}
                         </p>
                         <p className={`text-sm mt-1 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -138,20 +136,17 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
-                      {product.deletedAt ? (
-                        <RestoreProductButton productId={product.id} />
-                      ) : (
-                        <>
-                          <Link
-                            href={`/dashboard/products/${product.id}/edit`}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit
-                          </Link>
-                          <DeleteProductButton productId={product.id} />
-                        </>
-                      )}
+                      <Link
+                        href={`/dashboard/products/${product.id}/edit`}
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Link>
+                      <DeleteProductButton 
+                        productId={product.id} 
+                        onSuccess={handleProductDeleted}
+                      />
                     </div>
                   </div>
                 </div>
@@ -159,27 +154,24 @@ export default function ProductsPageContent({ products }: ProductsPageContentPro
             ) : (
               <div className="col-span-full py-12 text-center">
                 <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No products found matching "{searchQuery}"</p>
+                <p className="text-gray-500">
+                  {searchQuery.trim() 
+                    ? `No products match "${searchQuery}". Try adjusting your search.`
+                    : "No products available"}
+                </p>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mb-6">
-            <Package className="h-10 w-10 text-blue-600" />
+        <div className="bg-gradient-to-b from-blue-50/50 to-transparent rounded-2xl border border-gray-100 shadow-sm p-20 text-center">
+          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center mb-8 shadow-md">
+            <Package className="h-12 w-12 text-blue-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No products yet</h3>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Get started by adding your first product to your store
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">No products yet</h3>
+          <p className="text-gray-600 mb-1 max-w-md mx-auto leading-relaxed">
+            Get started by adding your first product to your store using the button above
           </p>
-          <Link
-            href="/dashboard/products/new"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-105"
-          >
-            <Plus className="h-5 w-5" />
-            Add Your First Product
-          </Link>
         </div>
       )}
     </div>

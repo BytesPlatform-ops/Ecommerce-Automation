@@ -103,7 +103,7 @@ export function ContactSection({
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12 sm:mb-16">
-            <p className="text-overline mb-3" style={{ color: "var(--primary)" }}>Contact</p>
+            <span className="section-badge mb-4 mx-auto">Contact</span>
             <h2 className="font-serif text-3xl sm:text-4xl text-foreground mb-4 font-medium">Get in Touch</h2>
             <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
               We&apos;d love to hear from you. Reach out through any of our contact channels.
@@ -117,7 +117,7 @@ export function ContactSection({
 
               {/* Email */}
               {contactEmail && (
-                <div className="contact-info-card flex gap-4">
+                <div className="contact-info-card-themed flex gap-4">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
                     <Mail className="h-4 w-4" strokeWidth={1.5} />
                   </div>
@@ -135,8 +135,8 @@ export function ContactSection({
 
               {/* Phone */}
               {contactPhone && (
-                <div className="contact-info-card flex gap-4">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
+                <div className="contact-info-card-themed flex gap-4">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--secondary)", color: "white" }}>
                     <Phone className="h-4 w-4" strokeWidth={1.5} />
                   </div>
                   <div className="min-w-0">
@@ -153,7 +153,7 @@ export function ContactSection({
 
               {/* WhatsApp */}
               {whatsappNumber && (
-                <div className="contact-info-card flex gap-4">
+                <div className="contact-info-card-themed flex gap-4">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--primary)", color: "white" }}>
                     <Smartphone className="h-4 w-4" strokeWidth={1.5} />
                   </div>
@@ -175,7 +175,7 @@ export function ContactSection({
             {/* Contact Form */}
             {contactEmail && (
               <div className="lg:col-span-2">
-                <div className="contact-form-card">
+                <div className="contact-form-card" style={{ borderColor: 'color-mix(in srgb, var(--primary) 12%, var(--border))' }}>
                   <h3 className="text-overline mb-6">Send a Message</h3>
 
                   {error && (
@@ -203,7 +203,7 @@ export function ContactSection({
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           placeholder="Your name"
-                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all duration-200 rounded-xl checkout-input-themed"
                         />
                       </div>
 
@@ -218,7 +218,7 @@ export function ContactSection({
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           placeholder="your@email.com"
-                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all duration-200 rounded-xl checkout-input-themed"
                         />
                       </div>
                     </div>
@@ -233,7 +233,7 @@ export function ContactSection({
                           id="queryType"
                           value={formData.queryType}
                           onChange={(e) => setFormData({ ...formData, queryType: e.target.value })}
-                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
+                          className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground focus:outline-none focus:bg-background transition-all duration-200 rounded-xl checkout-input-themed"
                         >
                           <option value="">Select inquiry type</option>
                           {queryTypes.map((type: string) => (
@@ -257,7 +257,7 @@ export function ContactSection({
                         value={formData.subject}
                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                         placeholder="Message subject"
-                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 rounded-xl"
+                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all duration-200 rounded-xl checkout-input-themed"
                       />
                     </div>
 
@@ -272,7 +272,7 @@ export function ContactSection({
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         placeholder="Your message..."
                         rows={4}
-                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:bg-background transition-all duration-200 resize-none rounded-xl"
+                        className="w-full px-4 py-3 bg-muted/50 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:bg-background transition-all duration-200 resize-none rounded-xl checkout-input-themed"
                       />
                     </div>
 

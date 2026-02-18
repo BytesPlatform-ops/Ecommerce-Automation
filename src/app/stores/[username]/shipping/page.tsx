@@ -1231,10 +1231,10 @@ export default function ShippingPage() {
   const cartTotal = cartData.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6 sm:py-16">
+    <div className="min-h-screen gradient-section py-12 px-6 sm:py-16">
       <div className="max-w-[1100px] mx-auto">
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-10 animate-fade-in-up">
           <button
             type="button"
             onClick={() => router.back()}
@@ -1245,15 +1245,16 @@ export default function ShippingPage() {
           </button>
           <h1 className="font-serif text-3xl sm:text-4xl text-foreground mb-2">Checkout</h1>
           <p className="text-sm text-muted-foreground">Complete your delivery information to proceed with payment</p>
+          <div className="accent-line w-16 mt-4" />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Shipping Form */}
           <div className="lg:order-1">
-            <div className="border border-border bg-background overflow-hidden">
-              <div className="px-6 py-5 border-b border-border">
+            <div className="checkout-card-themed">
+              <div className="checkout-header px-6 py-5">
                 <h2 className="text-overline !text-foreground flex items-center gap-2">
-                  <MapPin className="w-4 h-4" strokeWidth={1.5} />
+                  <MapPin className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--primary)" }} />
                   Delivery Information
                 </h2>
               </div>
@@ -1545,6 +1546,7 @@ export default function ShippingPage() {
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full btn-luxury btn-primary-luxury disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{ backgroundColor: "var(--primary)" }}
                   >
                     {isSubmitting ? (
                       <>
@@ -1562,10 +1564,10 @@ export default function ShippingPage() {
 
           {/* Order Summary */}
           <div className="lg:order-2">
-            <div className="border border-border bg-background overflow-hidden sticky top-8">
-              <div className="px-6 py-5 border-b border-border">
+            <div className="checkout-card-themed sticky top-8">
+              <div className="checkout-header px-6 py-5">
                 <h2 className="text-overline !text-foreground flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+                  <ShoppingBag className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--primary)" }} />
                   Order Summary
                 </h2>
               </div>
@@ -1615,7 +1617,7 @@ export default function ShippingPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 border border-border bg-muted">
+                <div className="mt-6 p-4 border bg-primary-light border-primary-light rounded-xl">
                   <div className="flex items-start gap-3">
                     <Package className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" strokeWidth={1.5} />
                     <div className="text-xs text-muted-foreground">

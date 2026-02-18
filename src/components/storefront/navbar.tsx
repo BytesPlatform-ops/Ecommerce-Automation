@@ -88,7 +88,7 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
       <div className="h-16 sm:h-[72px]" />
       
       <div className="relative">
-        <nav className="navbar-glass fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full" style={{ overflowAnchor: "none", transform: isNavbarVisible ? 'translateY(0)' : 'translateY(-100%)' }}>
+        <nav className="navbar-glass fixed top-0 left-0 right-0 z-50 transition-all duration-500 w-full" style={{ overflowAnchor: "none", transform: isNavbarVisible ? 'translateY(0)' : 'translateY(-100%)', borderBottomColor: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 sm:h-[72px] min-h-16 sm:min-h-[72px]">
             {/* Logo */}
@@ -116,19 +116,26 @@ export function StorefrontNavbar({ storeName, storeLogoUrl, slug, storeId, about
             <div className="hidden md:flex items-center gap-1">
               <Link
                 href={homePath}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+                style={{ ['--hover-bg' as string]: 'color-mix(in srgb, var(--primary) 8%, transparent)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 8%, transparent)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Shop
               </Link>
               <Link
                 href={aboutPath}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 8%, transparent)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 About
               </Link>
               <Link
                 href={contactPath}
-                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
+                className="px-4 py-2 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground transition-all duration-200"
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--primary) 8%, transparent)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Contact
               </Link>

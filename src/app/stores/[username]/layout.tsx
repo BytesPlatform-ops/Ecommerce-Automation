@@ -6,6 +6,21 @@ import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success
 import { sanitizeHexColor, sanitizeFontFamily } from "@/lib/security";
 import { getStoreBySlug, getStoreSectionCounts, checkIsCustomDomain } from "@/lib/store-cache";
 
+// Map theme font families to Google Fonts URL-safe names
+function getGoogleFontUrl(fontFamily: string | null | undefined): string | null {
+  if (!fontFamily) return null;
+  const font = fontFamily.trim();
+  // These are already loaded via next/font/google in root layout
+  const preloaded = ["Inter", "Playfair Display"];
+  if (preloaded.includes(font)) return null;
+  // System fonts don't need loading
+  const systemFonts = ["Georgia", "Arial", "Helvetica", "Times New Roman", "Courier New", "Verdana"];
+  if (systemFonts.includes(font)) return null;
+  // Build Google Fonts URL for the theme font
+  const encoded = font.replace(/\s+/g, "+");
+  return `https://fonts.googleapis.com/css2?family=${encoded}:wght@300;400;500;600;700&display=swap`;
+}
+
 export default async function StorefrontLayout({
   children,
   params,
@@ -48,6 +63,9 @@ export default async function StorefrontLayout({
   const secondaryColor = sanitizeHexColor(store.theme?.secondaryHex, "#737373");
   const fontFamily = sanitizeFontFamily(store.theme?.fontFamily);
 
+  // Load theme font from Google Fonts if not already preloaded
+  const googleFontUrl = getGoogleFontUrl(store.theme?.fontFamily);
+
   // CSS variables for theming (using sanitized values)
   const themeStyles = store.theme
     ? ({
@@ -62,11 +80,23 @@ export default async function StorefrontLayout({
       style={themeStyles}
       className="min-h-screen flex flex-col"
     >
+      {/* Load theme font from Google Fonts */}
+      {googleFontUrl && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href={googleFontUrl} rel="stylesheet" />
+        </>
+      )}
       <style>{`
         :root {
           --primary: ${primaryColor};
           --secondary: ${secondaryColor};
           --font-family: ${fontFamily};
+          --primary-light: ${primaryColor}15;
+          --primary-medium: ${primaryColor}25;
+          --secondary-light: ${secondaryColor}15;
+          --secondary-medium: ${secondaryColor}25;
         }
         .storefront {
           font-family: var(--font-family);
@@ -87,6 +117,15 @@ export default async function StorefrontLayout({
         }
         .storefront .border-primary {
           border-color: var(--primary);
+        }
+        .storefront .text-secondary {
+          color: var(--secondary);
+        }
+        .storefront .bg-secondary {
+          background-color: var(--secondary);
+        }
+        .storefront .border-secondary {
+          border-color: var(--secondary);
         }
       `}</style>
       <div className="storefront flex flex-col min-h-screen">

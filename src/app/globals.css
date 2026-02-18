@@ -582,3 +582,495 @@ input[type="radio"] {
   box-shadow: var(--shadow-md);
   border-color: var(--border);
 }
+
+/* ─── Theme Color Utilities ─── */
+.bg-primary-light {
+  background-color: color-mix(in srgb, var(--primary) 8%, var(--background));
+}
+
+.bg-primary-medium {
+  background-color: color-mix(in srgb, var(--primary) 15%, var(--background));
+}
+
+.bg-secondary-light {
+  background-color: color-mix(in srgb, var(--secondary) 8%, var(--background));
+}
+
+.bg-secondary-medium {
+  background-color: color-mix(in srgb, var(--secondary) 15%, var(--background));
+}
+
+.border-primary-light {
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.border-secondary-light {
+  border-color: color-mix(in srgb, var(--secondary) 25%, transparent);
+}
+
+.text-primary-accent {
+  color: var(--primary);
+}
+
+.text-secondary-accent {
+  color: var(--secondary);
+}
+
+/* ─── Gradient Utilities ─── */
+.gradient-hero {
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--primary) 6%, var(--background)) 0%, 
+    var(--background) 40%, 
+    color-mix(in srgb, var(--secondary) 6%, var(--background)) 100%
+  );
+}
+
+.gradient-section {
+  background: linear-gradient(180deg, 
+    color-mix(in srgb, var(--primary) 4%, var(--background)) 0%, 
+    var(--background) 100%
+  );
+}
+
+.gradient-section-alt {
+  background: linear-gradient(180deg, 
+    var(--background) 0%, 
+    color-mix(in srgb, var(--secondary) 5%, var(--background)) 100%
+  );
+}
+
+.gradient-cta {
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--primary) 10%, var(--background)) 0%, 
+    color-mix(in srgb, var(--secondary) 8%, var(--background)) 100%
+  );
+}
+
+.gradient-footer {
+  background: linear-gradient(180deg, 
+    var(--muted) 0%, 
+    color-mix(in srgb, var(--primary) 6%, var(--muted)) 100%
+  );
+}
+
+/* ─── Enhanced Trust Badge with Theme Colors ─── */
+.trust-badge-themed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  background: color-mix(in srgb, var(--primary) 5%, var(--background));
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-lg);
+  transition: all 400ms var(--ease-luxury);
+}
+
+.trust-badge-themed:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--background));
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.trust-badge-themed .trust-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 30%, transparent);
+  flex-shrink: 0;
+  transition: transform 300ms var(--ease-luxury);
+}
+
+.trust-badge-themed:hover .trust-icon {
+  transform: scale(1.05);
+}
+
+/* ─── Enhanced Info Page Cards ─── */
+.info-page-header-themed {
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--primary) 6%, var(--background)) 0%, 
+    color-mix(in srgb, var(--secondary) 4%, var(--background)) 100%
+  );
+  padding: 2.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-page-card-themed {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 400ms var(--ease-luxury);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-page-card-themed::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  opacity: 0;
+  transition: opacity 300ms var(--ease-luxury);
+}
+
+.info-page-card-themed:hover {
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+  transform: translateY(-2px);
+}
+
+.info-page-card-themed:hover::before {
+  opacity: 1;
+}
+
+/* ─── Enhanced Testimonial Card ─── */
+.testimonial-card-themed {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  background: var(--background);
+  box-shadow: var(--shadow-xs);
+  transition: all 400ms var(--ease-luxury);
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-card-themed::before {
+  content: "\201C";
+  position: absolute;
+  top: 0.5rem;
+  right: 1.5rem;
+  font-size: 4rem;
+  font-family: Georgia, serif;
+  color: color-mix(in srgb, var(--secondary) 25%, transparent);
+  line-height: 1;
+  pointer-events: none;
+  transition: color 400ms var(--ease-luxury);
+}
+
+.testimonial-card-themed:hover::before {
+  color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.testimonial-card-themed:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+/* ─── Enhanced Contact Info Card ─── */
+.contact-info-card-themed {
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  padding: 1.25rem;
+  background: color-mix(in srgb, var(--primary) 4%, var(--background));
+  transition: all 300ms var(--ease-luxury);
+}
+
+.contact-info-card-themed:hover {
+  box-shadow: var(--shadow-sm);
+  background: color-mix(in srgb, var(--primary) 8%, var(--background));
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  transform: translateX(4px);
+}
+
+/* ─── Button Secondary Style ─── */
+.btn-secondary-luxury {
+  background-color: var(--secondary);
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--secondary) 25%, transparent);
+}
+
+.btn-secondary-luxury:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--secondary) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ─── Product Card Enhanced ─── */
+.product-card-themed {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--background);
+  overflow: hidden;
+  transition: all 400ms var(--ease-luxury);
+  position: relative;
+}
+
+.product-card-themed::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  opacity: 0;
+  transition: opacity 400ms var(--ease-luxury);
+}
+
+.product-card-themed:hover {
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+}
+
+.product-card-themed:hover::after {
+  opacity: 1;
+}
+
+.product-card-themed .product-image {
+  transition: transform 700ms var(--ease-luxury);
+}
+
+.product-card-themed:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* ─── Social Icon Themed ─── */
+.social-icon-btn-themed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: var(--background);
+  border: 1px solid var(--border);
+  transition: all 300ms var(--ease-luxury);
+}
+
+.social-icon-btn-themed:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+/* ─── FAQ Accordion Themed ─── */
+.faq-accordion-themed {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--background);
+  box-shadow: var(--shadow-xs);
+  transition: all 300ms var(--ease-luxury);
+  overflow: hidden;
+}
+
+.faq-accordion-themed:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.faq-accordion-themed[open] {
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+/* ─── Shipping Location Card Themed ─── */
+.shipping-location-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--background);
+  transition: all 400ms var(--ease-luxury);
+}
+
+.shipping-location-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 25%, transparent);
+  background: color-mix(in srgb, var(--primary) 3%, var(--background));
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.shipping-location-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  background: color-mix(in srgb, var(--secondary) 10%, var(--background));
+  border: 1px solid color-mix(in srgb, var(--secondary) 15%, transparent);
+  color: var(--foreground);
+  transition: all 300ms var(--ease-luxury);
+}
+
+.shipping-location-chip:hover {
+  background: color-mix(in srgb, var(--primary) 12%, var(--background));
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* ─── Newsletter Input Themed ─── */
+.newsletter-input-themed {
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, var(--border));
+  background: var(--background);
+  transition: all 300ms var(--ease-luxury);
+}
+
+.newsletter-input-themed:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent) !important;
+}
+
+/* ─── Scroll Animation Classes ─── */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 20%, transparent); }
+  50% { box-shadow: 0 0 20px 4px color-mix(in srgb, var(--primary) 15%, transparent); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.7s var(--ease-luxury) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s var(--ease-luxury) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s var(--ease-luxury) forwards;
+}
+
+.animate-float {
+  animation: floatUp 3s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Delay utility classes for staggered animations */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+
+/* ─── Decorative Accent Line ─── */
+.accent-line {
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+.accent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--secondary);
+}
+
+/* ─── Enhanced Section Divider ─── */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    color-mix(in srgb, var(--primary) 20%, transparent) 20%, 
+    color-mix(in srgb, var(--secondary) 20%, transparent) 80%, 
+    transparent
+  );
+}
+
+/* ─── Checkout Form Themed ─── */
+.checkout-card-themed {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--background);
+  overflow: hidden;
+}
+
+.checkout-card-themed .checkout-header {
+  background: color-mix(in srgb, var(--primary) 5%, var(--background));
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.checkout-input-themed {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all 300ms var(--ease-luxury);
+}
+
+.checkout-input-themed:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent) !important;
+}
+
+/* ─── Section Tag/Badge ─── */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--primary) 8%, var(--background));
+  color: var(--primary);
+  border: 1px solid color-mix(in srgb, var(--primary) 15%, transparent);
+}
