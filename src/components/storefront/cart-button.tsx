@@ -128,7 +128,7 @@ export function CartButton() {
                           {/* Quantity */}
                           <div className="quantity-stepper mt-3">
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                              onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
                               className="px-3 py-1.5 hover:bg-gray-50 transition-colors duration-200"
                             >
                               <Minus className="h-3 w-3" strokeWidth={1.5} />
@@ -137,8 +137,9 @@ export function CartButton() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                              className="px-3 py-1.5 hover:bg-gray-50 transition-colors duration-200"
+                              onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
+                              disabled={item.stock !== undefined && item.quantity >= item.stock}
+                              className="px-3 py-1.5 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                             >
                               <Plus className="h-3 w-3" strokeWidth={1.5} />
                             </button>
@@ -147,7 +148,7 @@ export function CartButton() {
 
                         {/* Remove */}
                         <button
-                          onClick={() => removeItem(item.productId)}
+                          onClick={() => removeItem(item.productId, item.variantId)}
                           className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-all duration-200 self-start"
                         >
                           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />

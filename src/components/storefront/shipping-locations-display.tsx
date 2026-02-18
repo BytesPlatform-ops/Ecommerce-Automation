@@ -88,7 +88,7 @@ export function ShippingLocationsDisplay({ locations }: ShippingLocationsDisplay
           locations.length === 1 
             ? "grid-cols-1 max-w-md mx-auto" 
             : locations.length === 2 
-              ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto" 
+              ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto" 
               : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
         }`}>
           {locations.map((location) => (
@@ -96,36 +96,38 @@ export function ShippingLocationsDisplay({ locations }: ShippingLocationsDisplay
               key={location.id}
               className="shipping-location-card"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-semibold bg-primary-light"
-                >
-                  {getCountryFlag(location.country)}
+              <div className="shipping-location-header mb-6">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl font-semibold bg-primary-light border border-primary/20"
+                  >
+                    {getCountryFlag(location.country)}
+                  </div>
+                  <h3 className="font-serif text-xl font-semibold text-foreground">
+                    {location.country}
+                  </h3>
                 </div>
-                <h3 className="font-semibold text-lg text-foreground">
-                  {location.country}
-                </h3>
               </div>
 
               {location.cities.length > 0 ? (
-                <div className="space-y-2">
-                  <p className="text-xs uppercase tracking-wider" style={{ color: "var(--secondary)" }}>
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
                     Available Cities
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2.5">
                     {location.cities.map((city) => (
                       <span
                         key={city}
                         className="shipping-location-chip"
                       >
-                        <MapPin className="h-3 w-3" style={{ color: "var(--primary)" }} strokeWidth={1.5} />
+                        <MapPin className="h-3 w-3" style={{ color: "var(--primary)" }} strokeWidth={2} />
                         {city}
                       </span>
                     ))}
                   </div>
                 </div>
               ) : (
-                <p className="text-sm flex items-center gap-2" style={{ color: "var(--secondary)" }}>
+                <p className="text-sm font-medium flex items-center gap-2" style={{ color: "var(--primary)" }}>
                   <MapPin className="h-4 w-4" strokeWidth={1.5} />
                   All cities available
                 </p>

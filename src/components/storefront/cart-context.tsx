@@ -10,6 +10,7 @@ export interface CartItem {
   price: number;
   imageUrl: string | null;
   quantity: number;
+  stock?: number;
   storeId: string;
   storeSlug: string;
 }
@@ -17,7 +18,7 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  addToCart: (product: { id: string; name: string; price: number; imageUrl: string | null; variantId?: string; variantInfo?: string }, quantity: number, storeId: string, storeSlug: string) => void;
+  addToCart: (product: { id: string; name: string; price: number; imageUrl: string | null; variantId?: string; variantInfo?: string; stock?: number }, quantity: number, storeId: string, storeSlug: string) => void;
   removeItem: (productId: string, variantId?: string) => void;
   updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
@@ -74,9 +75,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       const existing = prev.find(matchKey);
       if (existing) {
+        const newQty = existing.quantity + (item.quantity || 1);
+        const cappedQty = item.stock !== undefined ? Math.min(newQty, item.stock) : newQty;
         return prev.map((i) =>
           matchKey(i)
-            ? { ...i, quantity: i.quantity + (item.quantity || 1) }
+            ? { ...i, quantity: cappedQty, stock: item.stock ?? i.stock }
             : i
         );
       }
@@ -91,7 +94,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       price: number; 
       imageUrl: string | null; 
       variantId?: string; 
-      variantInfo?: string 
+      variantInfo?: string;
+      stock?: number;
     }, 
     quantity: number,
     storeId: string,
@@ -104,6 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       name: product.name,
       price: product.price,
       imageUrl: product.imageUrl,
+      stock: product.stock,
       storeId,
       storeSlug,
       quantity,
@@ -127,11 +132,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) =>
       prev.map((i) => {
         if (variantId) {
-          return i.productId === productId && i.variantId === variantId 
-            ? { ...i, quantity } 
-            : i;
+          if (i.productId === productId && i.variantId === variantId) {
+            const capped = i.stock !== undefined ? Math.min(quantity, i.stock) : quantity;
+            return { ...i, quantity: capped };
+          }
+          return i;
         }
-        return i.productId === productId ? { ...i, quantity } : i;
+        if (i.productId === productId) {
+          const capped = i.stock !== undefined ? Math.min(quantity, i.stock) : quantity;
+          return { ...i, quantity: capped };
+        }
+        return i;
       })
     );
   }

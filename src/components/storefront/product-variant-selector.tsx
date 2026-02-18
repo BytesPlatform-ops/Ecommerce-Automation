@@ -98,6 +98,7 @@ export function ProductVariantSelector({
         price: effectivePrice,
         variantId: selectedVariant.id,
         variantInfo: formatVariant(selectedVariant),
+        stock: selectedVariant.stock,
       },
       quantity,
       storeId,
