@@ -57,6 +57,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isHydrated) {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      // Dispatch custom event to notify other components of cart changes
+      const event = new CustomEvent("cartUpdated", { detail: { items } });
+      window.dispatchEvent(event);
     }
   }, [items, isHydrated]);
 

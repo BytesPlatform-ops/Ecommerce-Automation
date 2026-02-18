@@ -920,12 +920,120 @@ export default function ShippingPage() {
     const cart = localStorage.getItem("ecommerce-cart");
     if (cart) {
       const parsedCart = JSON.parse(cart);
-      setCartData(parsedCart);
+      
+      // Fetch latest stock data from server to ensure up-to-date values
+      const productIds = [...new Set(parsedCart.map((item: any) => item.productId))];
+      if (productIds.length > 0) {
+        fetch("/api/products/stock", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productIds }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.stock) {
+              // Update cart items with latest stock information
+              const updatedCart = parsedCart.map((item: any) => {
+                const stockInfo = data.stock[item.productId];
+                if (stockInfo) {
+                  // For variant items, use variant stock; otherwise use base product stock
+                  const latestStock = item.variantId
+                    ? stockInfo.variants[item.variantId] ?? item.stock
+                    : stockInfo.baseStock ?? item.stock;
+                  
+                  return { ...item, stock: latestStock };
+                }
+                return item;
+              });
+              setCartData(updatedCart);
+            } else {
+              // If stock fetch fails, use the local data
+              setCartData(parsedCart);
+            }
+          })
+          .catch((error) => {
+            console.error("Failed to fetch latest stock data:", error);
+            // Fall back to local cart data if API call fails
+            setCartData(parsedCart);
+          });
+      } else {
+        setCartData(parsedCart);
+      }
     } else {
       // No cart data, redirect back to store
       router.back();
     }
+
+    // Listen for localStorage changes to sync cart updates from other sources (e.g., cart drawer)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "ecommerce-cart" && e.newValue) {
+        try {
+          const updatedCart = JSON.parse(e.newValue);
+          setCartData(updatedCart);
+        } catch (error) {
+          console.error("Failed to parse updated cart data:", error);
+        }
+      }
+    };
+
+    // Listen for custom cart update events (same-tab/window updates)
+    const handleCartUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && customEvent.detail.items) {
+        setCartData(customEvent.detail.items);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("cartUpdated", handleCartUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("cartUpdated", handleCartUpdate);
+    };
   }, [router]);
+
+  // Fetch latest stock data periodically while on checkout page
+  useEffect(() => {
+    if (!cartData || cartData.length === 0) return;
+
+    const productIds = [...new Set(cartData.map((item: any) => item.productId))];
+    if (productIds.length === 0) return;
+
+    // Fetch immediately
+    const fetchStockData = () => {
+      fetch("/api/products/stock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productIds }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.stock) {
+            setCartData((prevCart) =>
+              prevCart.map((item: any) => {
+                const stockInfo = data.stock[item.productId];
+                if (stockInfo) {
+                  const latestStock = item.variantId
+                    ? stockInfo.variants[item.variantId] ?? item.stock
+                    : stockInfo.baseStock ?? item.stock;
+                  return { ...item, stock: latestStock };
+                }
+                return item;
+              })
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to fetch latest stock data:", error);
+        });
+    };
+
+    // Poll every 3 seconds for real-time stock updates
+    const interval = setInterval(fetchStockData, 3000);
+
+    // Cleanup interval when component unmounts
+    return () => clearInterval(interval);
+  }, [cartData?.length]); // Only re-run if cart length changes
 
   // Fetch store shipping locations
   useEffect(() => {
