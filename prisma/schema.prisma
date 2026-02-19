@@ -398,6 +398,24 @@ enum AuditAction {
   WebhookProcessed
 }
 
+// ==================== PASSWORD RESET ====================
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  usedAt    DateTime?
+
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+
 model AuditLog {
   id           String      @id @default(cuid())
   action       AuditAction

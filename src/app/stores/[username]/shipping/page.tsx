@@ -1009,7 +1009,7 @@ export default function ShippingPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.stock) {
-            setCartData((prevCart) =>
+            setCartData((prevCart: any) =>
               prevCart.map((item: any) => {
                 const stockInfo = data.stock[item.productId];
                 if (stockInfo) {

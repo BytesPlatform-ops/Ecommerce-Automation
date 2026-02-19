@@ -166,6 +166,7 @@ export function SignupForm() {
             onFocus={() => setFocusedField("email")}
             onBlur={() => setFocusedField(null)}
             required
+            suppressHydrationWarning
             className="w-full pl-11 pr-12 py-2.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
             placeholder="you@example.com"
           />
@@ -202,6 +203,7 @@ export function SignupForm() {
             onFocus={() => setFocusedField("password")}
             onBlur={() => setFocusedField(null)}
             required
+            suppressHydrationWarning
             className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
             placeholder="Create a secure password"
           />
@@ -300,6 +302,7 @@ export function SignupForm() {
             onFocus={() => setFocusedField("confirmPassword")}
             onBlur={() => setFocusedField(null)}
             required
+            suppressHydrationWarning
             className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
             placeholder="Confirm your password"
           />
@@ -342,6 +345,7 @@ export function SignupForm() {
       {/* Submit button */}
       <motion.button
         type="submit"
+        suppressHydrationWarning
         disabled={loading}
         whileHover={{ scale: loading ? 1 : 1.01 }}
         whileTap={{ scale: loading ? 1 : 0.98 }}

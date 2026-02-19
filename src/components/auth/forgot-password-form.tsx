@@ -1,46 +1,80 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, AlertCircle, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, AlertCircle, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 
-export function LoginForm() {
+export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const router = useRouter();
-  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/send-reset-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
-        setError(error.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to send reset email");
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      setSuccess(true);
     } catch {
-      setError("An unexpected error occurred");
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center space-y-4"
+      >
+        <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+          <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+        </div>
+        <div>
+          <h3 className="text-lg font-medium text-neutral-900 mb-1">Email sent!</h3>
+          <p className="text-sm text-neutral-500 leading-relaxed">
+            If an account exists with <span className="font-medium text-neutral-700">{email}</span>, you&apos;ll receive a password reset link shortly.
+            <br />
+            Be sure to check your spam folder if you don&apos;t see it.
+          </p>
+        </div>
+        <p className="text-xs text-neutral-400 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setSuccess(false);
+              setEmail("");
+            }}
+            className="text-neutral-900 font-medium hover:text-amber-700 transition-colors duration-300 underline underline-offset-2"
+          >
+            Try another email
+          </button>
+        </p>
+      </motion.div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -64,7 +98,7 @@ export function LoginForm() {
       {/* Email field */}
       <div className="space-y-1.5">
         <label
-          htmlFor="email"
+          htmlFor="reset-email"
           className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
         >
           Email address
@@ -82,7 +116,7 @@ export function LoginForm() {
             }`}
           />
           <input
-            id="email"
+            id="reset-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -93,57 +127,6 @@ export function LoginForm() {
             className="w-full pl-11 pr-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
             placeholder="you@example.com"
           />
-        </div>
-      </div>
-
-      {/* Password field */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="password"
-            className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
-          >
-            Password
-          </label>
-          <Link
-            href="/forgot-password"
-            className="text-xs text-neutral-500 hover:text-amber-700 transition-colors duration-300 font-medium"
-          >
-            Forgot password?
-          </Link>
-        </div>
-        <div
-          className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
-            focusedField === "password"
-              ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
-              : "border-border hover:border-neutral-400"
-          }`}
-        >
-          <Lock
-            className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
-              focusedField === "password" ? "text-neutral-900" : "text-muted-foreground"
-            }`}
-          />
-          <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => setFocusedField("password")}
-            onBlur={() => setFocusedField(null)}
-            required
-            suppressHydrationWarning
-            className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
-            placeholder="Enter your password"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors duration-200"
-            tabIndex={-1}
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
         </div>
       </div>
 
@@ -159,11 +142,11 @@ export function LoginForm() {
         {loading ? (
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Signing in...
+            Sending reset link...
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
-            Sign in
+            Send reset link
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </span>
         )}
@@ -171,3 +154,4 @@ export function LoginForm() {
     </form>
   );
 }
+

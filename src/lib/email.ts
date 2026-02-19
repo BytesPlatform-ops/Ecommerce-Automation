@@ -818,3 +818,372 @@ export async function sendShippingConfirmationEmail(details: ShippingConfirmatio
     };
   }
 }
+interface PasswordResetDetails {
+  email: string;
+  resetLink: string;
+  storeName?: string;
+}
+
+export async function sendPasswordResetEmail(details: PasswordResetDetails) {
+  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Chameleon";
+  const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
+
+  if (!SENDGRID_API_KEY) {
+    console.warn("[Email] SENDGRID_API_KEY is not configured. Password reset email not sent.");
+    return { success: false, message: "SendGrid API key not configured" };
+  }
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  const { email, resetLink, storeName = "Chameleon" } = details;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; 
+      line-height: 1.6; 
+      color: #2c3e50; 
+      background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+      padding: 40px 20px;
+    }
+    .wrapper { background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); padding: 0; }
+    .container { 
+      max-width: 520px; 
+      margin: 0 auto; 
+      background: #ffffff; 
+      border-radius: 16px; 
+      overflow: hidden; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1); 
+    }
+    .header { 
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      color: white; 
+      padding: 60px 40px; 
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -5%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+    .logo-section {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+    .logo-circle {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      font-weight: 700;
+      font-size: 28px;
+      color: #1a1a1a;
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+    }
+    .header h1 { 
+      font-size: 32px; 
+      margin: 24px 0 8px 0; 
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      position: relative;
+      z-index: 2;
+    }
+    .header p { 
+      margin: 0; 
+      opacity: 0.9; 
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 2;
+    }
+    .divider { 
+      height: 2px; 
+      background: linear-gradient(90deg, transparent, #ffd700, transparent);
+      position: relative;
+      z-index: 1;
+    }
+    .content { padding: 50px 40px; }
+    .greeting { 
+      font-size: 15px; 
+      margin-bottom: 24px; 
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+    .greeting strong { color: #1a1a1a; font-weight: 600; }
+    .security-box {
+      background: linear-gradient(135deg, #f0f7ff 0%, #f5faff 100%);
+      border: 1px solid #d4e8ff;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 32px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .security-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(0, 100, 255, 0.05) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(80px, -80px);
+    }
+    .security-icon {
+      width: 40px;
+      height: 40px;
+      background: #0064ff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .security-box h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 8px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .security-box p {
+      font-size: 13px;
+      color: #4a5568;
+      margin: 0;
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white !important;
+      padding: 16px 48px;
+      border-radius: 10px;
+      text-decoration: none !important;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      margin: 32px 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+    }
+    .cta-note {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin: 16px 0 0 0;
+      line-height: 1.5;
+    }
+    .action-steps {
+      background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 28px;
+      margin: 32px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .action-steps::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(50px, -50px);
+    }
+    .action-steps h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin: 0 0 16px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .step:last-child {
+      margin-bottom: 0;
+    }
+    .step-number {
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      color: #1a1a1a;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    }
+    .step-text {
+      font-size: 13px;
+      color: #2c3e50;
+      line-height: 1.5;
+      padding-top: 3px;
+    }
+    .footer-text {
+      margin: 32px 0 0 0;
+      padding-top: 32px;
+      border-top: 1px solid #e8e8e8;
+      text-align: center;
+      font-size: 13px;
+      color: #2c3e50;
+      line-height: 1.7;
+    }
+    .footer-text strong { color: #1a1a1a; }
+    .support-link {
+      color: #0064ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .support-link:hover {
+      text-decoration: underline;
+    }
+    .footer { 
+      background: #1a1a1a;
+      padding: 32px 40px;
+      text-align: center; 
+      color: #999;
+      font-size: 11px;
+      border-top: 1px solid #2d2d2d;
+      position: relative;
+      overflow: hidden;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.03) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .footer p { 
+      margin: 6px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .footer a { color: #ffd700; text-decoration: none; font-weight: 600; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo-section">
+          <div class="logo-circle">🔐</div>
+        </div>
+        <h1>Reset Your Password</h1>
+        <p>Secure your account in seconds</p>
+      </div>
+      
+      <div class="divider"></div>
+
+      <div class="content">
+        <p class="greeting">Click the button below to reset your password. This link expires in 1 hour.</p>
+
+        <a href="${escapeHtml(resetLink)}" class="cta-button" style="color: white !important; text-decoration: none !important; background: #1a1a1a; display: block; padding: 16px 48px; border-radius: 10px; font-weight: 600; font-size: 14px; margin: 32px 0; text-align: center; width: 100%; box-sizing: border-box;">Reset Password Now</a>
+
+        <p class="cta-note">If the button doesn't work, copy and paste this link:<br><span style="word-break: break-all; font-size: 11px; color: #666;">${escapeHtml(resetLink)}</span></p>
+
+        <div class="footer-text" style="border-top: none; margin-top: 24px; padding-top: 0;">
+          <p style="font-size: 12px; color: #999;">If you didn't request this, you can ignore this email.</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated security email. Please do not reply to this message.</p>
+        <p>&copy; ${new Date().getFullYear()} ${escapeHtml(storeName)}. All rights reserved.</p>
+        <p>If you have security concerns, please contact us immediately.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    const msg: MailDataRequired = {
+      to: email,
+      from: FROM_ADDRESS,
+      subject: `Reset Your Password - ${escapeHtml(storeName)}`,
+      html,
+    };
+
+    await sgMail.send(msg);
+    console.log(`[Email] Password reset email sent to ${email}`);
+    return { success: true, message: "Password reset email sent successfully" };
+  } catch (error) {
+    console.error(`[Email] Failed to send password reset email to ${email}:`,
+      error instanceof Error ? error.message : "Unknown error"
+    );
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to send email" 
+    };
+  }
+}
