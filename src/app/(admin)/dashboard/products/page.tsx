@@ -1,19 +1,17 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import ProductsPageContent from "./products-content";
 
 export default async function ProductsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const store = await prisma.store.findFirst({
-    where: { ownerId: user.id },
-  });
+  // Deduplicated via React cache() — shared with layout
+  const store = await getOwnerStore(user.id);
 
   if (!store) {
     redirect("/onboarding");

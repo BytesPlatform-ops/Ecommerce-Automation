@@ -1,4 +1,4 @@
-# Chameleon Store 🦎
+# Bytescart Store 🦎
 
 A Multi-Tenant SaaS platform that allows users to create a full-stack, customized e-commerce storefront in under 60 seconds.
 
@@ -24,7 +24,7 @@ A Multi-Tenant SaaS platform that allows users to create a full-stack, customize
 ### 1. Clone and Install
 
 ```bash
-cd chameleon-store
+cd bytescart-store
 npm install
 ```
 

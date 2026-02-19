@@ -85,7 +85,7 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
           w-72 bg-white border-r border-gray-200/80 flex flex-col shadow-xl shadow-gray-200/50
           transition-all duration-300 ease-in-out
           ${isMobile 
-            ? (isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0")
+            ? (isOpen ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none")
             : "translate-x-0 opacity-100"
           } 
         `}

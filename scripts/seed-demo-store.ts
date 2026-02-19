@@ -27,9 +27,9 @@ async function seedDemoStore() {
       data: {
         ownerId: "demo-user", // Special ID for demo store
         subdomainSlug: "demo",
-        storeName: "Chameleon Demo Store",
+        storeName: "Bytescart Demo Store",
         aboutText:
-          "Welcome to the Chameleon Demo Store! Explore our premium collection of curated products. This is a fully functional storefront showcasing what you can build with Chameleon.",
+          "Welcome to the Bytescart Demo Store! Explore our premium collection of curated products. This is a fully functional storefront showcasing what you can build with Bytescart.",
         themeId: theme.id,
         domainStatus: "Live",
       },

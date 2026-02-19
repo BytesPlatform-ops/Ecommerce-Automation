@@ -29,7 +29,7 @@ const faqs = [
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes. On the Growth and Pro plans, you can connect your own custom domain with automatic SSL provisioning. On the Starter plan, you get a free subdomain like yourstore.chameleon.dev.",
+      "Yes. On the Growth and Pro plans, you can connect your own custom domain with automatic SSL provisioning. On the Starter plan, you get a free subdomain like yourstore.bytescart.dev.",
   },
   {
     question: "How fast are the generated stores?",

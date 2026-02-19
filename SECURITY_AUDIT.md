@@ -1,6 +1,6 @@
 # SECURITY AUDIT REPORT
 
-**Application:** Chameleon E-commerce Platform  
+**Application:** Bytescart E-commerce Platform  
 **Date:** February 13, 2026  
 **Auditor:** Security Engineering Review  
 **Scope:** Full-stack Next.js + Supabase + Prisma + Stripe  

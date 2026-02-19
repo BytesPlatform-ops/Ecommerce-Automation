@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Package, MapPin, User, Mail, Phone, DollarSign, Calendar, Truck, Loader2, CheckCircle, Copy, Check } from "lucide-react";
 import { markOrderAsShipped } from "@/lib/actions";
 
@@ -71,8 +72,27 @@ export function OrderDetailsModal({
   const [shippingSuccess, setShippingSuccess] = useState<{ trackingNumber: string } | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
   const [copiedOrderId, setCopiedOrderId] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  // Must be above the conditional return — React hooks cannot be called conditionally
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen && mounted) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, mounted]);
+
+  // All hooks are above — safe to return early now
+  if (!isOpen || !mounted) return null;
 
   const copyOrderId = () => {
     navigator.clipboard.writeText(order.id);
@@ -111,34 +131,27 @@ export function OrderDetailsModal({
   const isAlreadyShipped = order.status === "Shipped" || shippingSuccess !== null;
   const displayTrackingNumber = shippingSuccess?.trackingNumber || order.trackingNumber;
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
   const hasShippingInfo =
     order.shippingAddress ||
     order.shippingCity ||
     order.shippingCountry;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/35 z-40 transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-black/50 z-[100] transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 animate-in fade-in zoom-in duration-200">
+      <div
+        className="fixed inset-0 z-[101] overflow-y-auto flex items-end sm:items-center justify-center sm:p-4"
+        onClick={onClose}
+      >
         <div
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl max-h-[95vh] overflow-hidden flex flex-col"
+          className="w-full sm:max-w-2xl bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl max-h-[92vh] sm:max-h-[95vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -530,6 +543,7 @@ export function OrderDetailsModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }

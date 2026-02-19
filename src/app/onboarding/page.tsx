@@ -29,7 +29,7 @@ export default async function OnboardingPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-lg">
         <div className="text-center mb-10">
-          <span className="font-serif text-2xl tracking-tight text-foreground">Chameleon</span>
+          <span className="font-serif text-2xl tracking-tight text-foreground">Bytescart</span>
           <h1 className="font-serif text-3xl text-foreground mt-8 mb-3">
             Create Your Store
           </h1>

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const emailResult = await sendPasswordResetEmail({
       email,
       resetLink,
-      storeName: "Chameleon",
+      storeName: "Bytescart",
     });
 
     if (!emailResult.success) {

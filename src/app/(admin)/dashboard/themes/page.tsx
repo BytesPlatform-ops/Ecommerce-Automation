@@ -1,27 +1,24 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import { ThemeSelector } from "@/components/dashboard/theme-selector";
 
 export default async function ThemesPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const store = await prisma.store.findFirst({
-    where: { ownerId: user.id },
-  });
+  // Fetch store (cached) and themes in parallel
+  const [store, themes] = await Promise.all([
+    getOwnerStore(user.id),
+    prisma.theme.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   if (!store) {
     redirect("/onboarding");
   }
-
-  const themes = await prisma.theme.findMany({
-    orderBy: { name: "asc" },
-  });
 
   return (
     <div>

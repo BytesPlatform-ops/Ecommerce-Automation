@@ -193,7 +193,7 @@ export function StorefrontFooter({
               target="_blank"
               className="text-foreground hover:opacity-70 transition-opacity duration-300 font-semibold"
             >
-              Chameleon
+              Bytescart
             </a>
           </p>
         </div>

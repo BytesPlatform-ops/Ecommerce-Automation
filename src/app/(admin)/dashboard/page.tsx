@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Package, Palette, Eye, Plus, TrendingUp,
   ArrowUpRight, DollarSign, ShoppingCart, BarChart3,
@@ -13,17 +12,15 @@ import { StockNotificationAlert } from "@/components/dashboard/stock-notificatio
 import { OrderStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Deduplicated via React cache() — shared with layout.tsx
+  const user = await getAuthUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const store = await prisma.store.findFirst({
-    where: { ownerId: user.id },
-    include: { theme: true },
-  });
+  // Deduplicated via React cache() — shared with layout.tsx
+  const store = await getOwnerStore(user.id);
 
   if (!store) {
     redirect("/onboarding");
@@ -34,20 +31,12 @@ export default async function DashboardPage() {
   const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const last60Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  // Batch product queries into one connection
-  const [productCount, recentProducts, lowStockCount] = await prisma.$transaction([
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
-    prisma.product.findMany({
-      where: { storeId: store.id, deletedAt: null },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: { id: true, name: true, price: true, imageUrl: true, stock: true, createdAt: true },
-    }),
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
-  ]);
-
-  // Batch order queries into one connection
+  // Fire ALL queries at the same time instead of using $transaction
+  // (transactions serialize queries over the network — disastrous with
+  // a remote DB like Supabase where each round-trip is ~500ms).
   const [
+    productCount,
+    lowStockCount,
     totalOrders,
     completedOrders,
     last7DaysOrders,
@@ -57,7 +46,9 @@ export default async function DashboardPage() {
     prev30Revenue,
     recentOrders,
     recentOrdersForChart,
-  ] = await prisma.$transaction([
+  ] = await Promise.all([
+    prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
+    prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
     prisma.order.count({ where: { storeId: store.id } }),
     prisma.order.count({ where: { storeId: store.id, status: OrderStatus.Completed } }),
     prisma.order.count({ where: { storeId: store.id, createdAt: { gte: last7Days } } }),
@@ -490,57 +481,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent Products */}
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm dash-animate-in dash-delay-8">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="dash-section-title">
-            <Package className="h-5 w-5 text-violet-500" />
-            Recent Products
-          </h2>
-          <Link href="/dashboard/products" className="text-sm text-blue-600 font-medium hover:underline flex items-center gap-1">
-            View all <ArrowUpRight className="h-3 w-3" />
-          </Link>
-        </div>
 
-        {recentProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {recentProducts.map((product) => (
-              <Link key={product.id} href={`/dashboard/products/${product.id}/edit`} className="dash-product-card group">
-                <div className="image-wrapper aspect-square bg-gray-100">
-                  {product.imageUrl ? (
-                    <Image src={product.imageUrl} alt={product.name} width={200} height={200} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-                      <Package className="h-8 w-8 text-gray-300" />
-                    </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="font-medium text-gray-900 text-sm truncate">{product.name}</p>
-                  <div className="flex items-center justify-between mt-1.5">
-                    <p className="text-sm font-bold text-blue-600">${Number(product.price).toFixed(2)}</p>
-                    <span className={`text-xs font-medium ${product.stock > 10 ? 'text-emerald-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-500'}`}>
-                      {product.stock} in stock
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="dash-empty-state">
-            <div className="icon-container">
-              <Package className="h-8 w-8 text-violet-500" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">No products yet</h3>
-            <p className="text-gray-500 text-sm mb-4">Add your first product to get started</p>
-            <Link href="/dashboard/products/new" className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:shadow-lg transition-all">
-              <Plus className="h-4 w-4" />
-              Add Product
-            </Link>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

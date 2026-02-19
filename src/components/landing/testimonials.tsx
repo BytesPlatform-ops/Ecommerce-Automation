@@ -19,7 +19,7 @@ const testimonials = [
     role: "CEO, StreetVault",
     avatar: "MJ",
     rating: 5,
-    text: "We used to spend $15k+ on agency builds. Now we spin up client stores in seconds. Chameleon changed our entire business model.",
+    text: "We used to spend $15k+ on agency builds. Now we spin up client stores in seconds. Bytescart changed our entire business model.",
     accentColor: "from-blue-500 to-cyan-500",
   },
   {

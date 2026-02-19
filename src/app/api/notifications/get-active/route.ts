@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 /**
  * GET /api/notifications/get-active
  * 
- * Fetch active (non-dismissed) stock notifications for the authenticated user's store
+ * Fetch active (non-dismissed) stock notifications for the authenticated user's store.
+ * Uses a single query with a relation filter to avoid separate auth → store → notifications roundtrips.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -19,23 +20,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the user's store
-    const store = await prisma.store.findFirst({
-      where: { ownerId: user.id },
-      select: { id: true },
-    });
-
-    if (!store) {
-      return NextResponse.json(
-        { error: "Store not found" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch active notifications
+    // Single query: filter notifications through the store relation
+    // instead of fetching store first, then notifications separately.
     const notifications = await prisma.stockNotification.findMany({
       where: {
-        storeId: store.id,
+        store: { ownerId: user.id },
         isDismissed: false,
       },
       select: {

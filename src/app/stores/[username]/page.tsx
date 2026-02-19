@@ -222,7 +222,7 @@ export default async function StorefrontHomePage({
                           </div>
                         )}
                       </div>
-                      <div className="p-4 sm:p-5">
+                      <div className="p-2.5 sm:p-5">
                         <h3 className="text-sm sm:text-base text-foreground mb-2 line-clamp-1 font-medium">
                           {product.name}
                         </h3>
@@ -231,7 +231,7 @@ export default async function StorefrontHomePage({
                         </p>
                       </div>
                     </Link>
-                    <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                    <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-5">
                       <AddToCartButton 
                         product={{
                           ...product,
@@ -314,7 +314,7 @@ export default async function StorefrontHomePage({
                           </div>
                         )}
                       </div>
-                      <div className="p-4 sm:p-5">
+                      <div className="p-2.5 sm:p-5">
                         <h3 className="text-sm text-foreground mb-1.5 line-clamp-1 font-medium">
                           {product.name}
                         </h3>
@@ -323,7 +323,7 @@ export default async function StorefrontHomePage({
                         </p>
                       </div>
                     </Link>
-                    <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+                    <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-5">
                       <AddToCartButton 
                         product={{
                           ...product,

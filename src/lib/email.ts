@@ -33,9 +33,9 @@ interface OrderDetails {
 
 export async function sendOrderConfirmationEmail(orderDetails: OrderDetails) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@bytescart.store";
   // For customer emails, use the store name as the sender
-  const FROM_NAME = orderDetails.storeName || process.env.SENDGRID_FROM_NAME || "Chameleon Store";
+  const FROM_NAME = orderDetails.storeName || process.env.SENDGRID_FROM_NAME || "Bytescart Store";
   const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
   if (!SENDGRID_API_KEY) {
@@ -363,8 +363,8 @@ export async function sendStoreNotificationEmail(
   orderDetails: OrderDetails
 ) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
-  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Chameleon Store";
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@bytescart.store";
+  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Bytescart Store";
   const FROM_ADDRESS = FROM_NAME ? `${FROM_NAME} <${FROM_EMAIL}>` : FROM_EMAIL;
 
   if (!SENDGRID_API_KEY) {
@@ -647,7 +647,7 @@ interface ShippingConfirmationDetails {
 
 export async function sendShippingConfirmationEmail(details: ShippingConfirmationDetails) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@bytescart.store";
   const FROM_NAME = details.storeName;
   const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
@@ -826,8 +826,8 @@ interface PasswordResetDetails {
 
 export async function sendPasswordResetEmail(details: PasswordResetDetails) {
   const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@chameleon.store";
-  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Chameleon";
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@bytescart.store";
+  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Bytescart";
   const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
 
   if (!SENDGRID_API_KEY) {
@@ -837,7 +837,7 @@ export async function sendPasswordResetEmail(details: PasswordResetDetails) {
 
   sgMail.setApiKey(SENDGRID_API_KEY);
 
-  const { email, resetLink, storeName = "Chameleon" } = details;
+  const { email, resetLink, storeName = "Bytescart" } = details;
 
   const html = `
 <!DOCTYPE html>

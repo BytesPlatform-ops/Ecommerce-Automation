@@ -59,7 +59,7 @@ export function Footer() {
                 <span className="text-white font-bold text-sm">C</span>
               </div>
               <span className="text-gray-900 font-semibold text-lg tracking-tight">
-                Chameleon
+                Bytescart
               </span>
             </Link>
             <p className="text-xs text-gray-400 leading-relaxed mb-6 max-w-[200px]">
@@ -104,7 +104,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} Chameleon. All rights reserved.
+            &copy; {new Date().getFullYear()} Bytescart. All rights reserved.
           </p>
           <p className="text-xs text-gray-400">
             Built with Next.js, Tailwind CSS & AI

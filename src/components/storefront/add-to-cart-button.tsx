@@ -43,29 +43,29 @@ export function AddToCartButton({ product, storeId, storeSlug, stock = 0 }: AddT
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Quantity stepper */}
       {!isOutOfStock && (
-        <div className="flex items-center gap-4">
-          <span className="text-overline">Qty</span>
-          <div className="flex items-center border border-border">
+        <div className="flex items-center gap-1.5 sm:gap-4">
+          <span className="text-overline text-[10px] sm:text-sm">Qty</span>
+          <div className="flex items-center border border-border rounded-md">
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-3.5 py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground"
+              className="px-1.5 py-1 sm:px-3.5 sm:py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
             >
-              <Minus className="h-3 w-3" strokeWidth={1.5} />
+              <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={1.5} />
             </button>
-            <span className="px-4 py-2.5 text-sm text-foreground min-w-[3rem] text-center border-x border-border">
+            <span className="px-1 py-1 sm:px-4 sm:py-2.5 text-[11px] sm:text-sm text-foreground min-w-[1.5rem] sm:min-w-[3rem] text-center border-x border-border">
               {quantity}
             </span>
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
               disabled={quantity >= stock}
-              className="px-3.5 py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-1.5 py-1 sm:px-3.5 sm:py-2.5 hover:bg-muted transition-colors duration-200 text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed min-w-[28px] min-h-[28px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
             >
-              <Plus className="h-3 w-3" strokeWidth={1.5} />
+              <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={1.5} />
             </button>
           </div>
         </div>

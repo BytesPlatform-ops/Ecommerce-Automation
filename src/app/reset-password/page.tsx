@@ -31,10 +31,10 @@ export default function ResetPasswordPage() {
               className="inline-flex items-center gap-2.5 group"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-serif text-lg font-semibold leading-none">C</span>
+                <span className="text-white font-serif text-lg font-semibold leading-none">B</span>
               </div>
               <span className="font-serif text-xl tracking-tight text-neutral-900">
-                Chameleon
+                Bytescart
               </span>
             </Link>
           </motion.div>

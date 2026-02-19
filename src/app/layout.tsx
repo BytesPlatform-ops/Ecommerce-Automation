@@ -15,7 +15,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Chameleon - Create Your Store in 60 Seconds",
+  title: "Bytescart - Create Your Store in 60 Seconds",
   description: "Multi-tenant SaaS platform for creating customized e-commerce storefronts",
 };
 

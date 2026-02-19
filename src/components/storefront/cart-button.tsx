@@ -129,19 +129,19 @@ export function CartButton() {
                           <div className="quantity-stepper mt-3">
                             <button
                               onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
-                              className="px-3 py-1.5 hover:bg-gray-50 transition-colors duration-200"
+                              className="px-3 py-2 hover:bg-gray-50 transition-colors duration-200 min-w-[40px] min-h-[40px] flex items-center justify-center"
                             >
-                              <Minus className="h-3 w-3" strokeWidth={1.5} />
+                              <Minus className="h-3.5 w-3.5" strokeWidth={1.5} />
                             </button>
-                            <span className="px-3 py-1.5 text-xs font-medium text-gray-900 min-w-[2rem] text-center border-x border-gray-200">
+                            <span className="px-3 py-2 text-xs font-medium text-gray-900 min-w-[2.5rem] text-center border-x border-gray-200">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
                               disabled={item.stock !== undefined && item.quantity >= item.stock}
-                              className="px-3 py-1.5 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="px-3 py-2 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed min-w-[40px] min-h-[40px] flex items-center justify-center"
                             >
-                              <Plus className="h-3 w-3" strokeWidth={1.5} />
+                              <Plus className="h-3.5 w-3.5" strokeWidth={1.5} />
                             </button>
                           </div>
                         </div>

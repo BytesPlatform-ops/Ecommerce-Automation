@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { prisma } from "@/lib/prisma";
+import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import Link from "next/link";
 import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard } from "lucide-react";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar-toggle";
@@ -10,18 +9,15 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Deduplicated via React cache() — shared with page components
+  const user = await getAuthUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  // Check if user has a store
-  const store = await prisma.store.findFirst({
-    where: { ownerId: user.id },
-    include: { theme: true },
-  });
+  // Deduplicated via React cache() — shared with page components
+  const store = await getOwnerStore(user.id);
 
   // If no store and not on onboarding page, redirect to onboarding
   // This will be handled by individual pages
@@ -38,7 +34,7 @@ export default async function AdminLayout({
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Chameleon
+                Bytescart
               </h1>
               <p className="text-xs text-gray-400">Store Dashboard</p>
             </div>

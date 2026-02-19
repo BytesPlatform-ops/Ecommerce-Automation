@@ -1,4 +1,4 @@
-# Chameleon Design System — Minimal & Luxury
+# Bytescart Design System — Minimal & Luxury
 
 ## Brand Philosophy
 A refined, minimal aesthetic that communicates trust, quality, and sophistication. Every element should breathe — generous whitespace, understated typography, and purposeful interactions create an experience that feels curated and premium.

@@ -89,10 +89,10 @@ export default function SignupPage() {
               className="inline-flex items-center gap-1.5 group"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neutral-900 to-neutral-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-serif text-xs font-semibold leading-none">C</span>
+                <span className="text-white font-serif text-xs font-semibold leading-none">B</span>
               </div>
               <span className="font-serif text-base tracking-tight text-neutral-900">
-                Chameleon
+                Bytescart
               </span>
             </Link>
           </motion.div>

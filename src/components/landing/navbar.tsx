@@ -43,7 +43,7 @@ export function Navbar() {
             <span className="text-white font-bold text-sm">C</span>
           </motion.div>
           <span className="text-gray-900 font-semibold text-lg tracking-tight">
-            Chameleon
+            Bytescart
           </span>
         </Link>
 

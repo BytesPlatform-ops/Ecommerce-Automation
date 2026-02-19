@@ -24,10 +24,16 @@ export function StockNotificationAlert() {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetchNotifications();
-    // Poll for notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    // Delay the first fetch slightly so it doesn't compete with
+    // the initial page hydration / other client-side requests.
+    const initialTimeout = setTimeout(fetchNotifications, 1500);
+    // Poll for notifications every 60 seconds (reduced from 30s to
+    // avoid unnecessary load on the remote database).
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
   }, []);
 
   const fetchNotifications = async () => {
