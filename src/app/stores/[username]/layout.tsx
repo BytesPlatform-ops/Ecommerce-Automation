@@ -3,6 +3,7 @@ import { StorefrontNavbar } from "@/components/storefront/navbar";
 import { StorefrontFooter } from "@/components/storefront/footer";
 import { CartProvider } from "@/components/storefront/cart-context";
 import { CheckoutSuccessHandler } from "@/components/storefront/checkout-success-handler";
+import { MobileCartBar } from "@/components/storefront/mobile-cart-bar";
 import { sanitizeHexColor, sanitizeFontFamily } from "@/lib/security";
 import { getStoreBySlug, getStoreSectionCounts, checkIsCustomDomain } from "@/lib/store-cache";
 
@@ -143,6 +144,7 @@ export default async function StorefrontLayout({
             productPath={productPath}
           />
           <main className="flex-1">{children}</main>
+          <MobileCartBar />
           <StorefrontFooter 
             storeName={store.storeName} 
             slug={username} 
