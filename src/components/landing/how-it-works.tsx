@@ -14,9 +14,9 @@ const steps = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
       </svg>
     ),
-    gradient: "from-purple-500 to-blue-500",
-    bgGradient: "from-purple-50 to-blue-50",
-    accentColor: "text-purple-600",
+    gradient: "from-violet-500 to-blue-500",
+    bgGradient: "from-violet-50 to-blue-50",
+    accentColor: "text-violet-600",
   },
   {
     number: "02",
@@ -56,7 +56,7 @@ export function HowItWorks() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xs text-purple-600 uppercase tracking-[0.2em] mb-4 font-semibold"
+          className="text-xs text-violet-600 uppercase tracking-[0.2em] mb-4 font-semibold"
         >
           Simple Process
         </motion.p>
@@ -119,7 +119,7 @@ export function HowItWorks() {
             transition={{ delay: 0.6 + i * 0.2, type: "spring", stiffness: 300 }}
             className="w-8 h-8 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center"
           >
-            <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </motion.div>

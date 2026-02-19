@@ -53,7 +53,7 @@ export function FAQ() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xs text-purple-600 uppercase tracking-[0.2em] mb-4 font-semibold"
+          className="text-xs text-violet-600 uppercase tracking-[0.2em] mb-4 font-semibold"
         >
           FAQ
         </motion.p>

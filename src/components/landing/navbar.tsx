@@ -38,7 +38,7 @@ export function Navbar() {
           <motion.div
             whileHover={{ rotate: 8, scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20"
+            className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/25"
           >
             <span className="text-white font-bold text-sm">C</span>
           </motion.div>
@@ -56,7 +56,7 @@ export function Navbar() {
               className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200 relative group"
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-blue-500 rounded-full group-hover:w-full transition-all duration-300" />
             </a>
           ))}
         </div>
@@ -70,7 +70,7 @@ export function Navbar() {
           </Link>
           <Link
             href="/signup"
-            className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5 transition-all duration-300"
+            className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300"
           >
             Get Started
           </Link>
@@ -113,7 +113,7 @@ export function Navbar() {
             </Link>
             <Link
               href="/signup"
-              className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium text-center shadow-lg shadow-purple-500/20"
+              className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold text-center shadow-lg shadow-violet-500/25"
             >
               Get Started
             </Link>

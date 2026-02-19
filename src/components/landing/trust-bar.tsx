@@ -41,7 +41,7 @@ export function TrustBar() {
               className="flex items-center gap-2.5 text-gray-400 hover:text-gray-600 transition-colors duration-300 cursor-default"
             >
               <div className="w-8 h-8 rounded-xl bg-gray-100 border border-gray-200/60 flex items-center justify-center shadow-sm">
-                <span className="text-xs font-bold bg-gradient-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent">{name[0]}</span>
+                <span className="text-xs font-bold bg-gradient-to-br from-violet-600 to-blue-600 bg-clip-text text-transparent">{name[0]}</span>
               </div>
               <span className="text-sm font-medium tracking-tight">{name}</span>
             </motion.div>

@@ -3,7 +3,9 @@
 import { Navbar } from "./navbar";
 import { Hero } from "./hero";
 import { TrustBar } from "./trust-bar";
+import { Comparison } from "./comparison";
 import { HowItWorks } from "./how-it-works";
+import { MorphingUI } from "./morphing-ui";
 import { Features } from "./features";
 import { LivePreview } from "./live-preview";
 import { Pricing } from "./pricing";
@@ -14,7 +16,7 @@ import { Footer } from "./footer";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#FAFBFF] text-gray-900 overflow-x-hidden selection:bg-purple-200">
+    <div className="min-h-screen bg-[#FAFBFF] text-gray-900 overflow-x-hidden selection:bg-violet-200">
       {/* Subtle dot grid background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-30 z-0"
@@ -25,19 +27,21 @@ export function LandingPage() {
       />
 
       {/* Top gradient wash */}
-      <div className="fixed top-0 left-0 right-0 h-[700px] pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-100/50 via-blue-50/30 to-transparent" />
+      <div className="fixed top-0 left-0 right-0 h-[800px] pointer-events-none z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 via-blue-50/40 to-transparent" />
       </div>
 
       <div className="relative z-10">
         <Navbar />
         <Hero />
         <TrustBar />
+        <Comparison />
         <HowItWorks />
+        <MorphingUI />
         <Features />
         <LivePreview />
-        <Pricing />
         <Testimonials />
+        <Pricing />
         <FAQ />
         <FinalCTA />
         <Footer />
