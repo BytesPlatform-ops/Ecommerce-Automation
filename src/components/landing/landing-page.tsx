@@ -2,7 +2,6 @@
 
 import { Navbar } from "./navbar";
 import { Hero } from "./hero";
-import { TrustBar } from "./trust-bar";
 import { Comparison } from "./comparison";
 import { HowItWorks } from "./how-it-works";
 import { MorphingUI } from "./morphing-ui";
@@ -34,7 +33,6 @@ export function LandingPage() {
       <div className="relative z-10">
         <Navbar />
         <Hero />
-        <TrustBar />
         <Comparison />
         <HowItWorks />
         <MorphingUI />

@@ -316,7 +316,7 @@ export function MorphingUI() {
         const nextIndex = (currentIndex + 1) % tabs.length;
         return tabs[nextIndex].key;
       });
-    }, 4000);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, [isAutoPlaying]);
@@ -339,9 +339,9 @@ export function MorphingUI() {
           transition={{ delay: 0.1 }}
           className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight mb-5"
         >
-          One prompt builds{" "}
+          Manage everything{" "}
           <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
-            everything
+            visually
           </span>
         </motion.h2>
         <motion.p
@@ -349,9 +349,9 @@ export function MorphingUI() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-gray-500 max-w-2xl mx-auto text-lg"
+          className="text-gray-500 max-w-2xl mx-auto text-base sm:text-lg"
         >
-          Watch as AI generates your complete ecommerce stack in real-time
+          Drag, customize, and control your entire store from one intuitive dashboard
         </motion.p>
       </div>
 

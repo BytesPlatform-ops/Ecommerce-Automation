@@ -14,11 +14,6 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ShoppingBag,
 } from "lucide-react";
 import {
   getStripeAccountStatus,
@@ -1043,22 +1038,22 @@ export default function PaymentsContent({
               />
             </button>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3 bg-gradient-to-r from-gray-50 to-white p-3 rounded-xl border border-gray-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="relative flex-1 sm:min-w-[200px] sm:max-w-md">
-              <Search className="absolute left-4 top-2.5 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by email, name, or order ID..."
+                placeholder="Search orders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               />
             </div>
             <div className="flex items-center gap-2">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                className="flex-1 sm:flex-none px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-gray-700"
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
                 <option value="all">All Status</option>
                 <option value="Pending">Pending</option>
@@ -1070,7 +1065,7 @@ export default function PaymentsContent({
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                className="flex-1 sm:flex-none px-3 py-2.5 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-gray-700"
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
                 <option value="7days">Last 7 days</option>
                 <option value="30days">Last 30 days</option>
@@ -1148,106 +1143,101 @@ export default function PaymentsContent({
         ) : (
           <>
             {/* Mobile card view - only visible on small screens */}
-            <div className="block sm:hidden space-y-3 p-0">
+            <div className="block sm:hidden divide-y divide-gray-200">
               {paginatedTransactions.map((transaction: any) => (
                 <div
                   key={transaction.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  onClick={() => {
                     setSelectedOrder(transaction);
                     setIsModalOpen(true);
                   }}
-                  className={`p-4 cursor-pointer rounded-xl border transition-all hover:shadow-md hover:border-gray-300 ${
-                    transaction.isPending ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200 hover:bg-gray-50"
+                  className={`p-4 cursor-pointer active:bg-gray-100 transition-colors ${
+                    transaction.isPending ? "bg-blue-50/30" : "bg-white"
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-gray-900 text-sm truncate">
                         {transaction.customerName}
                       </p>
-                      <p className="text-xs text-gray-500 truncate mt-0.5">
+                      <p className="text-xs text-gray-500 truncate">
                         {transaction.customerEmail}
                       </p>
                     </div>
-                    <p className="font-bold text-lg text-gray-900 whitespace-nowrap ml-2">
+                    <p className="font-bold text-gray-900 text-sm whitespace-nowrap">
                       {formatCurrency(transaction.total, transaction.currency)}
                     </p>
                   </div>
-                  <div className="space-y-3 border-t border-gray-100 pt-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
-                            transaction.status === "Processing"
-                              ? "bg-blue-100 text-blue-800"
-                              : transaction.status === "Completed"
-                              ? "bg-green-100 text-green-800"
-                              : transaction.status === "Shipped"
-                              ? "bg-purple-100 text-purple-800"
-                              : transaction.status === "Failed"
-                              ? "bg-red-100 text-red-800"
-                              : transaction.status === "Refunded"
-                              ? "bg-gray-100 text-gray-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {transaction.isPending && <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>}
-                          <span>{transaction.status}</span>
-                        </span>
-                        <span
-                          className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
-                            transaction.paymentStatus === "Pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : transaction.paymentStatus === "Paid"
-                              ? "bg-blue-100 text-blue-800"
-                              : transaction.paymentStatus === "Settled"
-                              ? "bg-green-100 text-green-800"
-                              : transaction.paymentStatus === "Refunded"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {transaction.paymentStatus}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                        {formatDate(transaction.createdAt)}
-                      </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          transaction.status === "Processing"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : transaction.status === "Shipped"
+                            ? "bg-purple-100 text-purple-800"
+                            : transaction.status === "Failed"
+                            ? "bg-red-100 text-red-800"
+                            : transaction.status === "Refunded"
+                            ? "bg-gray-100 text-gray-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {transaction.isPending ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>
+                            {transaction.status}
+                          </span>
+                        ) : (
+                          transaction.status
+                        )}
+                      </span>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          transaction.paymentStatus === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : transaction.paymentStatus === "Paid"
+                            ? "bg-blue-100 text-blue-800"
+                            : transaction.paymentStatus === "Settled"
+                            ? "bg-green-100 text-green-800"
+                            : transaction.paymentStatus === "Refunded"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {transaction.paymentStatus}
+                      </span>
                     </div>
-                    {transaction.items.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-600 font-semibold mb-2 flex items-center gap-1">
-                          <Package className="h-3.5 w-3.5" />
-                          Products ({transaction.items.length})
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {transaction.items.map((item: any) => (
-                            <span key={item.id} className="text-xs text-gray-700 bg-gray-100 rounded-lg px-2.5 py-1.5 font-medium">
-                              {item.productName} {item.quantity > 1 && `×${item.quantity}`}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 pt-1">
-                      <code className="text-xs font-mono bg-gray-100 px-3 py-1.5 rounded-lg text-gray-600 font-semibold">
-                        #{transaction.id.slice(0, 8)}
-                      </code>
+                    <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                      {formatDate(transaction.createdAt)}
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-gray-100">
+                    <p className="text-xs text-gray-600 font-medium mb-1">Products:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {transaction.items.map((item: any) => (
+                        <span key={item.id} className="text-xs text-gray-700 bg-gray-100 rounded px-2 py-1">
+                          {item.productName} {item.quantity > 1 && `(×${item.quantity})`}
+                        </span>
+                      ))}
                     </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                      #{transaction.id.slice(0, 8)}
+                    </code>
                   </div>
                 </div>
               ))}
             </div>
             {/* Desktop table view - only visible on sm and above */}
             <div className="hidden sm:block">
-              <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Order ID
                   </th>
@@ -1279,12 +1269,12 @@ export default function PaymentsContent({
                       setSelectedOrder(transaction);
                       setIsModalOpen(true);
                     }}
-                    className={`hover:bg-blue-50 cursor-pointer transition-all hover:shadow-sm ${
-                      transaction.isPending ? "bg-blue-50/50" : index % 2 === 0 ? "bg-white" : "bg-gray-50/60"
+                    className={`hover:bg-gray-100 cursor-pointer transition-colors ${
+                      transaction.isPending ? "bg-blue-50/30" : index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                     }`}
                   >
                     <td className="px-6 py-4">
-                      <code className="text-xs font-mono bg-gray-100 px-3 py-1.5 rounded-lg text-gray-700 font-semibold">
+                      <code className="text-xs font-mono bg-gray-100 px-3 py-1.5 rounded text-gray-700">
                         {transaction.id.slice(0, 8)}
                       </code>
                     </td>
@@ -1293,15 +1283,15 @@ export default function PaymentsContent({
                         <p className="text-sm font-semibold text-gray-900">
                           {transaction.customerName}
                         </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-gray-600 mt-0.5">
                           {transaction.customerEmail}
                         </p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                        <ShoppingBag className="h-4 w-4 text-gray-600" />
-                        {transaction.items.length} item{transaction.items.length !== 1 ? "s" : ""}
+                      <span className="text-sm font-medium text-gray-700">
+                        {transaction.items.length} item
+                        {transaction.items.length !== 1 ? "s" : ""}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -1311,7 +1301,7 @@ export default function PaymentsContent({
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-full ${
+                        className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
                           transaction.status === "Processing"
                             ? "bg-blue-100 text-blue-800"
                             : transaction.status === "Completed"
@@ -1325,8 +1315,14 @@ export default function PaymentsContent({
                                   : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {transaction.isPending && <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>}
-                        <span>{transaction.status}</span>
+                        {transaction.isPending ? (
+                          <span className="flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 bg-current rounded-full animate-pulse"></span>
+                            {transaction.status}
+                          </span>
+                        ) : (
+                          transaction.status
+                        )}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -1347,8 +1343,7 @@ export default function PaymentsContent({
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-600 flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                      <p className="text-sm text-gray-600">
                         {formatDate(transaction.createdAt)}
                       </p>
                     </td>
@@ -1363,15 +1358,15 @@ export default function PaymentsContent({
 
         {/* Pagination Controls */}
         {!isLoading && displayTransactions.length > 0 && (
-          <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-              Showing <span className="font-semibold text-gray-900">{((currentPage - 1) * itemsPerPage) + 1}</span>–<span className="font-semibold text-gray-900">{Math.min(currentPage * itemsPerPage, displayTransactions.length)}</span> of <span className="font-semibold text-gray-900">{displayTransactions.length}</span> transactions
+              Showing {((currentPage - 1) * itemsPerPage) + 1}–{Math.min(currentPage * itemsPerPage, displayTransactions.length)} of {displayTransactions.length} transactions
             </div>
             <div className="flex items-center justify-center gap-2">
               <button
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-blue-50 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1 font-medium text-gray-700"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Previous</span>
@@ -1379,7 +1374,7 @@ export default function PaymentsContent({
               
               <div className="flex items-center gap-1">
                 {/* Mobile: just show current/total */}
-                <span className="sm:hidden text-sm text-gray-600 px-2 font-medium">
+                <span className="sm:hidden text-sm text-gray-600 px-2">
                   {currentPage} / {totalPages}
                 </span>
                 {/* Desktop: show page buttons */}
@@ -1399,10 +1394,10 @@ export default function PaymentsContent({
                         )}
                         <button
                           onClick={() => setCurrentPage(page)}
-                          className={`px-3 py-2 text-sm rounded-lg transition-all font-medium ${
+                          className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                             currentPage === page
-                              ? "bg-blue-500 text-white shadow-md hover:bg-blue-600"
-                              : "bg-white border border-gray-300 hover:bg-blue-50 hover:border-blue-300 text-gray-700"
+                              ? "bg-blue-500 text-white font-semibold"
+                              : "bg-white border border-gray-300 hover:bg-gray-50 text-gray-700"
                           }`}
                         >
                           {page}
@@ -1415,7 +1410,7 @@ export default function PaymentsContent({
               <button
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-blue-50 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1 font-medium text-gray-700"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
               >
                 <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="h-4 w-4" />

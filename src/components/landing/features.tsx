@@ -128,7 +128,6 @@ export function Features() {
               <div className="relative">
                 {/* Icon */}
                 <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.bgGradient} border border-white/60 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className={`w-6 h-6 bg-gradient-to-br ${feature.gradient} bg-clip-text`} style={{ color: 'transparent', stroke: 'url(#gradient)' }} />
                   <feature.icon className={`w-6 h-6 text-gray-600 group-hover:text-violet-600 transition-colors duration-300`} />
                 </div>
                 
