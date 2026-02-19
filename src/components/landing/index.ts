@@ -1,6 +1,5 @@
 export { Navbar } from "./navbar";
 export { Hero } from "./hero";
-export { TrustBar } from "./trust-bar";
 export { HowItWorks } from "./how-it-works";
 export { Features } from "./features";
 export { LivePreview } from "./live-preview";

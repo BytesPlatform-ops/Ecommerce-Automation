@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { SectionWrapper } from "./section-wrapper";
@@ -8,12 +9,12 @@ import { ShoppingBag, Star, Heart, Eye } from "lucide-react";
 const categories = ["All Products", "Sneakers", "Apparel", "Accessories"];
 
 const products = [
-  { name: "Air Max Retro", price: "$189", rating: 4.9, views: "2.1k", category: "Sneakers", color: "bg-gradient-to-br from-violet-50 to-violet-100" },
-  { name: "Urban Hoodie", price: "$89", rating: 4.8, views: "1.8k", category: "Apparel", color: "bg-gradient-to-br from-blue-50 to-blue-100" },
-  { name: "Classic Runner", price: "$149", rating: 4.7, views: "3.2k", category: "Sneakers", color: "bg-gradient-to-br from-cyan-50 to-cyan-100" },
-  { name: "Canvas Cap", price: "$39", rating: 4.6, views: "890", category: "Accessories", color: "bg-gradient-to-br from-emerald-50 to-emerald-100" },
-  { name: "Street Joggers", price: "$79", rating: 4.9, views: "1.5k", category: "Apparel", color: "bg-gradient-to-br from-pink-50 to-pink-100" },
-  { name: "Leather Belt", price: "$59", rating: 4.8, views: "760", category: "Accessories", color: "bg-gradient-to-br from-amber-50 to-amber-100" },
+  { name: "Air Max Retro", price: "$189", rating: 4.9, views: "2.1k", category: "Sneakers", color: "bg-gradient-to-br from-violet-50 to-violet-100", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop" },
+  { name: "Urban Hoodie", price: "$89", rating: 4.8, views: "1.8k", category: "Apparel", color: "bg-gradient-to-br from-blue-50 to-blue-100", image: "https://images.unsplash.com/photo-1685354217981-26c14a211bf8?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Classic Runner", price: "$149", rating: 4.7, views: "3.2k", category: "Sneakers", color: "bg-gradient-to-br from-cyan-50 to-cyan-100", image: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&h=500&fit=crop" },
+  { name: "Canvas Cap", price: "$39", rating: 4.6, views: "890", category: "Accessories", color: "bg-gradient-to-br from-emerald-50 to-emerald-100", image: "https://images.unsplash.com/photo-1691256676359-20e5c6d4bc92?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Street Joggers", price: "$79", rating: 4.9, views: "1.5k", category: "Apparel", color: "bg-gradient-to-br from-pink-50 to-pink-100", image: "https://images.unsplash.com/photo-1719759674376-a001dc166cb6?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Leather Bag", price: "$59", rating: 4.8, views: "760", category: "Accessories", color: "bg-gradient-to-br from-amber-50 to-amber-100", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop" },
 ];
 
 export function LivePreview() {
@@ -194,7 +195,14 @@ export function LivePreview() {
                   className="relative rounded-2xl border border-gray-100/80 overflow-hidden group cursor-pointer bg-white hover:shadow-xl hover:shadow-violet-100/40 transition-all duration-300"
                 >
                   <div className={`aspect-square ${product.color} flex items-center justify-center relative overflow-hidden`}>
-                    <div className="w-16 h-16 rounded-2xl bg-white/70 shadow-lg backdrop-blur-sm" />
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-cover hover:scale-110 transition-transform duration-300"
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      priority={false}
+                    />
                     
                     {/* Quick actions */}
                     <AnimatePresence>

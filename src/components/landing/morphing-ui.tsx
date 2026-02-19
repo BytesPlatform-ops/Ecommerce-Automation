@@ -356,7 +356,7 @@ export function MorphingUI() {
       </div>
 
       {/* Tab buttons */}
-      <div className="flex justify-center gap-2 mb-8">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 px-4">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -364,13 +364,13 @@ export function MorphingUI() {
               setActiveTab(tab.key);
               setIsAutoPlaying(false);
             }}
-            className={`group flex items-center gap-2 px-5 py-3 rounded-2xl font-medium text-sm transition-all duration-300 ${
+            className={`group flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-medium text-xs sm:text-sm transition-all duration-300 whitespace-nowrap ${
               activeTab === tab.key
                 ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/30"
                 : "bg-white/60 backdrop-blur-sm text-gray-600 border border-gray-200 hover:border-violet-200 hover:text-violet-600"
             }`}
           >
-            <tab.icon className="w-4 h-4" />
+            <tab.icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
             <span>{tab.label}</span>
           </button>
         ))}
