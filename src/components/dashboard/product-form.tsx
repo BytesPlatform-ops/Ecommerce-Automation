@@ -6,7 +6,7 @@ import { createProduct, updateProduct } from "@/lib/actions";
 import { Product, ProductImage } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, AlertCircle, CheckCircle2, Image as ImageIcon, Layers, DollarSign, Package } from "lucide-react";
 
 interface ProductFormProps {
   storeId: string;
@@ -242,13 +242,33 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm flex items-center gap-3">
-          <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <X className="h-4 w-4 text-red-600" />
+        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-sm flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Error</p>
+            <p className="text-red-700 mt-0.5">{error}</p>
           </div>
-          {error}
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-auto text-red-600 hover:text-red-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
+
+      {/* Section 1: Basic Information */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div className="h-10 w-10 bg-blue-50 rounded-lg flex items-center justify-center">
+            <Package className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+            <p className="text-sm text-gray-500">Product name and description</p>
+          </div>
+        </div>
 
       {/* Product Name */}
       <div>
@@ -256,7 +276,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           htmlFor="name"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Product Name
+          Product Name <span className="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -264,7 +284,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
+          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
           placeholder="e.g. Premium Wireless Headphones"
         />
       </div>
@@ -275,17 +295,31 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           htmlFor="description"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Description (Optional)
+          Description <span className="text-gray-400">(Optional)</span>
         </label>
         <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all resize-none"
-          placeholder="Describe your product in detail..."
+          rows={5}
+          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-gray-400"
+          placeholder="Describe your product features, benefits, and specifications..."
         />
+        <p className="text-xs text-gray-500 mt-1.5">This will be displayed to your customers</p>
       </div>
+      </div>
+
+      {/* Section 2: Pricing & Stock */}
+      <div className="space-y-6 pt-8 border-t border-gray-200">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div className="h-10 w-10 bg-purple-50 rounded-lg flex items-center justify-center">
+            <DollarSign className="h-5 w-5 text-purple-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Pricing & Stock</h2>
+            <p className="text-sm text-gray-500">Base price and inventory level</p>
+          </div>
+        </div>
 
       {/* Price */}
       <div>
@@ -293,10 +327,10 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           htmlFor="price"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Price
+          Price <span className="text-red-500">*</span>
         </label>
         <div className="relative">
-          <span className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-500 font-medium">$</span>
+          <span className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center text-gray-500 font-semibold text-lg">$</span>
           <input
             id="price"
             type="number"
@@ -305,13 +339,12 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             max="999999.99"
             value={price}
             onChange={(e) => {
-              // Preserve the input value as-is to avoid browser rounding
               const inputValue = e.target.value;
               setPrice(inputValue);
             }}
             required
-            className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
-            placeholder="29.99"
+            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+            placeholder="0.00"
           />
         </div>
       </div>
@@ -322,7 +355,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           htmlFor="stock"
           className="block text-sm font-semibold text-gray-700 mb-2"
         >
-          Stock
+          Stock <span className="text-red-500">*</span>
         </label>
         <input
           id="stock"
@@ -331,49 +364,83 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           step="1"
           value={stock}
           onChange={(e) => setStock(parseInt(e.target.value) || 0)}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white outline-none transition-all"
+          className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
           placeholder="0"
         />
+        <div className="flex items-center gap-2 mt-2">
+          {stock > 20 ? (
+            <>
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <p className="text-xs text-green-600">Good stock level</p>
+            </>
+          ) : stock > 0 ? (
+            <>
+              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <p className="text-xs text-yellow-600">Low stock</p>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="h-4 w-4 text-red-500" />
+              <p className="text-xs text-red-600">Out of stock</p>
+            </>
+          )}
+        </div>
+      </div>
       </div>
 
-      {/* Image Upload */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Product Images
-        </label>
-        <p className="text-xs text-gray-500 mb-3">The first image is used as the primary image.</p>
+      {/* Section 3: Product Images */}
+      <div className="space-y-6 pt-8 border-t border-gray-200">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div className="h-10 w-10 bg-green-50 rounded-lg flex items-center justify-center">
+            <ImageIcon className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Product Images</h2>
+            <p className="text-sm text-gray-500">Upload photos of your product</p>
+          </div>
+        </div>
 
         {imageUrls.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-            {imageUrls.map((url, index) => (
-              <div key={`${url}-${index}`} className="relative group">
-                <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                  <Image
-                    src={url}
-                    alt={`Product image ${index + 1}`}
-                    width={240}
-                    height={240}
-                    className="object-cover"
-                  />
+          <div className="mb-6">
+            <p className="text-sm text-gray-600 mb-3 font-medium">Uploaded Images ({imageUrls.length})</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {imageUrls.map((url, index) => (
+                <div key={`${url}-${index}`} className="relative group">
+                  <div className="rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow bg-gray-50">
+                    <Image
+                      src={url}
+                      alt={`Product image ${index + 1}`}
+                      width={240}
+                      height={240}
+                      className="object-cover w-full h-48"
+                    />
+                  </div>
+                  {index === 0 && (
+                    <span className="absolute left-2 top-2 text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2.5 py-1 rounded-full shadow-lg">
+                      Primary
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== index))}
+                    className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-2.5 hover:bg-red-600 shadow-lg hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-                {index === 0 && (
-                  <span className="absolute left-2 top-2 text-[10px] font-semibold uppercase tracking-wide bg-white/90 text-gray-700 px-2 py-1 rounded-full shadow">
-                    Primary
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setImageUrls(imageUrls.filter((_, i) => i !== index))}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 shadow-lg hover:scale-110 transition-all"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 
-        <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 transition-all">
+        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 bg-gradient-to-br from-blue-50/50 to-purple-50/50 hover:from-blue-50 hover:to-purple-50 hover:border-gray-400 transition-all cursor-pointer">
+          <div className="flex flex-col items-center justify-center">
+            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+              <ImageIcon className="h-6 w-6 text-blue-600" />
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-1">Click to upload images</p>
+            <p className="text-xs text-gray-500">or drag and drop</p>
+          </div>
           <UploadButton
             endpoint="productImage"
             onClientUploadComplete={(res) => {
@@ -388,21 +455,20 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         </div>
       </div>
 
-      {/* Product Variants */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700">
-              Product Variants (Optional)
-            </label>
-            <p className="text-xs text-gray-500 mt-1">
-              Add different sizes, volumes, or variations of this product
-            </p>
+      {/* Section 4: Product Variants */}
+      <div className="pt-8 border-t border-gray-200 space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div className="h-10 w-10 bg-orange-50 rounded-lg flex items-center justify-center">
+            <Layers className="h-5 w-5 text-orange-600" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-gray-900">Product Variants</h2>
+            <p className="text-sm text-gray-500">Optional: Add sizes, volumes, or variations</p>
           </div>
           <button
             type="button"
             onClick={addVariant}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/20 transition-all text-sm font-medium"
           >
             <Plus className="h-4 w-4" />
             Add Variant
@@ -414,20 +480,23 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
             {variants.map((variant, index) => (
               <div
                 key={index}
-                className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-4"
+                className="p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl space-y-5 hover:border-gray-300 hover:shadow-md transition-all"
               >
                 {/* Header with Type and Remove Button */}
-                <div className="flex items-end gap-3">
+                <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+                  <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-orange-600">
+                    {index + 1}
+                  </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                      Type
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Variant Type
                     </label>
                     <select
                       value={variant.sizeType}
                       onChange={(e) =>
                         updateVariant(index, "sizeType", e.target.value)
                       }
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
                     >
                       <option value="">Select type</option>
                       <option value="VOLUME">Volume</option>
@@ -443,17 +512,17 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                   <button
                     type="button"
                     onClick={() => removeVariant(index)}
-                    className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 hover:text-red-700"
                     title="Remove variant"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5" />
                   </button>
                 </div>
 
                 {/* Value and Unit Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="col-span-1">
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
                       Value
                     </label>
                     <input
@@ -463,19 +532,19 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                         updateVariant(index, "value", e.target.value)
                       }
                       placeholder="e.g. 500"
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                  <div className="col-span-2">
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
                       Unit
                     </label>
                     <select
                       value={variant.unit}
                       onChange={(e) => updateVariant(index, "unit", e.target.value)}
                       disabled={!variant.sizeType}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
                     >
                       <option value="">Select unit</option>
                       {variant.sizeType &&
@@ -489,13 +558,13 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                 </div>
 
                 {/* Price and Stock Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                      Price (Optional)
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Price <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center text-gray-500 text-sm font-medium">$</span>
+                      <span className="absolute left-0 top-10 bottom-0 w-8 flex items-center justify-center text-gray-500 text-sm font-medium">$</span>
                       <input
                         type="number"
                         step="0.01"
@@ -503,19 +572,18 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                         max="999999.99"
                         value={variant.price || ""}
                         onChange={(e) => {
-                          // Preserve the input value as-is to avoid browser rounding
                           const inputValue = e.target.value;
                           updateVariant(index, "price", inputValue);
                         }}
                         placeholder="Leave empty for base price"
-                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none placeholder:text-gray-400"
+                        className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none placeholder:text-gray-400 transition-all"
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Variant-specific price</p>
+                    <p className="text-xs text-gray-500 mt-1.5">Variant-specific price (optional)</p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
                       Stock
                     </label>
                     <input
@@ -525,7 +593,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
                       onChange={(e) =>
                         updateVariant(index, "stock", parseInt(e.target.value) || 0)
                       }
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -536,18 +604,18 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4 pt-4 border-t border-gray-100">
+      <div className="flex gap-4 pt-8 border-t border-gray-200">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-3 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-xl hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none active:scale-[0.98]"
         >
           {loading
             ? isEditing

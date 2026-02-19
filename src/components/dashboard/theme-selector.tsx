@@ -79,7 +79,6 @@ export function ThemeSelector({
                 handleThemeChange(theme.id);
               }
             }}
-            disabled={loading}
             className={`relative rounded-2xl border-2 transition-all text-left overflow-hidden group cursor-pointer ${
               selectedTheme === theme.id
                 ? "border-blue-500 shadow-xl ring-2 ring-blue-200 bg-gradient-to-br from-white to-blue-50/50"
