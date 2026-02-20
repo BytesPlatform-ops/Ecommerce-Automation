@@ -33,7 +33,7 @@ const newWayItems = [
 
 export function Comparison() {
   return (
-    <SectionWrapper id="comparison" className="py-24 sm:py-32">
+    <SectionWrapper id="comparison" className="py-16 sm:py-24">
       <div className="text-center mb-16">
         <motion.p
           initial={{ opacity: 0, y: 10 }}

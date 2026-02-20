@@ -16,7 +16,7 @@ export function FinalCTA() {
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
-    <section ref={sectionRef} className="relative py-24 sm:py-32 overflow-hidden">
+    <section ref={sectionRef} className="relative py-16 sm:py-24 overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.div 

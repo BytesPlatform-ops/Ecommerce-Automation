@@ -47,7 +47,7 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <SectionWrapper id="faq" className="py-32">
+    <SectionWrapper id="faq" className="py-20">
       <div className="text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 10 }}

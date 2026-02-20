@@ -326,7 +326,7 @@ export function MorphingUI() {
   }, [isAutoPlaying]);
 
   return (
-    <SectionWrapper id="demo" className="py-24 sm:py-32">
+    <SectionWrapper id="demo" className="py-16 sm:py-24">
       <div className="text-center mb-12">
         <motion.p
           initial={{ opacity: 0, y: 10 }}

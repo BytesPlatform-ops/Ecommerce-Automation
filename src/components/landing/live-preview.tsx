@@ -37,7 +37,7 @@ export function LivePreview() {
   }, []);
 
   return (
-    <SectionWrapper id="live-preview" className="py-24 sm:py-32">
+    <SectionWrapper id="live-preview" className="py-16 sm:py-24">
       <div className="text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 10 }}

@@ -50,7 +50,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <SectionWrapper id="how-it-works" className="py-32">
+    <SectionWrapper id="how-it-works" className="py-20">
       <div className="text-center mb-20">
         <motion.p
           initial={{ opacity: 0, y: 10 }}
