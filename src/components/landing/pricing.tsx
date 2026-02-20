@@ -6,14 +6,12 @@ import { Check, X, Sparkles, Zap, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const includedFeatures = [
-  "AI-powered store generation",
   "Unlimited products",
   "Custom domain + SSL",
   "Stripe payments integration",
   "Admin dashboard",
   "PostgreSQL database",
   "Edge hosting (200+ locations)",
-  "SEO optimization",
   "Email notifications",
   "Analytics dashboard",
   "Priority support",
@@ -22,9 +20,9 @@ const includedFeatures = [
 
 const agencyComparison = [
   { feature: "Development time", agency: "3-6 months", bytescart: "60 seconds" },
-  { feature: "Upfront cost", agency: "$15,000+", bytescart: "$0" },
+  { feature: "Upfront cost", agency: "$3,000+", bytescart: "$0" },
   { feature: "Monthly maintenance", agency: "$500-2,000/mo", bytescart: "Included" },
-  { feature: "Design revisions", agency: "Limited", bytescart: "Unlimited" },
+  // { feature: "Design revisions", agency: "Limited", bytescart: "Unlimited" },
   { feature: "Tech expertise needed", agency: "Yes", bytescart: "None" },
 ];
 
@@ -96,7 +94,7 @@ export function Pricing() {
                 
                 {/* Price */}
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-lg text-gray-400 line-through">$15,000</span>
+                  <span className="text-lg text-gray-400 line-through">$3,000</span>
                   <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-600 font-semibold">
                     Agency price
                   </span>

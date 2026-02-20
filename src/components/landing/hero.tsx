@@ -500,7 +500,7 @@ export function Hero() {
   const containerRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={containerRef} className="relative min-h-screen lg:h-screen flex items-center pt-16 sm:pt-20 lg:pt-16 pb-12 sm:pb-24 lg:pb-12 overflow-hidden">
+    <section ref={containerRef} className="relative min-h-screen lg:h-screen flex items-center pt-24 sm:pt-28 lg:pt-16 pb-12 sm:pb-24 lg:pb-12 overflow-hidden">
       <ParallaxOrbs />
 
       <div className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
@@ -513,7 +513,7 @@ export function Hero() {
             className="text-center lg:text-left"
           >
             {/* Main headline - Brutalist bold typography */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] xl:text-6xl 2xl:text-7xl font-black text-gray-900 leading-[1.05] tracking-tight mb-4 sm:mb-6 lg:mb-5">
+            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-6 sm:mb-6 lg:mb-5">
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -547,7 +547,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.7 }}
-              className="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl text-gray-500 leading-relaxed mb-6 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
+              className="text-lg sm:text-lg md:text-xl lg:text-lg xl:text-xl text-gray-500 leading-relaxed mb-8 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
             >
               Our AI builds the frontend, backend, database, payments — and deploys your complete store in <span className="text-gray-900 font-semibold">60 seconds</span>.
             </motion.p>
@@ -586,7 +586,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.7 }}
-              className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-8 sm:mt-10 lg:mt-8 pt-6 sm:pt-8 lg:pt-6 border-t border-gray-200/60"
+              className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-10 sm:mt-10 lg:mt-8 pt-8 sm:pt-8 lg:pt-6 border-t border-gray-200/60"
             >
               {[
                 { value: 12000, suffix: "+", label: "Stores Created" },
@@ -600,10 +600,10 @@ export function Hero() {
                   transition={{ delay: 1.1 + i * 0.1 }}
                   className="text-center"
                 >
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900">
+                  <p className="text-3xl sm:text-3xl md:text-4xl font-black text-gray-900">
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                   </p>
-                  <p className="text-[11px] sm:text-xs md:text-sm text-gray-500 mt-1 font-medium line-clamp-2">{stat.label}</p>
+                  <p className="text-xs sm:text-xs md:text-sm text-gray-500 mt-2 font-medium line-clamp-2">{stat.label}</p>
                 </motion.div>
               ))}
             </motion.div>

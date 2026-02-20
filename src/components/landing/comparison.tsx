@@ -17,7 +17,7 @@ import {
 
 const oldWayItems = [
   { icon: Clock, text: "Weeks of development time", detail: "3-6 months typical" },
-  { icon: DollarSign, text: "Expensive agency fees", detail: "$15,000 - $50,000+" },
+  { icon: DollarSign, text: "Expensive agency fees", detail: "$3,000 - $50,000+" },
   { icon: Code2, text: "Hire developers & designers", detail: "Full team required" },
   { icon: Server, text: "Manual server setup", detail: "DevOps expertise needed" },
   { icon: Palette, text: "Endless design revisions", detail: "Back-and-forth cycles" },
@@ -209,7 +209,7 @@ export function Comparison() {
         {[
           { value: "99%", label: "Time saved" },
           { value: "300x", label: "Faster launch" },
-          { value: "$14,950", label: "Money saved" },
+          { value: "$3,000", label: "Money saved" },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}

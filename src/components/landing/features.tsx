@@ -8,15 +8,15 @@ import {
   CreditCard,
   Globe,
   LayoutDashboard,
-  Search,
+  BarChart3,
   Zap,
   Rocket
 } from "lucide-react";
 
 const features = [
   {
-    title: "AI Store Builder",
-    description: "Describe your vision and watch AI generate a complete, production-ready storefront in seconds.",
+    title: "Store Builder",
+    description: "Build a complete, production-ready storefront in seconds.",
     icon: Sparkles,
     gradient: "from-violet-500 to-purple-500",
     bgGradient: "from-violet-100 to-purple-100",
@@ -50,9 +50,9 @@ const features = [
     bgGradient: "from-pink-100 to-rose-100",
   },
   {
-    title: "SEO Optimized",
-    description: "Auto-generated meta tags, sitemaps, structured data, and lightning-fast Core Web Vitals scores.",
-    icon: Search,
+    title: "Advanced Analytics",
+    description: "Real-time dashboards tracking sales, traffic, customer behavior, and inventory insights to drive growth.",
+    icon: BarChart3,
     gradient: "from-indigo-500 to-blue-500",
     bgGradient: "from-indigo-100 to-blue-100",
   },

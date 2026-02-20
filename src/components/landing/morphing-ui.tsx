@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { SectionWrapper } from "./section-wrapper";
@@ -67,22 +68,25 @@ function StorefrontView() {
       </div>
 
       {/* Products Grid */}
-      <div className="p-4 grid grid-cols-2 gap-3">
+      <div className="p-3 grid grid-cols-2 gap-2">
         {[
-          { name: "Oversized Hoodie", price: "$89" },
-          { name: "Cargo Pants", price: "$120" },
-          { name: "Graphic Tee", price: "$45" },
-          { name: "Track Jacket", price: "$135" },
+          { name: "Oversized Hoodie", price: "$89", image: "https://images.unsplash.com/photo-1611312449545-94176309c857?q=80&w=656&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=1000&h=1000&fit=crop" },
+          { name: "Cargo Pants", price: "$120", image: "https://images.unsplash.com/photo-1639736922209-793b59a41572?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=1000&h=1000&fit=crop" },
+          // { name: "Graphic Tee", price: "$45", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop" },
+          // { name: "Track Jacket", price: "$135", image: "https://images.unsplash.com/photo-1551028719-00167b16ebc5?w=400&h=400&fit=crop" },
         ].map((product, i) => (
           <div key={i} className="group cursor-pointer">
-            <div className="aspect-square rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 mb-2 relative overflow-hidden">
-              <div className="absolute inset-0 flex items-center justify-center text-4xl opacity-20">
-                👕
-              </div>
+            <div className="aspect-video rounded-xl bg-gray-100 mb-1.5 relative overflow-hidden">
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+              />
               <motion.div
                 initial={{ opacity: 0 }}
                 whileHover={{ opacity: 1 }}
-                className="absolute inset-0 bg-violet-500/10 flex items-center justify-center"
+                className="absolute inset-0 bg-violet-500/20 flex items-center justify-center"
               >
                 <span className="px-3 py-1 bg-white rounded-full text-xs font-medium shadow-lg">
                   Quick View
@@ -403,7 +407,7 @@ export function MorphingUI() {
           </div>
 
           {/* Content */}
-          <div className="h-[420px] overflow-hidden">
+          <div className="h-[500px] overflow-hidden">
             <AnimatePresence mode="wait">
               {activeTab === "storefront" && <StorefrontView key="storefront" />}
               {activeTab === "database" && <DatabaseView key="database" />}

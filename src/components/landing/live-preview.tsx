@@ -76,7 +76,7 @@ export function LivePreview() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.2 }}
-        className="relative max-w-5xl mx-auto"
+        className="relative max-w-6xl lg:max-w-7xl mx-auto"
       >
         {/* Floating stats */}
         <motion.div

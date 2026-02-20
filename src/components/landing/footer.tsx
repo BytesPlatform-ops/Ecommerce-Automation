@@ -106,9 +106,6 @@ export function Footer() {
           <p className="text-xs text-gray-400">
             &copy; {new Date().getFullYear()} Bytescart. All rights reserved.
           </p>
-          <p className="text-xs text-gray-400">
-            Built with Next.js, Tailwind CSS & AI
-          </p>
         </div>
       </div>
     </footer>
