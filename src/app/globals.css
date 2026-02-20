@@ -91,6 +91,10 @@ body {
   100% { background-position: 0% center; }
 }
 
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+}
+
 /* ─── Typography Utility Classes ─── */
 .font-display {
   font-family: var(--font-display);

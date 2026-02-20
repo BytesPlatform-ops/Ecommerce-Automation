@@ -9,3 +9,4 @@ export { Testimonials } from "./testimonials";
 export { FAQ } from "./faq";
 export { FinalCTA } from "./final-cta";
 export { Footer } from "./footer";
+export { ContactPage } from "./contact";

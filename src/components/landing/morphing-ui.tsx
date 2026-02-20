@@ -281,9 +281,9 @@ function DashboardView() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 + i * 0.1 }}
-                  className="px-4 py-2.5 flex items-center justify-between"
+                  className="px-4 py-2.5 flex max-md:flex-col max-md:gap-2 items-center justify-between gap-3"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex max-md:flex-col max-md:gap-1 items-center gap-3">
                     <span className="text-xs font-mono text-gray-500">{order.id}</span>
                     <span className="text-sm text-gray-900">{order.customer}</span>
                   </div>

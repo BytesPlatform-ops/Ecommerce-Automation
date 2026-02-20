@@ -298,31 +298,31 @@ function StorefrontMockup() {
       className="relative"
     >
       {/* Glassmorphism container */}
-      <div className="relative rounded-2xl md:rounded-3xl border border-white/40 bg-white/60 backdrop-blur-2xl overflow-hidden shadow-2xl shadow-violet-200/30">
+      <div className="relative rounded-xl md:rounded-2xl border border-white/40 bg-white/60 backdrop-blur-2xl overflow-hidden shadow-2xl shadow-violet-200/30">
         {/* Browser chrome */}
-        <div className="flex items-center gap-2 px-3 md:px-5 py-3 md:py-4 border-b border-gray-100/60 bg-white/40">
-          <div className="flex gap-1.5 md:gap-2">
-            <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-red-400/80" />
-            <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-amber-400/80" />
-            <div className="w-2.5 md:w-3 h-2.5 md:h-3 rounded-full bg-emerald-400/80" />
+        <div className="flex items-center gap-2 px-2 md:px-4 py-2 md:py-3 border-b border-gray-100/60 bg-white/40">
+          <div className="flex gap-1 md:gap-1.5">
+            <div className="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full bg-red-400/80" />
+            <div className="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full bg-amber-400/80" />
+            <div className="w-2 md:w-2.5 h-2 md:h-2.5 rounded-full bg-emerald-400/80" />
           </div>
-          <div className="flex-1 mx-2 md:mx-4">
-            <div className="h-7 md:h-8 rounded-lg bg-gray-100/80 flex items-center px-3 gap-2">
-              <Shield className="w-2.5 md:w-3.5 h-2.5 md:h-3.5 text-emerald-500 flex-shrink-0" />
-              <span className="text-[10px] md:text-xs text-gray-500 font-mono truncate">dashboard.bytescart.dev</span>
+          <div className="flex-1 mx-1 md:mx-3">
+            <div className="h-6 md:h-7 rounded-lg bg-gray-100/80 flex items-center px-2 md:px-3 gap-1.5">
+              <Shield className="w-2 md:w-3 h-2 md:h-3 text-emerald-500 flex-shrink-0" />
+              <span className="text-[8px] md:text-xs text-gray-500 font-mono truncate">dashboard.bytescart.dev</span>
             </div>
           </div>
         </div>
 
         {/* Dashboard header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100/60 bg-gradient-to-r from-white to-violet-50/30">
+        <div className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 border-b border-gray-100/60 bg-gradient-to-r from-white to-violet-50/30">
           <div className="flex items-center gap-2">
-            <div className="w-7 md:w-8 h-7 md:h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
-              <Sparkles className="w-3.5 md:w-4 h-3.5 md:w-4 text-white" />
+            <div className="w-6 md:w-7 h-6 md:h-7 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
+              <Sparkles className="w-3 md:w-3.5 h-3 md:h-3.5 text-white" />
             </div>
-            <span className="text-xs md:text-sm font-bold text-gray-900">Bytescart Dashboard</span>
+            <span className="text-[10px] md:text-sm font-bold text-gray-900">Bytescart Dashboard</span>
           </div>
-          <div className="w-6 md:w-7 h-6 md:h-7 rounded-full bg-violet-200 flex items-center justify-center text-xs md:text-sm font-semibold text-violet-600">
+          <div className="w-5 md:w-6 h-5 md:h-6 rounded-full bg-violet-200 flex items-center justify-center text-[9px] md:text-xs font-semibold text-violet-600">
             JD
           </div>
         </div>
@@ -330,7 +330,7 @@ function StorefrontMockup() {
         {/* Dashboard content */}
         <div className="flex">
           {/* Sidebar */}
-          <div className="hidden sm:flex flex-col w-32 md:w-40 border-r border-gray-100/60 bg-gray-50/40 p-3 md:p-4 gap-2">
+          <div className="hidden sm:flex flex-col w-28 md:w-36 border-r border-gray-100/60 bg-gray-50/40 p-2 md:p-3 gap-1">
             {[
               { icon: Palette, label: 'Design', tab: 'design' },
               { icon: Package, label: 'Products', tab: 'products' },
@@ -339,7 +339,7 @@ function StorefrontMockup() {
               <button
                 key={item.tab}
                 onClick={() => setActiveTab(item.tab as any)}
-                className={`flex items-center gap-2 px-2.5 md:px-3 py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all ${
                   activeTab === item.tab
                     ? 'bg-white text-violet-600 border border-violet-200'
                     : 'text-gray-600 hover:text-gray-900'
@@ -352,7 +352,7 @@ function StorefrontMockup() {
           </div>
 
           {/* Main panel */}
-          <div className="flex-1 p-3 md:p-5 space-y-3 md:space-y-4">
+          <div className="flex-1 p-2 md:p-4 space-y-2 md:space-y-3">
             <AnimatePresence mode="wait">
               {activeTab === 'design' && (
                 <motion.div
@@ -364,8 +364,8 @@ function StorefrontMockup() {
                   className="space-y-3 md:space-y-4"
                 >
                   <div>
-                    <p className="text-[10px] md:text-xs font-semibold text-gray-600 mb-2">Brand Colors</p>
-                    <div className="flex gap-2">
+                    <p className="text-[9px] md:text-xs font-semibold text-gray-600 mb-1.5">Brand Colors</p>
+                    <div className="flex gap-1.5">
                       {[
                         { color: 'bg-violet-500', name: 'Violet' },
                         { color: 'bg-blue-500', name: 'Blue' },
@@ -375,19 +375,19 @@ function StorefrontMockup() {
                         <motion.button
                           key={c.name}
                           whileHover={{ scale: 1.1 }}
-                          className={`w-6 md:w-7 h-6 md:h-7 rounded-lg ${c.color} shadow-md cursor-pointer`}
+                          className={`w-5 md:w-6 h-5 md:h-6 rounded-lg ${c.color} shadow-md cursor-pointer`}
                         />
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-[10px] md:text-xs font-semibold text-gray-600 mb-2">Typography</p>
-                    <div className="space-y-1.5 md:space-y-2">
+                    <p className="text-[9px] md:text-xs font-semibold text-gray-600 mb-1.5">Typography</p>
+                    <div className="space-y-1 md:space-y-1.5">
                       {['Heading Font', 'Body Font'].map((item) => (
                         <div
                           key={item}
-                          className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-white border border-gray-100 text-[10px] md:text-xs text-gray-700"
+                          className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-white border border-gray-100 text-[9px] md:text-xs text-gray-700"
                         >
                           {item}: Inter
                         </div>
@@ -396,12 +396,12 @@ function StorefrontMockup() {
                   </div>
 
                   <div>
-                    <p className="text-[10px] md:text-xs font-semibold text-gray-600 mb-2">Layout</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <p className="text-[9px] md:text-xs font-semibold text-gray-600 mb-1.5">Layout</p>
+                    <div className="grid grid-cols-2 gap-1.5">
                       {['Grid', 'Carousel', 'List', 'Featured'].map((layout) => (
                         <button
                           key={layout}
-                          className="px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-[9px] md:text-xs bg-violet-50 text-violet-600 border border-violet-200 font-medium hover:bg-violet-100 transition-colors"
+                          className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg text-[8px] md:text-xs bg-violet-50 text-violet-600 border border-violet-200 font-medium hover:bg-violet-100 transition-colors"
                         >
                           {layout}
                         </button>
@@ -430,18 +430,18 @@ function StorefrontMockup() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.08 }}
-                      className="flex items-center justify-between px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-gray-50 border border-gray-100"
+                      className="flex items-center justify-between px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-gray-50 border border-gray-100"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-[10px] md:text-xs font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-[9px] md:text-[10px] text-violet-600">{product.price}</p>
+                        <p className="text-[9px] md:text-xs font-medium text-gray-900 truncate">{product.name}</p>
+                        <p className="text-[8px] md:text-[9px] text-violet-600">{product.price}</p>
                       </div>
                       <span className={`text-xs ${product.status === '✓' ? 'text-emerald-600' : 'text-gray-400'}`}>
                         {product.status}
                       </span>
                     </motion.div>
                   ))}
-                  <button className="w-full px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg text-[9px] md:text-xs bg-violet-100 text-violet-600 font-semibold hover:bg-violet-200 transition-colors">
+                  <button className="w-full px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg text-[8px] md:text-xs bg-violet-100 text-violet-600 font-semibold hover:bg-violet-200 transition-colors">
                     + Add Product
                   </button>
                 </motion.div>
@@ -466,10 +466,10 @@ function StorefrontMockup() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.08 }}
-                      className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg bg-white border border-gray-100"
+                      className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-white border border-gray-100"
                     >
-                      <p className="text-[9px] md:text-[10px] text-gray-600 font-medium">{setting.label}</p>
-                      <p className="text-[10px] md:text-xs text-gray-900 font-semibold">{setting.value}</p>
+                      <p className="text-[8px] md:text-[9px] text-gray-600 font-medium">{setting.label}</p>
+                      <p className="text-[9px] md:text-xs text-gray-900 font-semibold">{setting.value}</p>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -479,19 +479,19 @@ function StorefrontMockup() {
         </div>
 
         {/* Bottom action bar */}
-        <div className="flex items-center justify-between px-3 md:px-5 py-2.5 md:py-3 border-t border-gray-100/60 bg-gradient-to-r from-violet-50/30 to-blue-50/30">
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] md:text-xs text-gray-600">Live preview updating...</span>
+        <div className="flex items-center justify-between px-2 md:px-4 py-2 border-t border-gray-100/60 bg-gradient-to-r from-violet-50/30 to-blue-50/30">
+          <div className="flex items-center gap-1 md:gap-1.5">
+            <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[8px] md:text-xs text-gray-600">Live preview updating...</span>
           </div>
-          <button className="px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 text-white text-[9px] md:text-xs font-semibold hover:shadow-lg transition-shadow">
+          <button className="px-2 md:px-2.5 py-0.5 md:py-1 rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 text-white text-[8px] md:text-xs font-semibold hover:shadow-lg transition-shadow">
             Publish
           </button>
         </div>
       </div>
 
       {/* Ambient glow */}
-      <div className="absolute -inset-8 md:-inset-12 bg-gradient-to-br from-violet-300/20 via-blue-200/10 to-purple-300/20 rounded-[40px] md:rounded-[48px] blur-3xl -z-10" />
+      <div className="absolute -inset-6 md:-inset-10 bg-gradient-to-br from-violet-300/20 via-blue-200/10 to-purple-300/20 rounded-[40px] md:rounded-[48px] blur-3xl -z-10" />
     </motion.div>
   );
 }
@@ -513,7 +513,7 @@ export function Hero() {
             className="text-center lg:text-left"
           >
             {/* Main headline - Brutalist bold typography */}
-            <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-5xl 2xl:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-6 sm:mb-6 lg:mb-5">
+            <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-6xl font-black text-gray-900 leading-[1.05] tracking-tight mb-6 sm:mb-6 lg:mb-5">
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -547,7 +547,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.65, duration: 0.7 }}
-              className="text-lg sm:text-lg md:text-xl lg:text-lg xl:text-xl text-gray-500 leading-relaxed mb-8 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
+              className="text-base sm:text-base md:text-lg lg:text-base xl:text-lg text-gray-500 leading-relaxed mb-8 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
             >
               Our AI builds the frontend, backend, database, payments — and deploys your complete store in <span className="text-gray-900 font-semibold">60 seconds</span>.
             </motion.p>

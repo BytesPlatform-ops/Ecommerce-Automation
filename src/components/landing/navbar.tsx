@@ -10,6 +10,7 @@ const navLinks = [
   { label: "How It Works", href: "#how-it-works" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export function Navbar() {
@@ -59,14 +60,14 @@ export function Navbar() {
         {/* Desktop nav links - centered */}
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200 relative group whitespace-nowrap"
             >
               {link.label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-blue-500 rounded-full group-hover:w-full transition-all duration-300" />
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -111,14 +112,14 @@ export function Navbar() {
         >
           <div className="px-6 py-4 flex flex-col gap-4">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <Link
               href="/login"

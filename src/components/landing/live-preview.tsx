@@ -134,8 +134,8 @@ export function LivePreview() {
                 <span className="text-gray-900 font-bold text-sm">SneakerVault</span>
               </div>
               <div className="flex items-center gap-6 text-sm text-gray-500">
-                <span className="hover:text-violet-600 cursor-pointer transition-colors">Shop</span>
-                <span className="hover:text-violet-600 cursor-pointer transition-colors">About</span>
+                {/* <span className="hover:text-violet-600 cursor-pointer transition-colors">Shop</span> */}
+                {/* <span className="hover:text-violet-600 cursor-pointer transition-colors">About</span> */}
                 <span className="hover:text-violet-600 cursor-pointer transition-colors">Contact</span>
                 <button
                   onClick={() => setCartCount(c => c + 1)}
