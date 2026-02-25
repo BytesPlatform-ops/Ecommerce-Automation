@@ -52,12 +52,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if domain is live
-    if (anyStore.domainStatus !== "Live") {
+    // Allow both "Live" and "Pending" domains to work
+    // This enables custom domains to function even during the verification/setup process
+    if (anyStore.domainStatus !== "Live" && anyStore.domainStatus !== "Pending") {
       return NextResponse.json(
         { error: `Domain exists but status is ${anyStore.domainStatus}`, status: anyStore.domainStatus },
         { status: 404 }
       );
+    }
+
+    // Log if domain is not yet live (helpful for debugging)
+    if (anyStore.domainStatus !== "Live") {
+      console.log(`[API by-domain] Domain ${anyStore.domain} is in ${anyStore.domainStatus} status but access is allowed`);
     }
 
     return NextResponse.json({ store: anyStore }, {
