@@ -101,6 +101,19 @@ export const checkIsCustomDomain = cache(async () => {
   const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
   const appDomain =
     process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, "") || "";
-  const isPlatform = isLocal || (appDomain && host.includes(appDomain));
+  
+  // List of platform domains
+  const platformDomains = [
+    "bytescart.ai",
+    "www.bytescart.ai",
+    appDomain,
+  ].filter(Boolean);
+  
+  // Check if current host matches any platform domain
+  const hostWithoutPort = host.split(":")[0];
+  const isPlatform = isLocal || platformDomains.some(domain => 
+    hostWithoutPort === domain || host === domain
+  );
+  
   return !isPlatform;
 });
