@@ -7,6 +7,8 @@ const PLATFORM_DOMAINS = [
   "localhost",
   "127.0.0.1:3000",
   "127.0.0.1",
+  "bytescart.ai",
+  "www.bytescart.ai",
   // Production domains loaded from env at runtime
   ...(process.env.NEXT_PUBLIC_APP_URL
     ? [process.env.NEXT_PUBLIC_APP_URL.replace(/^https?:\/\//, "")]
