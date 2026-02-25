@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import Link from "next/link";
+import Image from "next/image";
 import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard, Tag } from "lucide-react";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar-toggle";
 
@@ -29,8 +30,8 @@ export default async function AdminLayout({
         {/* Logo & Store Info */}
         <div className="p-6 border-b border-gray-100/80">
           <div className="flex items-center gap-3 mb-4">
-            <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-              <Sparkles className="h-5 w-5 text-white" />
+            <div className="h-12 w-12 flex items-center justify-center">
+              <Image src="/logo.png" alt="Bytescart" width={48} height={48} className="object-contain" />
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">

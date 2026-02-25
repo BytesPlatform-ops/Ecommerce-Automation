@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { LoginForm } from "@/components/auth/login-form";
 import { AuthBackground } from "@/components/auth/auth-background";
@@ -80,8 +81,8 @@ export default function LoginPage() {
               href="/"
               className="inline-flex items-center gap-2.5 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-serif text-lg font-semibold leading-none">B</span>
+              <div className="w-12 h-12 flex items-center justify-center">
+                <Image src="/logo.png" alt="Bytescart" width={48} height={48} className="object-contain" />
               </div>
               <span className="font-serif text-xl tracking-tight text-neutral-900">
                 Bytescart

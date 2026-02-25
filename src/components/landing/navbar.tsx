@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -48,9 +49,9 @@ export function Navbar() {
           <motion.div
             whileHover={{ rotate: 8, scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center shadow-lg shadow-violet-500/25"
+            className="w-11 h-11 flex items-center justify-center"
           >
-            <span className="text-white font-bold text-sm">C</span>
+            <Image src="/logo.png" alt="Bytescart" width={44} height={44} className="object-contain" />
           </motion.div>
           <span className="text-gray-900 font-semibold text-lg tracking-tight">
             Bytescart

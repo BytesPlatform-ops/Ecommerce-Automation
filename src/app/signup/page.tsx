@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { SignupForm } from "@/components/auth/signup-form";
 import { AuthBackground } from "@/components/auth/auth-background";
@@ -88,8 +89,8 @@ export default function SignupPage() {
               href="/"
               className="inline-flex items-center gap-1.5 group"
             >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neutral-900 to-neutral-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-serif text-xs font-semibold leading-none">B</span>
+              <div className="w-10 h-10 flex items-center justify-center">
+                <Image src="/logo.png" alt="Bytescart" width={40} height={40} className="object-contain" />
               </div>
               <span className="font-serif text-base tracking-tight text-neutral-900">
                 Bytescart
