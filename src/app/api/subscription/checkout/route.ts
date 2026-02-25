@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       where: { ownerId: user.id },
       select: {
         id: true,
+        storeName: true,
         stripeCustomerId: true,
         subscriptionTier: true,
         stripeSubscriptionStatus: true,
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
     // Create checkout session
     const session = await createSubscriptionCheckoutSession({
       storeId: store.id,
+      storeName: store.storeName,
       email: user.email!,
       stripeCustomerId: store.stripeCustomerId,
       priceId,

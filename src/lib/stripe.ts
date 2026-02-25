@@ -325,6 +325,7 @@ export async function getOrCreatePrices(): Promise<{
  */
 export async function createSubscriptionCheckoutSession({
   storeId,
+  storeName,
   email,
   stripeCustomerId,
   priceId,
@@ -332,6 +333,7 @@ export async function createSubscriptionCheckoutSession({
   cancelUrl,
 }: {
   storeId: string;
+  storeName: string;
   email: string;
   stripeCustomerId?: string | null;
   priceId: string;
@@ -342,10 +344,16 @@ export async function createSubscriptionCheckoutSession({
   let customerId = stripeCustomerId;
   if (!customerId) {
     const customer = await stripe.customers.create({
+      name: storeName,
       email,
       metadata: { storeId },
     });
     customerId = customer.id;
+  } else {
+    // Update existing customer with store name if not set
+    await stripe.customers.update(customerId, {
+      name: storeName,
+    });
   }
 
   const session = await stripe.checkout.sessions.create({
