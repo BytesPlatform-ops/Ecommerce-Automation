@@ -148,6 +148,7 @@ model Store {
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
 
+  categories Category[]
   products Product[]
   orders   Order[]
   faqs     StoreFaq[]
@@ -242,10 +243,29 @@ model StoreShippingLocation {
   @@map("store_shipping_locations")
 }
 
+model Category {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@index([storeId])
+  @@index([storeId, sortOrder])
+  @@map("categories")
+}
+
 model Product {
   id          String      @id @default(cuid())
   storeId     String
   store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   name        String
   description String?     @db.Text
   sku         String?
@@ -261,6 +281,7 @@ model Product {
   orderItems OrderItem[]
 
   @@index([storeId])
+  @@index([categoryId])
   @@index([deletedAt])
   @@index([storeId, deletedAt])
   @@map("products")
@@ -394,6 +415,10 @@ enum AuditAction {
   LoginSuccess
   LoginFailed
   SignOut
+  // Categories
+  CategoryCreated
+  CategoryUpdated
+  CategoryDeleted
   // Payments
   CheckoutCreated
   WebhookProcessed

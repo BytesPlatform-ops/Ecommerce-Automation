@@ -20,11 +20,16 @@ const _getStoreBySlug = (slug: string) =>
         where: { subdomainSlug: slug },
         include: {
           theme: true,
+          categories: {
+            where: { isPublished: true },
+            orderBy: { sortOrder: "asc" },
+          },
           products: {
             where: { deletedAt: null }, // Exclude soft-deleted products
             orderBy: { createdAt: "desc" },
             take: 50, // cap products per store
             include: {
+              category: true,
               images: {
                 orderBy: { sortOrder: "asc" },
                 take: 5, // cap images per product

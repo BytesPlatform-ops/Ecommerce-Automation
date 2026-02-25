@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import Link from "next/link";
-import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard } from "lucide-react";
+import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard, Tag } from "lucide-react";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar-toggle";
 
 export default async function AdminLayout({
@@ -73,6 +73,15 @@ export default async function AdminLayout({
               <Package className="h-5 w-5 text-green-600 group-hover:text-white transition-colors" />
             </div>
             <span className="font-medium">Products</span>
+          </Link>
+          <Link
+            href="/dashboard/categories"
+            className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 rounded-xl transition-all group"
+          >
+            <div className="h-9 w-9 bg-amber-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
+              <Tag className="h-5 w-5 text-amber-600 group-hover:text-white transition-colors" />
+            </div>
+            <span className="font-medium">Categories</span>
           </Link>
           <Link
             href="/dashboard/themes"

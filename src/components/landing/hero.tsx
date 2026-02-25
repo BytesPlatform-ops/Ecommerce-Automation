@@ -520,7 +520,7 @@ export function Hero() {
                 transition={{ delay: 0.2, duration: 0.8 }}
                 className="block"
               >
-                Turn one sentence
+                Turn one idea
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}

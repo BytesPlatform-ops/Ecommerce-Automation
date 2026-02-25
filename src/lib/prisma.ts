@@ -15,6 +15,10 @@ const createPrismaClient = () => {
   });
 };
 
+// Prisma connection pool configuration
+// For best results with serverless/pooling, ensure your DATABASE_URL 
+// points to a connection pooler (e.g., Supabase Connection Pooler with PgBouncer)
+
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
@@ -32,6 +36,7 @@ export const CacheTags = {
   store: (slug: string) => `store:${slug}`,
   storeById: (id: string) => `store-id:${id}`,
   products: (storeId: string) => `products:${storeId}`,
+  categories: (storeId: string) => `categories:${storeId}`,
   orders: (storeId: string) => `orders:${storeId}`,
   sections: (storeId: string) => `sections:${storeId}`,
 } as const;

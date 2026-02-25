@@ -6,13 +6,20 @@ import { createProduct, updateProduct } from "@/lib/actions";
 import { Product, ProductImage } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
-import { X, Plus, Trash2, AlertCircle, CheckCircle2, Image as ImageIcon, Layers, DollarSign, Package } from "lucide-react";
+import { X, Plus, Trash2, AlertCircle, CheckCircle2, Image as ImageIcon, Layers, DollarSign, Package, Tag } from "lucide-react";
+
+interface CategoryOption {
+  id: string;
+  name: string;
+}
 
 interface ProductFormProps {
   storeId: string;
   product?: (Product | (Omit<Product, 'price'> & { price: string })) & {
     images?: ProductImage[];
+    categoryId?: string | null;
   };
+  categories?: CategoryOption[];
 }
 
 type SizeType = "VOLUME" | "WEIGHT" | "APPAREL_ALPHA" | "APPAREL_NUMERIC" | "FOOTWEAR" | "DIMENSION" | "COUNT" | "STORAGE";
@@ -81,11 +88,12 @@ const UNIT_OPTIONS: Record<SizeType, { value: Unit; label: string }[]> = {
   ],
 };
 
-export function ProductForm({ storeId, product }: ProductFormProps) {
+export function ProductForm({ storeId, product, categories }: ProductFormProps) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price?.toString() || "");
   const [stock, setStock] = useState(product && 'stock' in product ? (product.stock as number) : 0);
+  const [categoryId, setCategoryId] = useState<string>(product?.categoryId || "");
   const [imageUrls, setImageUrls] = useState<string[]>(() => {
     if (product?.images && product.images.length > 0) {
       return [...product.images]
@@ -200,6 +208,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           price: roundedPrice,
           stock,
           imageUrls,
+          categoryId: categoryId || null,
           variants: variants.map(v => ({
             id: v.id,
             sizeType: v.sizeType as SizeType,
@@ -216,6 +225,7 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
           price: roundedPrice,
           stock,
           imageUrls,
+          categoryId: categoryId || null,
           variants: variants.map(v => ({
             sizeType: v.sizeType as SizeType,
             value: v.value || undefined,
@@ -307,6 +317,35 @@ export function ProductForm({ storeId, product }: ProductFormProps) {
         />
         <p className="text-xs text-gray-500 mt-1.5">This will be displayed to your customers</p>
       </div>
+
+      {/* Category */}
+      {categories && categories.length > 0 && (
+        <div>
+          <label
+            htmlFor="category"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Category <span className="text-gray-400">(Optional)</span>
+          </label>
+          <div className="relative">
+            <Tag className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+            <select
+              id="category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all text-sm appearance-none"
+            >
+              <option value="">No category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="text-xs text-gray-500 mt-1.5">Products without a category will appear under &quot;Other&quot; on your storefront</p>
+        </div>
+      )}
       </div>
 
       {/* Section 2: Pricing & Stock */}

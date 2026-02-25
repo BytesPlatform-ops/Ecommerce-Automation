@@ -150,6 +150,7 @@ const createProductSchema = z.object({
   stock: z.number().int().min(0).max(999999).optional().default(0),
   imageUrl: z.string().url().max(2048).optional(),
   imageUrls: z.array(z.string().url().max(2048)).max(20).optional(),
+  categoryId: z.string().max(100).nullable().optional(),
   variants: z.array(z.object({
     sizeType: z.string().max(50),
     value: z.string().max(100).optional(),
@@ -205,6 +206,7 @@ export async function createProduct(
     stock?: number;
     imageUrl?: string;
     imageUrls?: string[];
+    categoryId?: string | null;
     variants?: Array<{
       sizeType: string;
       value?: string;
@@ -243,6 +245,7 @@ export async function createProduct(
       price: validated.price,
       stock: validated.stock ?? 0,
       imageUrl: primaryImageUrl,
+      categoryId: validated.categoryId || null,
       images: validated.imageUrls && validated.imageUrls.length > 0 ? {
         create: validated.imageUrls.map((url, index) => ({
           url,
@@ -296,6 +299,7 @@ export async function updateProduct(
     stock?: number;
     imageUrl?: string;
     imageUrls?: string[];
+    categoryId?: string | null;
     variants?: Array<{
       id?: string;
       sizeType: string;
@@ -420,6 +424,7 @@ export async function updateProduct(
       price: validated.price,
       stock: validated.stock ?? undefined,
       imageUrl: primaryImageUrl,
+      categoryId: data.categoryId !== undefined ? (data.categoryId || null) : undefined,
       images: validated.imageUrls && validated.imageUrls.length > 0 ? {
         create: validated.imageUrls.map((url, index) => ({
           url,
@@ -683,6 +688,197 @@ export async function updateStore(
   revalidateTag(CacheTags.storeById(storeId), "default");
 
   return updatedStore;
+}
+
+// ==================== CATEGORY ACTIONS ====================
+
+const categorySchema = z.object({
+  name: z.string().min(1).max(200),
+  isPublished: z.boolean().optional(),
+});
+
+export async function createCategory(
+  storeId: string,
+  data: {
+    name: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  const validated = categorySchema.parse(data);
+
+  const lastCategory = await prisma.category.findFirst({
+    where: { storeId },
+    orderBy: { sortOrder: "desc" },
+  });
+
+  const category = await prisma.category.create({
+    data: {
+      storeId,
+      name: sanitizeString(validated.name, 200),
+      isPublished: validated.isPublished ?? true,
+      sortOrder: lastCategory ? lastCategory.sortOrder + 1 : 0,
+    },
+  });
+
+  await logAudit({
+    action: AuditAction.CategoryCreated,
+    actorId: user.id,
+    storeId,
+    resourceType: "Category",
+    resourceId: category.id,
+    metadata: { name: category.name },
+  });
+
+  revalidateTag(CacheTags.categories(storeId), "default");
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+  return category;
+}
+
+export async function updateCategory(
+  categoryId: string,
+  data: {
+    name?: string;
+    isPublished?: boolean;
+  }
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId },
+    include: { store: true },
+  });
+
+  if (!category || category.store.ownerId !== user.id) {
+    throw new Error("Category not found or unauthorized");
+  }
+
+  const updateData: { name?: string; isPublished?: boolean } = {};
+
+  if (data.name !== undefined) {
+    updateData.name = sanitizeString(data.name.trim(), 200);
+  }
+
+  if (data.isPublished !== undefined) {
+    updateData.isPublished = data.isPublished;
+  }
+
+  const updatedCategory = await prisma.category.update({
+    where: { id: categoryId },
+    data: updateData,
+  });
+
+  await logAudit({
+    action: AuditAction.CategoryUpdated,
+    actorId: user.id,
+    storeId: category.storeId,
+    resourceType: "Category",
+    resourceId: categoryId,
+    metadata: { name: updatedCategory.name },
+  });
+
+  revalidateTag(CacheTags.categories(category.storeId), "default");
+  revalidateTag(CacheTags.store(category.store.subdomainSlug), "default");
+  return updatedCategory;
+}
+
+export async function deleteCategory(categoryId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId },
+    include: { store: true },
+  });
+
+  if (!category || category.store.ownerId !== user.id) {
+    throw new Error("Category not found or unauthorized");
+  }
+
+  // Products with this category will have categoryId set to null via onDelete: SetNull
+  const deleted = await prisma.category.delete({
+    where: { id: categoryId },
+  });
+
+  await logAudit({
+    action: AuditAction.CategoryDeleted,
+    actorId: user.id,
+    storeId: category.storeId,
+    resourceType: "Category",
+    resourceId: categoryId,
+    metadata: { name: category.name },
+  });
+
+  revalidateTag(CacheTags.categories(category.storeId), "default");
+  revalidateTag(CacheTags.products(category.storeId), "default");
+  revalidateTag(CacheTags.store(category.store.subdomainSlug), "default");
+  return deleted;
+}
+
+export async function reorderCategories(storeId: string, orderedIds: string[]) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  if (orderedIds.length === 0) {
+    return { success: true };
+  }
+
+  const categories = await prisma.category.findMany({
+    where: { id: { in: orderedIds }, storeId },
+    select: { id: true },
+  });
+
+  if (categories.length !== orderedIds.length) {
+    throw new Error("One or more categories could not be reordered");
+  }
+
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.category.update({
+        where: { id },
+        data: { sortOrder: index },
+      })
+    )
+  );
+
+  revalidateTag(CacheTags.categories(storeId), "default");
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+  return { success: true };
 }
 
 export async function createStoreFaq(

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Package, Search } from "lucide-react";
+import { Plus, Pencil, Package, Search, Tag } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
 
@@ -13,6 +13,7 @@ interface Product {
   stock: number;
   imageUrl: string | null;
   deletedAt: string | Date | null;
+  categoryName?: string | null;
   variants?: Array<{
     id: string;
     sizeType: string | null;
@@ -119,6 +120,12 @@ export default function ProductsPageContent({ products: initialProducts }: Produ
                     <div className="flex items-start justify-between mb-3">
                       <div className="min-w-0">
                         <h3 className="font-semibold line-clamp-1 text-gray-900">{product.name}</h3>
+                        {product.categoryName && (
+                          <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                            <Tag className="h-3 w-3" />
+                            {product.categoryName}
+                          </span>
+                        )}
                         <p className="text-lg font-bold mt-1 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                           ${Number(product.price).toFixed(2)}
                         </p>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
+import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/dashboard/product-form";
 import { ArrowLeft, Package2 } from "lucide-react";
 import Link from "next/link";
@@ -17,6 +18,12 @@ export default async function NewProductPage() {
   if (!store) {
     redirect("/onboarding");
   }
+
+  const categories = await prisma.category.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, name: true },
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -51,7 +58,7 @@ export default async function NewProductPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
           {/* Form Container */}
           <div className="p-8 lg:p-10">
-            <ProductForm storeId={store.id} />
+            <ProductForm storeId={store.id} categories={categories} />
           </div>
         </div>
 

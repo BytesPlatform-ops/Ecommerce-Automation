@@ -39,10 +39,17 @@ export default async function EditProductPage({
     notFound();
   }
 
+  const categories = await prisma.category.findMany({
+    where: { storeId: store.id },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, name: true },
+  });
+
   // Convert Decimal prices to string for client component
   const serializedProduct = {
     ...product,
     price: product.price.toString(),
+    categoryId: product.categoryId,
     variants: product.variants.map((variant) => ({
       ...variant,
       price: variant.price ? variant.price.toString() : null,
@@ -57,7 +64,7 @@ export default async function EditProductPage({
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 max-w-2xl">
-        <ProductForm storeId={store.id} product={serializedProduct} />
+        <ProductForm storeId={store.id} product={serializedProduct} categories={categories} />
       </div>
     </div>
   );

@@ -53,10 +53,32 @@ export default async function StorefrontHomePage({
 
   const products = store.products;
   const featuredProducts = products.slice(0, 4);
-  const latestProducts = products.slice(0, 12);
+
+  // Group products by category for section display
+  type StoreWithCategories = typeof store & {
+    categories?: Array<{ id: string; name: string; sortOrder: number }>;
+  };
+  type ProductWithCategory = (typeof products)[number] & {
+    categoryId?: string | null;
+  };
+
+  const storeWithCats = store as StoreWithCategories;
+  const publishedCategories = storeWithCats.categories || [];
+  const productsWithCats = products as ProductWithCategory[];
+
+  // Build category sections: each category with its products
+  const categorySections = publishedCategories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    products: productsWithCats.filter((p) => p.categoryId === cat.id),
+  })).filter((section) => section.products.length > 0);
+
+  // Uncategorized products
+  const uncategorizedProducts = productsWithCats.filter(
+    (p) => !p.categoryId || !publishedCategories.some((cat) => cat.id === p.categoryId)
+  );
 
   const productPath = onCustomDomain ? "/product" : `/stores/${username}/product`;
-  const storePath = onCustomDomain ? "/" : `/stores/${username}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -277,66 +299,154 @@ export default async function StorefrontHomePage({
           </div>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 stagger-children">
-              {products.map((product) => {
-                const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
-                const secondaryImageUrl = product.images?.[1]?.url;
-
-                return (
-                  <div
-                    key={product.id}
-                    className="product-card-themed group overflow-hidden"
-                  >
-                    <Link href={`${productPath}/${product.id}`} className="block">
-                      <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
-                        {primaryImageUrl ? (
-                          <>
-                            <Image
-                              src={primaryImageUrl}
-                              alt={product.name}
-                              fill
-                              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                              className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
-                            />
-                            {secondaryImageUrl && (
-                              <Image
-                                src={secondaryImageUrl}
-                                alt={`${product.name} alternate view`}
-                                fill
-                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-                              />
-                            )}
-                          </>
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-primary-light">
-                            <span className="text-xs text-muted-foreground">No image</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-2.5 sm:p-5">
-                        <h3 className="text-sm text-foreground mb-1.5 line-clamp-1 font-medium">
-                          {product.name}
-                        </h3>
-                        <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-                          ${Number(product.price).toFixed(2)}
-                        </p>
-                      </div>
-                    </Link>
-                    <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-5">
-                      <AddToCartButton 
-                        product={{
-                          ...product,
-                          price: Number(product.price),
-                        }}
-                        storeId={store.id}
-                        storeSlug={username}
-                        stock={product.stock}
-                      />
-                    </div>
+            <div className="space-y-16 sm:space-y-20">
+              {/* Category Sections */}
+              {categorySections.map((section) => (
+                <div key={section.id}>
+                  <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                    <div className="h-1 w-8 rounded-full" style={{ backgroundColor: "var(--primary)" }} />
+                    <h3 className="font-serif text-xl sm:text-2xl md:text-3xl tracking-tight font-medium text-foreground">
+                      {section.name}
+                    </h3>
                   </div>
-                );
-              })}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 stagger-children">
+                    {section.products.map((product) => {
+                      const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
+                      const secondaryImageUrl = product.images?.[1]?.url;
+
+                      return (
+                        <div
+                          key={product.id}
+                          className="product-card-themed group overflow-hidden"
+                        >
+                          <Link href={`${productPath}/${product.id}`} className="block">
+                            <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
+                              {primaryImageUrl ? (
+                                <>
+                                  <Image
+                                    src={primaryImageUrl}
+                                    alt={product.name}
+                                    fill
+                                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                    className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
+                                  />
+                                  {secondaryImageUrl && (
+                                    <Image
+                                      src={secondaryImageUrl}
+                                      alt={`${product.name} alternate view`}
+                                      fill
+                                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                      className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+                                    />
+                                  )}
+                                </>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-primary-light">
+                                  <span className="text-xs text-muted-foreground">No image</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-2.5 sm:p-5">
+                              <h3 className="text-sm text-foreground mb-1.5 line-clamp-1 font-medium">
+                                {product.name}
+                              </h3>
+                              <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                                ${Number(product.price).toFixed(2)}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-5">
+                            <AddToCartButton 
+                              product={{
+                                ...product,
+                                price: Number(product.price),
+                              }}
+                              storeId={store.id}
+                              storeSlug={username}
+                              stock={product.stock}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {/* Uncategorized Products ("Other" section) */}
+              {uncategorizedProducts.length > 0 && (
+                <div>
+                  {categorySections.length > 0 && (
+                    <div className="flex items-center gap-3 mb-6 sm:mb-8">
+                      <div className="h-1 w-8 rounded-full bg-muted-foreground/30" />
+                      <h3 className="font-serif text-xl sm:text-2xl md:text-3xl tracking-tight font-medium text-foreground">
+                        Other
+                      </h3>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-7 stagger-children">
+                    {uncategorizedProducts.map((product) => {
+                      const primaryImageUrl = product.imageUrl ?? product.images?.[0]?.url;
+                      const secondaryImageUrl = product.images?.[1]?.url;
+
+                      return (
+                        <div
+                          key={product.id}
+                          className="product-card-themed group overflow-hidden"
+                        >
+                          <Link href={`${productPath}/${product.id}`} className="block">
+                            <div className="aspect-[3/4] relative bg-muted overflow-hidden rounded-t-[var(--radius-lg)]">
+                              {primaryImageUrl ? (
+                                <>
+                                  <Image
+                                    src={primaryImageUrl}
+                                    alt={product.name}
+                                    fill
+                                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                    className="object-cover product-image transition-transform duration-700 ease-out group-hover:scale-105"
+                                  />
+                                  {secondaryImageUrl && (
+                                    <Image
+                                      src={secondaryImageUrl}
+                                      alt={`${product.name} alternate view`}
+                                      fill
+                                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                      className="absolute inset-0 object-cover opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+                                    />
+                                  )}
+                                </>
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-primary-light">
+                                  <span className="text-xs text-muted-foreground">No image</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-2.5 sm:p-5">
+                              <h3 className="text-sm text-foreground mb-1.5 line-clamp-1 font-medium">
+                                {product.name}
+                              </h3>
+                              <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                                ${Number(product.price).toFixed(2)}
+                              </p>
+                            </div>
+                          </Link>
+                          <div className="px-2.5 sm:px-5 pb-2.5 sm:pb-5">
+                            <AddToCartButton 
+                              product={{
+                                ...product,
+                                price: Number(product.price),
+                              }}
+                              storeId={store.id}
+                              storeSlug={username}
+                              stock={product.stock}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-20 rounded-2xl border border-border bg-background">

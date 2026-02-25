@@ -33,6 +33,10 @@ export default async function ProductsPage() {
       updatedAt: true,
       storeId: true,
       deletedAt: true,
+      categoryId: true,
+      category: {
+        select: { id: true, name: true },
+      },
       variants: {
         select: {
           id: true,
@@ -51,6 +55,7 @@ export default async function ProductsPage() {
     ...product,
     price: product.price.toString(),
     deletedAt: product.deletedAt ? product.deletedAt.toISOString() : null,
+    categoryName: product.category?.name || null,
     variants: product.variants.map((variant) => ({
       ...variant,
       price: variant.price ? variant.price.toString() : null,
