@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
 import { prisma } from "@/lib/prisma";
+import { getSubscriptionStatus } from "@/lib/actions";
 import { ProductForm } from "@/components/dashboard/product-form";
+import { ProductLimitGate } from "@/components/dashboard/product-limit-gate";
 import { ArrowLeft, Package2 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,6 +26,9 @@ export default async function NewProductPage() {
     orderBy: { sortOrder: "asc" },
     select: { id: true, name: true },
   });
+
+  // Check subscription status — if at limit, show upgrade prompt instead of form
+  const subscriptionStatus = await getSubscriptionStatus(store.id);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
@@ -55,12 +60,16 @@ export default async function NewProductPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
+        {!subscriptionStatus.canAddProduct ? (
+          <ProductLimitGate subscriptionStatus={subscriptionStatus} />
+        ) : (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
           {/* Form Container */}
           <div className="p-8 lg:p-10">
             <ProductForm storeId={store.id} categories={categories} />
           </div>
         </div>
+        )}
 
         {/* Footer Info */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">

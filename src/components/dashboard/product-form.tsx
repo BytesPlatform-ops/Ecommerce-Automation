@@ -7,6 +7,7 @@ import { Product, ProductImage } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
 import { X, Plus, Trash2, AlertCircle, CheckCircle2, Image as ImageIcon, Layers, DollarSign, Package, Tag } from "lucide-react";
+import { UpgradeModal } from "./upgrade-modal";
 
 interface CategoryOption {
   id: string;
@@ -106,6 +107,8 @@ export function ProductForm({ storeId, product, categories }: ProductFormProps) 
   const [variants, setVariants] = useState<Variant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeInfo, setUpgradeInfo] = useState<{ currentCount: number; limit: number } | null>(null);
   const router = useRouter();
 
   const isEditing = !!product;
@@ -234,6 +237,18 @@ export function ProductForm({ storeId, product, categories }: ProductFormProps) 
             stock: v.stock,
           })),
         });
+
+        // Check if product limit was reached
+        if (result && 'error' in result && result.error === "PRODUCT_LIMIT_REACHED") {
+          setUpgradeInfo({
+            currentCount: (result as any).currentCount ?? 15,
+            limit: (result as any).limit ?? 15,
+          });
+          setShowUpgradeModal(true);
+          setLoading(false);
+          return;
+        }
+
         console.log("Product created:", result);
       }
 
@@ -250,6 +265,7 @@ export function ProductForm({ storeId, product, categories }: ProductFormProps) 
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-sm flex items-start gap-4 animate-in fade-in slide-in-from-top-2">
@@ -666,5 +682,14 @@ export function ProductForm({ storeId, product, categories }: ProductFormProps) 
         </button>
       </div>
     </form>
+
+    {/* Upgrade Modal — shown when product limit is reached */}
+    <UpgradeModal
+      isOpen={showUpgradeModal}
+      onClose={() => setShowUpgradeModal(false)}
+      currentCount={upgradeInfo?.currentCount ?? 15}
+      limit={upgradeInfo?.limit ?? 15}
+    />
+    </>
   );
 }

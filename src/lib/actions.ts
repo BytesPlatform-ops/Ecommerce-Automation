@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { validateDomainFormat, normalizeDomain, DOMAIN_STATUS } from "@/lib/domain-utils";
-import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus, Prisma, SizeType, Unit } from "@prisma/client";
+import { DomainStatus, StripeConnectStatus, OrderStatus, PaymentStatus, Prisma, SizeType, Unit, SubscriptionTier } from "@prisma/client";
 import { sanitizeUrl, secureLog, sanitizeString } from "@/lib/security";
 import { logAudit, AuditAction } from "@/lib/audit";
 import { z } from "zod";
@@ -223,13 +223,46 @@ export async function createProduct(
     throw new Error("Not authenticated");
   }
 
-  // Verify store ownership
+  // Verify store ownership (include subscription fields for product limit check)
   const store = await prisma.store.findFirst({
     where: { id: storeId, ownerId: user.id },
+    select: {
+      id: true,
+      subdomainSlug: true,
+      subscriptionTier: true,
+      productLimit: true,
+      stripeSubscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+    },
   });
 
   if (!store) {
     throw new Error("Store not found or unauthorized");
+  }
+
+  // ==================== PRODUCT LIMIT ENFORCEMENT ====================
+  const activeProductCount = await prisma.product.count({
+    where: { storeId, deletedAt: null },
+  });
+
+  // Determine effective limit: if within grace period after cancellation, keep PRO limit
+  let effectiveLimit = store.productLimit;
+  if (
+    store.subscriptionTier === "FREE" &&
+    store.subscriptionCurrentPeriodEnd &&
+    new Date() < store.subscriptionCurrentPeriodEnd
+  ) {
+    effectiveLimit = 100; // Grace period — allow PRO product count
+  }
+
+  if (activeProductCount >= effectiveLimit) {
+    return {
+      success: false as const,
+      error: "PRODUCT_LIMIT_REACHED" as const,
+      limit: effectiveLimit,
+      tier: store.subscriptionTier,
+      currentCount: activeProductCount,
+    };
   }
 
   // Validate input
@@ -2852,5 +2885,62 @@ export async function getOrderStats() {
     totalRevenue: (Number(aggregate._sum.total) || 0).toFixed(2),
     last7DaysOrders: last7Count,
     last30DaysOrders: last30Count,
+  };
+}
+
+// ==================== SUBSCRIPTION STATUS ====================
+
+const GRACE_PERIOD_DAYS = 14;
+
+export async function getSubscriptionStatus(storeId: string) {
+  const store = await prisma.store.findFirst({
+    where: { id: storeId },
+    select: {
+      subscriptionTier: true,
+      productLimit: true,
+      stripeSubscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+    },
+  });
+
+  if (!store) {
+    throw new Error("Store not found");
+  }
+
+  const productCount = await prisma.product.count({
+    where: { storeId, deletedAt: null },
+  });
+
+  const now = new Date();
+  const isGracePeriod =
+    store.subscriptionTier === "FREE" &&
+    store.subscriptionCurrentPeriodEnd !== null &&
+    now < store.subscriptionCurrentPeriodEnd;
+
+  // Calculate days remaining in grace period
+  let gracePeriodDaysLeft = 0;
+  if (isGracePeriod && store.subscriptionCurrentPeriodEnd) {
+    gracePeriodDaysLeft = Math.ceil(
+      (store.subscriptionCurrentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
+
+  // Effective limit considers grace period
+  const effectiveLimit = isGracePeriod ? 100 : store.productLimit;
+  const canAddProduct = productCount < effectiveLimit;
+
+  return {
+    tier: store.subscriptionTier,
+    productCount,
+    productLimit: store.productLimit,
+    effectiveLimit,
+    canAddProduct,
+    subscriptionStatus: store.stripeSubscriptionStatus,
+    isGracePeriod,
+    gracePeriodDaysLeft,
+    gracePeriodEnd: store.subscriptionCurrentPeriodEnd?.toISOString() || null,
+    hasStripeCustomer: !!store.stripeCustomerId,
   };
 }

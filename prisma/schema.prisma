@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum DomainStatus {
@@ -23,6 +23,11 @@ enum StripeConnectStatus {
   Pending
   Active
   Restricted
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
 }
 
 enum OrderStatus {
@@ -135,6 +140,13 @@ model Store {
   stripeConnectId        String?             @unique
   stripeConnectStatus    StripeConnectStatus @default(NotConnected)
   stripeConnectedAt      DateTime?
+  // Platform Subscription fields
+  subscriptionTier             SubscriptionTier @default(FREE)
+  stripeCustomerId             String?          @unique
+  stripeSubscriptionId         String?          @unique
+  stripeSubscriptionStatus     String?          // active, past_due, canceled, trialing, etc.
+  subscriptionCurrentPeriodEnd DateTime?
+  productLimit                 Int              @default(15)
   // Contact Information fields
   contactEmail           String?
   contactPhone           String?
@@ -422,6 +434,10 @@ enum AuditAction {
   // Payments
   CheckoutCreated
   WebhookProcessed
+  // Subscription
+  SubscriptionCreated
+  SubscriptionUpdated
+  SubscriptionCanceled
 }
 
 // ==================== PASSWORD RESET ====================

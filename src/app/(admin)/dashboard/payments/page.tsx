@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
+import { getSubscriptionStatus } from "@/lib/actions";
 import PaymentsContent from "@/components/dashboard/payments-content";
+import { SubscriptionManagement } from "@/components/dashboard/subscription-management";
 
 export default async function PaymentsPage() {
   const user = await getAuthUser();
@@ -16,6 +18,8 @@ export default async function PaymentsPage() {
     redirect("/onboarding");
   }
 
+  const subscriptionStatus = await getSubscriptionStatus(store.id);
+
   return (
     <div className="space-y-6">
       <div className="dash-animate-in">
@@ -24,6 +28,9 @@ export default async function PaymentsPage() {
           Manage your Stripe account and view transactions
         </p>
       </div>
+
+      {/* Platform Subscription Management */}
+      <SubscriptionManagement subscriptionStatus={subscriptionStatus} />
 
       <PaymentsContent
         storeId={store.id}

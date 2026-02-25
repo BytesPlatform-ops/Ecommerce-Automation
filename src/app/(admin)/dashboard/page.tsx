@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
+import { getSubscriptionStatus } from "@/lib/actions";
 import Link from "next/link";
 import {
   Package, Palette, Eye, Plus, TrendingUp,
@@ -9,6 +10,7 @@ import {
   CreditCard, Settings
 } from "lucide-react";
 import { StockNotificationAlert } from "@/components/dashboard/stock-notification-alert";
+import { SubscriptionGate } from "@/components/dashboard/subscription-gate";
 import { OrderStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -128,6 +130,9 @@ export default async function DashboardPage() {
     return "Good evening";
   })();
 
+  // Fetch subscription status for the upgrade banner
+  const subscriptionStatus = await getSubscriptionStatus(store.id);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -159,6 +164,9 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Subscription Status Banner */}
+      <SubscriptionGate subscriptionStatus={subscriptionStatus} />
 
       {/* Stock Notifications */}
       <StockNotificationAlert />

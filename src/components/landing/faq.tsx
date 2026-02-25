@@ -22,14 +22,14 @@ const faqs = [
       "We integrate with Stripe out of the box, which supports credit cards, Apple Pay, Google Pay, and dozens of other payment methods. We're also working on adding PayPal, Square, and other providers.",
   },
   {
-    question: "Is there a free trial?",
+    question: "Is there a free plan?",
     answer:
-      "Yes! Every plan comes with a 14-day free trial, no credit card required. You can generate and test your store fully before committing to a plan.",
+      "Yes! You can start with our Free plan — no credit card required. You get up to 15 products, a full admin dashboard, and all core features. When you're ready to scale, upgrade to Pro for up to 100 products.",
   },
   {
     question: "Can I use my own domain?",
     answer:
-      "Yes. On the Growth and Pro plans, you can connect your own custom domain with automatic SSL provisioning. On the Starter plan, you get a free subdomain like yourstore.bytescart.dev.",
+      "Yes. On the Pro plan, you can connect your own custom domain with automatic SSL provisioning. On the Free plan, you get a free subdomain like yourstore.bytescart.dev.",
   },
   {
     question: "How fast are the generated stores?",
@@ -39,7 +39,7 @@ const faqs = [
   {
     question: "Do you take a percentage of my sales?",
     answer:
-      "No. We never take a cut of your revenue. You pay a flat monthly subscription fee and keep 100% of your sales (minus standard Stripe processing fees).",
+      "No. We never take a cut of your revenue. The Free plan is completely free, and on Pro you pay a flat monthly or yearly fee. You keep 100% of your sales (minus standard Stripe processing fees).",
   },
 ];
 
