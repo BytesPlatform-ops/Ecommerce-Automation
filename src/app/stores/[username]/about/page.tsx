@@ -28,7 +28,7 @@ export default async function StorefrontAboutPage({
           
           {store.aboutText ? (
             <div className="info-page-card-themed text-left">
-              <p className="text-base leading-relaxed text-muted-foreground">
+              <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
                 {store.aboutText}
               </p>
             </div>
