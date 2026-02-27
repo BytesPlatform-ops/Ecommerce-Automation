@@ -47,26 +47,26 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <SectionWrapper id="faq" className="py-20">
+    <SectionWrapper id="faq" className="py-20 bg-[#0D2B1F]">
       <div className="text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-50 to-blue-50 border border-violet-200/60 mb-6"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A3D2B] border border-[#D4873A]/30 mb-6"
         >
-          <HelpCircle className="w-4 h-4 text-violet-600" />
-          <span className="text-lg font-semibold text-violet-700">FAQ</span>
+          <HelpCircle className="w-4 h-4 text-[#D4873A]" />
+          <span className="text-lg font-semibold text-[#D4873A]">FAQ</span>
         </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#F5F0E8] tracking-tight mb-4"
         >
           Your questions,{" "}
-          <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#D4873A] to-[#C9A84C] bg-clip-text text-transparent">
             answered
           </span>
         </motion.h2>
@@ -75,7 +75,7 @@ export function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-gray-500 max-w-lg mx-auto text-lg"
+          className="text-[#8FA898] max-w-lg mx-auto text-lg"
         >
           Everything you need to know about BytesCart and our platform
         </motion.p>
@@ -95,18 +95,18 @@ export function FAQ() {
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
               className={`w-full flex items-start justify-between gap-4 rounded-2xl border-2 px-6 py-5 text-left transition-all duration-300 ${
                 openIndex === i
-                  ? "border-violet-400 bg-gradient-to-br from-violet-50 via-blue-50 to-purple-50 shadow-lg shadow-violet-200/30"
-                  : "border-gray-200/80 bg-white/60 hover:border-violet-300 hover:bg-gradient-to-br hover:from-violet-50/40 hover:to-blue-50/40 hover:shadow-md hover:shadow-violet-100/20"
+                  ? "border-[#D4873A]/50 bg-[#F5F0E8] shadow-lg shadow-[#D4873A]/10"
+                  : "border-[#F5F0E8]/20 bg-[#F5F0E8] hover:border-[#D4873A]/30 hover:shadow-md hover:shadow-[#D4873A]/10"
               }`}
               aria-expanded={openIndex === i}
             >
-              <span className="text-sm font-semibold text-gray-800 group-hover:text-violet-700 transition-colors leading-relaxed flex-1 pt-0.5">
+              <span className="text-sm font-semibold text-[#1A3D2B] group-hover:text-[#D4873A] transition-colors leading-relaxed flex-1 pt-0.5">
                 {faq.question}
               </span>
               <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${
                 openIndex === i
-                  ? "bg-gradient-to-br from-violet-600 to-blue-600 text-white"
-                  : "bg-gray-100 text-gray-400 group-hover:bg-violet-100 group-hover:text-violet-600"
+                  ? "bg-gradient-to-br from-[#D4873A] to-[#C9A84C] text-white"
+                  : "bg-[#1A3D2B]/10 text-[#8FA898] group-hover:bg-[#D4873A]/20 group-hover:text-[#D4873A]"
               }`}>
                 {openIndex === i ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               </span>
@@ -120,7 +120,7 @@ export function FAQ() {
                   transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                   className="overflow-hidden"
                 >
-                  <div className="px-6 py-5 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-50/50 border border-gray-200/60 text-sm text-gray-600 leading-relaxed font-light">
+                  <div className="px-6 py-5 rounded-2xl bg-[#F5F0E8]/80 border border-[#1A3D2B]/10 text-sm text-[#1A3D2B]/80 leading-relaxed font-light">
                     {faq.answer}
                   </div>
                 </motion.div>

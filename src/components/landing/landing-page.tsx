@@ -15,19 +15,21 @@ import { Footer } from "./footer";
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#FAFBFF] text-gray-900 overflow-x-hidden selection:bg-violet-200">
+    <div className="min-h-screen bg-[#0D2B1F] text-[#F5F0E8] overflow-x-hidden selection:bg-[#D4873A]/30">
       {/* Subtle dot grid background */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-30 z-0"
+        className="fixed inset-0 pointer-events-none opacity-20 z-0"
         style={{
-          backgroundImage: `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(circle, #2E5C40 1px, transparent 1px)`,
           backgroundSize: "32px 32px",
         }}
       />
 
-      {/* Top gradient wash */}
+      {/* Ambient gradient glow - forest/amber */}
       <div className="fixed top-0 left-0 right-0 h-[800px] pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 via-blue-50/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#122E22]/80 via-[#0D2B1F]/60 to-transparent" />
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#D4873A]/5 rounded-full blur-[120px]" />
+        <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-[#2E5C40]/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10">

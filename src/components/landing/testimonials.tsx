@@ -13,7 +13,7 @@ const testimonials = [
     rating: 5,
     text: "I described my skincare brand and had a fully functional store with payments live in under 2 minutes. The speed is unreal.",
     result: "Generated $42K in first month",
-    accentColor: "from-violet-500 to-purple-500",
+    accentColor: "from-[#D4873A] to-[#C9A84C]",
   },
   {
     name: "Marcus Johnson",
@@ -22,7 +22,7 @@ const testimonials = [
     rating: 5,
     text: "We used to spend $15k+ on agency builds. Now we spin up client stores in seconds. Bytescart changed our entire business model.",
     result: "Saved $180K in agency costs",
-    accentColor: "from-blue-500 to-cyan-500",
+    accentColor: "from-[#D4873A] to-[#C9A84C]",
   },
   {
     name: "Lea Moreau",
@@ -31,7 +31,7 @@ const testimonials = [
     rating: 5,
     text: "I've launched 12 stores this month. Each one looks custom-built. The AI understands branding better than most designers I've worked with.",
     result: "12 stores, $8K MRR combined",
-    accentColor: "from-emerald-500 to-teal-500",
+    accentColor: "from-[#D4873A] to-[#C9A84C]",
   },
   {
     name: "David Kim",
@@ -40,7 +40,7 @@ const testimonials = [
     rating: 5,
     text: "The admin dashboard alone saves us 40 hours per project. Combined with auto-deployment, it's a no-brainer for our team.",
     result: "40+ hours saved per project",
-    accentColor: "from-orange-500 to-amber-500",
+    accentColor: "from-[#D4873A] to-[#C9A84C]",
   },
   {
     name: "Aisha Patel",
@@ -49,7 +49,7 @@ const testimonials = [
     rating: 5,
     text: "I'm not technical at all and I built my merch store in a minute. My audience was buying within the hour. Insane.",
     result: "First sale in under 1 hour",
-    accentColor: "from-pink-500 to-rose-500",
+    accentColor: "from-[#D4873A] to-[#C9A84C]",
   },
 ];
 
@@ -82,13 +82,13 @@ export function Testimonials() {
   };
 
   return (
-    <SectionWrapper className="py-16 sm:py-24">
+    <SectionWrapper className="py-16 sm:py-24 bg-[#122E22]">
       <div className="text-center mb-16">
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xs text-violet-600 uppercase tracking-[0.2em] mb-4 font-semibold"
+          className="text-xs text-[#D4873A] uppercase tracking-[0.2em] mb-4 font-semibold"
         >
           Success Stories
         </motion.p>
@@ -97,10 +97,10 @@ export function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight mb-5"
+          className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#F5F0E8] tracking-tight mb-5"
         >
           Trusted by{" "}
-          <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#D4873A] to-[#C9A84C] bg-clip-text text-transparent">
             12,000+ founders
           </span>
         </motion.h2>
@@ -109,7 +109,7 @@ export function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-gray-500 max-w-2xl mx-auto text-lg"
+          className="text-[#8FA898] max-w-2xl mx-auto text-lg"
         >
           Real results from real businesses. See why founders choose Bytescart.
         </motion.p>
@@ -134,36 +134,36 @@ export function Testimonials() {
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
               className="absolute inset-0"
             >
-              <div className="h-full rounded-3xl border border-gray-200/60 bg-white/80 backdrop-blur-xl p-5 sm:p-10 flex flex-col justify-between shadow-xl shadow-violet-100/30">
+              <div className="h-full rounded-3xl border border-[#D4873A]/30 bg-[#F5F0E8] backdrop-blur-xl p-5 sm:p-10 flex flex-col justify-between shadow-xl shadow-[#0D2B1F]/20">
                 {/* Quote icon and stars */}
                 <div className="flex items-start justify-between mb-4">
-                  <Quote className="w-8 h-8 text-violet-200" />
+                  <Quote className="w-8 h-8 text-[#D4873A]/40" />
                   <div className="flex gap-1">
                     {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="w-4 h-4 fill-[#C9A84C] text-[#C9A84C]" />
                     ))}
                   </div>
                 </div>
 
-                <p className="text-gray-700 text-base sm:text-lg leading-relaxed flex-1">
+                <p className="text-[#1A3D2B] text-base sm:text-lg leading-relaxed flex-1 italic font-serif">
                   &ldquo;{testimonial.text}&rdquo;
                 </p>
 
                 {/* ROI Result Badge */}
                 <div className="mt-3 mb-4 sm:mt-4 sm:mb-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200/60">
-                    <TrendingUp className="w-4 h-4 text-emerald-600" />
-                    <span className="text-sm font-semibold text-emerald-700">{testimonial.result}</span>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#D4873A]">
+                    <TrendingUp className="w-4 h-4 text-[#0D2B1F]" />
+                    <span className="text-sm font-semibold text-[#0D2B1F]">{testimonial.result}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-gray-100">
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${testimonial.accentColor} flex items-center justify-center shadow-lg`}>
+                <div className="flex items-center gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-[#1A3D2B]/10">
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${testimonial.accentColor} flex items-center justify-center shadow-lg ring-2 ring-[#D4873A]`}>
                     <span className="text-white text-sm font-bold">{testimonial.avatar}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
+                    <p className="font-semibold text-[#1A3D2B]">{testimonial.name}</p>
+                    <p className="text-sm text-[#1A3D2B]/70">{testimonial.role}</p>
                   </div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export function Testimonials() {
         <div className="flex items-center justify-center gap-4 mt-8">
           <button
             onClick={prev}
-            className="w-12 h-12 rounded-2xl border border-gray-200 bg-white/60 backdrop-blur-sm flex items-center justify-center text-gray-400 hover:text-violet-600 hover:border-violet-200 hover:bg-violet-50/50 transition-all duration-300"
+            className="w-12 h-12 rounded-2xl border border-[#F5F0E8]/30 bg-[#0D2B1F]/50 backdrop-blur-sm flex items-center justify-center text-[#F5F0E8] hover:text-[#D4873A] hover:border-[#D4873A] hover:bg-[#D4873A]/10 transition-all duration-300"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -190,7 +190,7 @@ export function Testimonials() {
                   setCurrent(i);
                 }}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  i === current ? "bg-gradient-to-r from-violet-500 to-blue-500 w-8" : "bg-gray-300 hover:bg-gray-400 w-2"
+                  i === current ? "bg-[#D4873A] w-8" : "bg-[#F5F0E8]/40 hover:bg-[#F5F0E8]/60 w-2"
                 }`}
                 aria-label={`Go to testimonial ${i + 1}`}
               />
@@ -199,7 +199,7 @@ export function Testimonials() {
 
           <button
             onClick={next}
-            className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:border-gray-300 transition-all duration-200"
+            className="w-12 h-12 rounded-2xl border border-[#F5F0E8]/30 bg-[#0D2B1F]/50 backdrop-blur-sm flex items-center justify-center text-[#F5F0E8] hover:text-[#D4873A] hover:border-[#D4873A] hover:bg-[#D4873A]/10 transition-all duration-300"
             aria-label="Next testimonial"
           >
             <ChevronRight className="w-5 h-5" />

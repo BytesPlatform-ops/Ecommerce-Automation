@@ -9,12 +9,12 @@ import { ShoppingBag, Star, Heart, Eye } from "lucide-react";
 const categories = ["All Products", "Sneakers", "Apparel", "Accessories"];
 
 const products = [
-  { name: "Air Max Retro", price: "$189", rating: 4.9, views: "2.1k", category: "Sneakers", color: "bg-gradient-to-br from-violet-50 to-violet-100", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop" },
-  { name: "Urban Hoodie", price: "$89", rating: 4.8, views: "1.8k", category: "Apparel", color: "bg-gradient-to-br from-blue-50 to-blue-100", image: "https://images.unsplash.com/photo-1685354217981-26c14a211bf8?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
-  { name: "Classic Runner", price: "$149", rating: 4.7, views: "3.2k", category: "Sneakers", color: "bg-gradient-to-br from-cyan-50 to-cyan-100", image: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&h=500&fit=crop" },
-  { name: "Canvas Cap", price: "$39", rating: 4.6, views: "890", category: "Accessories", color: "bg-gradient-to-br from-emerald-50 to-emerald-100", image: "https://images.unsplash.com/photo-1691256676359-20e5c6d4bc92?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
-  { name: "Street Joggers", price: "$79", rating: 4.9, views: "1.5k", category: "Apparel", color: "bg-gradient-to-br from-pink-50 to-pink-100", image: "https://images.unsplash.com/photo-1719759674376-a001dc166cb6?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
-  { name: "Leather Bag", price: "$59", rating: 4.8, views: "760", category: "Accessories", color: "bg-gradient-to-br from-amber-50 to-amber-100", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop" },
+  { name: "Air Max Retro", price: "$189", rating: 4.9, views: "2.1k", category: "Sneakers", color: "bg-gradient-to-br from-[#F5F0E8] to-[#E8E0D5]", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&h=500&fit=crop" },
+  { name: "Urban Hoodie", price: "$89", rating: 4.8, views: "1.8k", category: "Apparel", color: "bg-gradient-to-br from-[#2E5C40]/10 to-[#2E5C40]/20", image: "https://images.unsplash.com/photo-1685354217981-26c14a211bf8?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Classic Runner", price: "$149", rating: 4.7, views: "3.2k", category: "Sneakers", color: "bg-gradient-to-br from-[#D4873A]/10 to-[#D4873A]/20", image: "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=500&h=500&fit=crop" },
+  { name: "Canvas Cap", price: "$39", rating: 4.6, views: "890", category: "Accessories", color: "bg-gradient-to-br from-[#C9A84C]/10 to-[#C9A84C]/20", image: "https://images.unsplash.com/photo-1691256676359-20e5c6d4bc92?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Street Joggers", price: "$79", rating: 4.9, views: "1.5k", category: "Apparel", color: "bg-gradient-to-br from-[#8FA898]/10 to-[#8FA898]/20", image: "https://images.unsplash.com/photo-1719759674376-a001dc166cb6?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?w=500&h=500&fit=crop" },
+  { name: "Leather Bag", price: "$59", rating: 4.8, views: "760", category: "Accessories", color: "bg-gradient-to-br from-[#F5F0E8] to-[#D4873A]/10", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&h=500&fit=crop" },
 ];
 
 export function LivePreview() {
@@ -37,26 +37,26 @@ export function LivePreview() {
   }, []);
 
   return (
-    <SectionWrapper id="live-preview" className="py-16 sm:py-24">
+    <SectionWrapper id="live-preview" className="py-16 sm:py-24 bg-[#F5F0E8]">
       <div className="text-center mb-16">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-50 to-blue-50 border border-violet-200/60 mb-6"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#F5F0E8] to-[#E8E0D5] border border-[#D4873A]/30 mb-6"
         >
-          <Eye className="w-4 h-4 text-violet-600" />
-          <span className="text-xs font-semibold text-violet-700">Live Preview</span>
+          <Eye className="w-4 h-4 text-[#D4873A]" />
+          <span className="text-xs font-semibold text-[#D4873A]">Live Preview</span>
         </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 tracking-tight mb-5"
+          className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1A3D2B] tracking-tight mb-5"
         >
           See it{" "}
-          <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#D4873A] to-[#C9A84C] bg-clip-text text-transparent">
             in action
           </span>
         </motion.h2>
@@ -65,7 +65,7 @@ export function LivePreview() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-gray-500 max-w-lg mx-auto text-lg"
+          className="text-[#8FA898] max-w-lg mx-auto text-lg"
         >
           A real preview of a store generated by Bytescart — fully functional, fully customizable.
         </motion.p>
@@ -86,10 +86,10 @@ export function LivePreview() {
           transition={{ delay: 0.4 }}
           className="absolute -left-4 top-1/4 z-20 hidden lg:block"
         >
-          <div className="px-4 py-3 rounded-xl bg-white/90 backdrop-blur-lg border border-violet-100 shadow-xl shadow-violet-100/30">
+          <div className="px-4 py-3 rounded-xl bg-[#F5F0E8]/95 backdrop-blur-lg border border-[#2E5C40]/20 shadow-xl shadow-[#2E5C40]/10">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-gray-600">{visitors} visitors now</span>
+              <div className="w-2 h-2 rounded-full bg-[#2E5C40] animate-pulse" />
+              <span className="text-xs font-medium text-[#8FA898]">{visitors} visitors now</span>
             </div>
           </div>
         </motion.div>
@@ -101,54 +101,54 @@ export function LivePreview() {
           transition={{ delay: 0.5 }}
           className="absolute -right-4 top-1/3 z-20 hidden lg:block"
         >
-          <div className="px-4 py-3 rounded-xl bg-white/90 backdrop-blur-lg border border-emerald-100 shadow-xl shadow-emerald-100/30">
-            <p className="text-xs font-semibold text-emerald-600">+$2,847</p>
-            <p className="text-[10px] text-gray-500">Today&apos;s sales</p>
+          <div className="px-4 py-3 rounded-xl bg-[#F5F0E8]/95 backdrop-blur-lg border border-[#2E5C40]/20 shadow-xl shadow-[#2E5C40]/10">
+            <p className="text-xs font-semibold text-[#2E5C40]">+$2,847</p>
+            <p className="text-[10px] text-[#8FA898]">Today&apos;s sales</p>
           </div>
         </motion.div>
 
         {/* Browser frame */}
-        <div className="rounded-3xl border border-white/60 bg-white/80 backdrop-blur-xl overflow-hidden shadow-2xl shadow-violet-200/40">
+        <div className="rounded-3xl border-2 border-[#2E5C40]/40 bg-[#F5F0E8]/90 backdrop-blur-xl overflow-hidden shadow-2xl shadow-[#2E5C40]/20">
           {/* Browser chrome */}
-          <div className="flex items-center gap-2 px-5 py-4 border-b border-gray-100/80 bg-gradient-to-r from-gray-50/80 to-white/80">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-[#2E5C40]/20 bg-[#0D2B1F]">
             <div className="flex gap-2">
               <div className="w-3 h-3 rounded-full bg-red-400/80" />
               <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
               <div className="w-3 h-3 rounded-full bg-green-400/80" />
             </div>
             <div className="flex-1 mx-4">
-              <div className="h-8 rounded-lg bg-gray-100/80 flex items-center px-4 border border-gray-200/40">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 mr-2" />
-                <span className="text-xs text-gray-500 font-mono">sneaker-vault.bytescart.dev</span>
+              <div className="h-8 rounded-lg bg-[#1A3D2B] flex items-center px-4 border border-[#2E5C40]/40">
+                <div className="w-3 h-3 rounded-full bg-[#2E5C40] mr-2" />
+                <span className="text-xs text-[#8FA898] font-mono">sneaker-vault.bytescart.dev</span>
               </div>
             </div>
           </div>
 
           {/* Store header */}
-          <div className="px-6 py-4 border-b border-gray-100/60 bg-gradient-to-r from-violet-50/30 to-blue-50/30">
+          <div className="px-6 py-4 border-b border-[#2E5C40]/10 bg-gradient-to-r from-[#F5F0E8] to-[#E8E0D5]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2E5C40] to-[#1A3D2B] flex items-center justify-center">
                   <span className="text-white text-xs font-bold">SV</span>
                 </div>
-                <span className="text-gray-900 font-bold text-sm">SneakerVault</span>
+                <span className="text-[#1A3D2B] font-bold text-sm">SneakerVault</span>
               </div>
-              <div className="flex items-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-6 text-sm text-[#8FA898]">
                 {/* <span className="hover:text-violet-600 cursor-pointer transition-colors">Shop</span> */}
                 {/* <span className="hover:text-violet-600 cursor-pointer transition-colors">About</span> */}
-                <span className="hover:text-violet-600 cursor-pointer transition-colors">Contact</span>
+                <span className="hover:text-[#D4873A] cursor-pointer transition-colors">Contact</span>
                 <button
                   onClick={() => setCartCount(c => c + 1)}
-                  className="relative w-9 h-9 rounded-xl bg-white border border-gray-200 flex items-center justify-center hover:border-violet-300 transition-colors"
+                  className="relative w-9 h-9 rounded-xl bg-[#F5F0E8] border border-[#2E5C40]/20 flex items-center justify-center hover:border-[#D4873A] transition-colors"
                 >
-                  <ShoppingBag className="w-4 h-4 text-gray-600" />
+                  <ShoppingBag className="w-4 h-4 text-[#8FA898]" />
                   <AnimatePresence>
                     {cartCount > 0 && (
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-violet-600 text-white text-[10px] font-bold flex items-center justify-center"
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#D4873A] text-white text-[10px] font-bold flex items-center justify-center"
                       >
                         {cartCount}
                       </motion.span>
@@ -168,8 +168,8 @@ export function LivePreview() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
                     activeCategory === cat
-                      ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/25"
-                      : "bg-gray-50 text-gray-500 border border-gray-200/60 hover:text-violet-600 hover:border-violet-300"
+                      ? "bg-gradient-to-r from-[#2E5C40] to-[#1A3D2B] text-white shadow-lg shadow-[#2E5C40]/25"
+                      : "bg-[#F5F0E8] text-[#8FA898] border border-[#2E5C40]/20 hover:text-[#D4873A] hover:border-[#D4873A]"
                   }`}
                 >
                   {cat}
@@ -192,7 +192,7 @@ export function LivePreview() {
                   whileHover={{ scale: 1.03, y: -4 }}
                   onHoverStart={() => setHoveredProduct(product.name)}
                   onHoverEnd={() => setHoveredProduct(null)}
-                  className="relative rounded-2xl border border-gray-100/80 overflow-hidden group cursor-pointer bg-white hover:shadow-xl hover:shadow-violet-100/40 transition-all duration-300"
+                  className="relative rounded-2xl border border-[#2E5C40]/10 overflow-hidden group cursor-pointer bg-[#F5F0E8] hover:shadow-xl hover:shadow-[#2E5C40]/20 transition-all duration-300"
                 >
                   <div className={`aspect-square ${product.color} flex items-center justify-center relative overflow-hidden`}>
                     <Image
@@ -215,24 +215,24 @@ export function LivePreview() {
                         >
                           <button 
                             onClick={(e) => { e.stopPropagation(); setCartCount(c => c + 1); }}
-                            className="flex-1 py-2 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 transition-colors"
+                            className="flex-1 py-2 rounded-lg bg-[#D4873A] text-white text-xs font-semibold hover:bg-[#C9A84C] transition-colors"
                           >
                             Add to Cart
                           </button>
-                          <button className="w-9 h-9 rounded-lg bg-white/90 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-colors">
-                            <Heart className="w-4 h-4 text-gray-600" />
+                          <button className="w-9 h-9 rounded-lg bg-[#F5F0E8]/90 backdrop-blur-sm flex items-center justify-center hover:bg-[#F5F0E8] transition-colors">
+                            <Heart className="w-4 h-4 text-[#8FA898]" />
                           </button>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
-                  <div className="p-4 bg-white">
-                    <p className="text-sm font-semibold text-gray-800">{product.name}</p>
+                  <div className="p-4 bg-[#F5F0E8]">
+                    <p className="text-sm font-semibold text-[#1A3D2B]">{product.name}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-sm font-bold text-violet-600">{product.price}</p>
+                      <p className="text-sm font-bold text-[#D4873A]">{product.price}</p>
                       <div className="flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                        <span className="text-xs text-gray-500">{product.rating}</span>
+                        <Star className="w-3 h-3 fill-[#C9A84C] text-[#C9A84C]" />
+                        <span className="text-xs text-[#8FA898]">{product.rating}</span>
                       </div>
                     </div>
                   </div>
@@ -243,11 +243,11 @@ export function LivePreview() {
         </div>
 
         {/* Glow effects */}
-        <div className="absolute -inset-6 bg-gradient-to-r from-violet-200/30 via-blue-200/20 to-violet-200/30 rounded-[40px] blur-3xl -z-10" />
+        <div className="absolute -inset-6 bg-gradient-to-r from-[#2E5C40]/20 via-[#D4873A]/10 to-[#2E5C40]/20 rounded-[40px] blur-3xl -z-10" />
         <motion.div
           animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 4, repeat: Infinity }}
-          className="absolute -inset-10 bg-gradient-to-br from-violet-300/20 to-blue-300/20 rounded-[50px] blur-3xl -z-20"
+          className="absolute -inset-10 bg-gradient-to-br from-[#2E5C40]/15 to-[#D4873A]/15 rounded-[50px] blur-3xl -z-20"
         />
       </motion.div>
     </SectionWrapper>

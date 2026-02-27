@@ -1,5 +1,6 @@
-import { LandingPage } from "@/components/landing/landing-page";
+import { BytescartLanding } from "@/components/bytescart/landing-page";
 
 export default function Home() {
-  return <LandingPage />;
+  return <BytescartLanding />;
+  // return <LandingPage />;
 }

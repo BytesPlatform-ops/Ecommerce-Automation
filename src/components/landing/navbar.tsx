@@ -39,8 +39,8 @@ export function Navbar() {
       transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "md:bg-white/50 md:backdrop-blur-lg bg-white border-b border-gray-200/50 shadow-sm shadow-gray-200/30 md:border-b-0 md:shadow-none"
-          : "md:bg-white/50 md:backdrop-blur-lg bg-white"
+          ? "bg-[#0D2B1F] shadow-lg shadow-[#0D2B1F]/20 border-b border-[#2E5C40]/50"
+          : "bg-[#0D2B1F]/80 backdrop-blur-xl border-b border-[#2E5C40]/30"
       }`}
     >
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -51,9 +51,9 @@ export function Navbar() {
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
             className="w-11 h-11 flex items-center justify-center"
           >
-            <Image src="/logo.jpeg" alt="Bytescart" width={44} height={44} className="object-contain" />
+            <Image src="/logo.jpeg" alt="Bytescart" width={44} height={44} className="object-contain rounded-lg" />
           </motion.div>
-          <span className="text-gray-900 font-semibold text-lg tracking-tight">
+          <span className="text-[#F5F0E8] font-semibold text-lg tracking-tight">
             Bytescart
           </span>
         </Link>
@@ -64,10 +64,10 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200 relative group whitespace-nowrap"
+              className="text-sm text-[#F5F0E8]/80 hover:text-[#F5F0E8] transition-colors duration-200 relative group whitespace-nowrap"
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-violet-500 to-blue-500 rounded-full group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#D4873A] rounded-full group-hover:w-full transition-all duration-300" />
             </Link>
           ))}
         </div>
@@ -79,13 +79,13 @@ export function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-sm text-gray-500 hover:text-gray-900 transition-colors duration-200 px-4 py-2 whitespace-nowrap"
+                className="text-sm text-[#F5F0E8]/80 hover:text-[#F5F0E8] transition-colors duration-200 px-4 py-2 whitespace-nowrap border border-transparent hover:border-[#F5F0E8]/30 rounded-lg"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                className="text-sm px-5 py-2.5 rounded-lg bg-[#D4873A] text-[#0D2B1F] font-semibold shadow-lg shadow-[#D4873A]/25 hover:bg-[#E8A04F] hover:shadow-xl hover:shadow-[#D4873A]/40 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
               >
                 Get Started
               </Link>
@@ -95,7 +95,7 @@ export function Navbar() {
           {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden text-gray-600 hover:text-gray-900 flex-shrink-0"
+            className="md:hidden text-[#F5F0E8] hover:text-[#D4873A] flex-shrink-0 transition-colors duration-200"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
@@ -109,7 +109,7 @@ export function Navbar() {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
-          className="md:hidden bg-white/90 backdrop-blur-2xl border-b border-gray-200/50"
+          className="md:hidden bg-[#0D2B1F]/95 backdrop-blur-2xl border-b border-[#2E5C40]/50"
         >
           <div className="px-6 py-4 flex flex-col gap-4">
             {navLinks.map((link) => (
@@ -117,20 +117,20 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm text-[#F5F0E8]/80 hover:text-[#D4873A] transition-colors"
               >
                 {link.label}
               </Link>
             ))}
             <Link
               href="/login"
-              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-sm text-[#F5F0E8]/80 hover:text-[#D4873A] transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="text-sm px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold text-center shadow-lg shadow-violet-500/25"
+              className="text-sm px-5 py-2.5 rounded-lg bg-[#D4873A] text-[#0D2B1F] font-semibold text-center shadow-lg shadow-[#D4873A]/25 hover:bg-[#E8A04F] transition-colors"
             >
               Get Started
             </Link>

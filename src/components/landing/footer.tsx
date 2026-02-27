@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WaveDivider } from "./wave-divider";
 
 const footerLinks = {
   Product: [
@@ -49,20 +50,21 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-gray-200">
+    <footer className="relative bg-[#0D2B1F]">
+      <WaveDivider variant="top" color="cream" flip />
       <div className="max-w-[1280px] mx-auto px-6 py-16">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-blue-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#D4873A] to-[#C67830] flex items-center justify-center">
                 <span className="text-white font-bold text-sm">C</span>
               </div>
-              <span className="text-gray-900 font-semibold text-lg tracking-tight">
+              <span className="text-[#F5F0E8] font-semibold text-lg tracking-tight">
                 Bytescart
               </span>
             </Link>
-            <p className="text-xs text-gray-400 leading-relaxed mb-6 max-w-[200px]">
+            <p className="text-xs text-[#8FA898] leading-relaxed mb-6 max-w-[200px]">
               Turn ideas into live ecommerce websites in seconds.
             </p>
             <div className="flex gap-3">
@@ -70,7 +72,7 @@ export function Footer() {
                 <a
                   key={social.label}
                   href={social.href}
-                  className="w-9 h-9 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all duration-200"
+                  className="w-9 h-9 rounded-lg bg-[#1A3D2C] border border-[#2E5C40] flex items-center justify-center text-[#F5F0E8] hover:text-[#D4873A] hover:border-[#D4873A] transition-all duration-200"
                   aria-label={social.label}
                 >
                   {social.icon}
@@ -82,7 +84,7 @@ export function Footer() {
           {/* Link columns */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
+              <h4 className="text-xs font-semibold text-[#8FA898] uppercase tracking-wider mb-4">
                 {category}
               </h4>
               <ul className="space-y-3">
@@ -90,7 +92,7 @@ export function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-gray-700 transition-colors duration-200"
+                      className="text-sm text-[#F5F0E8] hover:text-[#D4873A] transition-colors duration-200 relative after:absolute after:left-0 after:bottom-0 after:h-[1px] after:w-0 after:bg-[#D4873A] hover:after:w-full after:transition-all after:duration-300"
                     >
                       {link.label}
                     </a>
@@ -102,8 +104,8 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-400">
+        <div className="mt-16 pt-8 border-t border-[#2E5C40] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#8FA898]">
             &copy; {new Date().getFullYear()} Bytescart. All rights reserved.
           </p>
         </div>
