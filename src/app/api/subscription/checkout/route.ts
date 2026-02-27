@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
     const priceId = billingPeriod === "monthly" ? monthlyPriceId : yearlyPriceId;
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
-    const successUrl = `${baseUrl}/dashboard?subscription=success`;
+    // Include {CHECKOUT_SESSION_ID} so the dashboard can verify the session directly
+    const successUrl = `${baseUrl}/dashboard?subscription=success&session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${baseUrl}/dashboard?subscription=canceled`;
 
     // Create checkout session

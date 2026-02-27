@@ -9,8 +9,10 @@ import {
   Users, Zap, Activity, ArrowUp, ArrowDown,
   CreditCard, Settings
 } from "lucide-react";
+import { Suspense } from "react";
 import { StockNotificationAlert } from "@/components/dashboard/stock-notification-alert";
 import { SubscriptionGate } from "@/components/dashboard/subscription-gate";
+import { SubscriptionVerifier } from "@/components/dashboard/subscription-verifier";
 import { OrderStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -164,6 +166,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Verify subscription after returning from Stripe Checkout */}
+      <Suspense fallback={null}>
+        <SubscriptionVerifier />
+      </Suspense>
 
       {/* Subscription Status Banner */}
       <SubscriptionGate subscriptionStatus={subscriptionStatus} />
