@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateStore } from "@/lib/actions";
 import { Store } from "@/types/database";
 import { UploadButton } from "@/lib/uploadthing";
-import { X, Upload, CheckCircle } from "lucide-react";
+import { X, Upload, CheckCircle, ImageIcon, Sparkles } from "lucide-react";
 
 interface SettingsFormProps {
   store: Store;
@@ -275,115 +275,154 @@ export function SettingsForm({ store }: SettingsFormProps) {
       </div>
 
       {/* Store Logo */}
-      <div>
-        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--primary)' }}>
-          Store Logo
-        </label>
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-violet-100 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-violet-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Store Logo</h3>
+              <p className="text-xs text-gray-500">256×256px or larger recommended</p>
+            </div>
+          </div>
+        </div>
 
-        {storeLogoUrl && (
-          <div className="mb-4 flex items-center gap-4">
-            <div className="relative h-16 w-16 rounded-md border border-gray-300 bg-white overflow-hidden">
+        <div className="p-5">
+          <div className="flex flex-col sm:flex-row items-start gap-5">
+            {/* Logo preview */}
+            <div className="shrink-0">
+              {storeLogoUrl ? (
+                <div className="relative group">
+                  <div className="h-24 w-24 rounded-2xl border-2 border-gray-200 bg-gray-50 overflow-hidden shadow-sm">
+                    <img
+                      src={storeLogoUrl}
+                      alt="Store Logo Preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        console.error("Failed to load logo:", storeLogoUrl);
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveLogo()}
+                    className="absolute -top-2 -right-2 h-7 w-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+                    aria-label="Remove logo"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="h-24 w-24 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center">
+                  <ImageIcon className="h-8 w-8 text-gray-300" />
+                </div>
+              )}
+            </div>
+
+            {/* Upload area */}
+            <div className="flex-1 w-full">
+              <div className="rounded-xl border-2 border-dashed border-gray-200 hover:border-violet-300 bg-gray-50/50 hover:bg-violet-50/30 transition-colors p-5">
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="h-10 w-10 rounded-full bg-violet-100 flex items-center justify-center">
+                    <Upload className="h-5 w-5 text-violet-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Upload a new logo</p>
+                    <p className="text-xs text-gray-400 mt-0.5">PNG, JPG or WebP up to 4MB</p>
+                  </div>
+                  <UploadButton
+                    endpoint="imageUploader"
+                    onClientUploadComplete={(res) => {
+                      console.log("Logo upload response:", res);
+                      if (res?.[0]) {
+                        const uploadedUrl = res[0].url;
+                        console.log("Uploaded logo URL:", uploadedUrl);
+                        handleLogoUpload(uploadedUrl);
+                      }
+                    }}
+                    onUploadError={(error: Error) => {
+                      console.error("Logo upload error:", error);
+                      setError(`Upload error: ${error.message}`);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Section Image */}
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <ImageIcon className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Hero Section Image</h3>
+              <p className="text-xs text-gray-500">1200×400px or wider recommended</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5">
+          {heroImageUrl && (
+            <div className="relative group mb-4 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
               <img
-                src={storeLogoUrl}
-                alt="Store Logo Preview"
-                className="h-full w-full object-cover"
+                src={heroImageUrl}
+                alt="Hero Image Preview"
+                className="w-full h-44 sm:h-52 object-cover"
                 onError={(e) => {
-                  console.error("Failed to load logo:", storeLogoUrl);
+                  console.error("Failed to load image:", heroImageUrl);
                   const img = e.target as HTMLImageElement;
                   img.style.display = "none";
                 }}
               />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              <button
+                type="button"
+                onClick={() => handleRemoveImage()}
+                className="absolute top-3 right-3 h-8 w-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-80 group-hover:opacity-100"
+                aria-label="Remove image"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => handleRemoveLogo()}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-colors"
-              aria-label="Remove logo"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
+          )}
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-          <div className="flex flex-col items-center gap-4">
-            <Upload className="h-6 w-6 text-gray-400" />
-            <p className="text-sm text-gray-600 text-center">Drag and drop or click to select</p>
-            <UploadButton
-              endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                console.log("Logo upload response:", res);
-                if (res?.[0]) {
-                  const uploadedUrl = res[0].url;
-                  console.log("Uploaded logo URL:", uploadedUrl);
-                  handleLogoUpload(uploadedUrl);
-                }
-              }}
-              onUploadError={(error: Error) => {
-                console.error("Logo upload error:", error);
-                setError(`Upload error: ${error.message}`);
-              }}
-            />
+          <div className="rounded-xl border-2 border-dashed border-gray-200 hover:border-blue-300 bg-gray-50/50 hover:bg-blue-50/30 transition-colors p-6">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <Upload className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  {heroImageUrl ? "Replace hero image" : "Upload a hero image"}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">PNG, JPG or WebP up to 4MB</p>
+              </div>
+              <UploadButton
+                endpoint="imageUploader"
+                onClientUploadComplete={(res) => {
+                  console.log("Upload response:", res);
+                  if (res?.[0]) {
+                    const uploadedUrl = res[0].url;
+                    console.log("Uploaded URL:", uploadedUrl);
+                    handleImageUpload(uploadedUrl);
+                  }
+                }}
+                onUploadError={(error: Error) => {
+                  console.error("Upload error:", error);
+                  setError(`Upload error: ${error.message}`);
+                }}
+              />
+            </div>
           </div>
         </div>
-        <p className="mt-2 text-xs text-gray-500">
-          Recommended size: 256x256px or larger
-        </p>
-      </div>
-
-      {/* Hero Section Image */}
-      <div>
-        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--primary)' }}>
-          Hero Section Image
-        </label>
-        
-        {heroImageUrl && (
-          <div className="mb-4 relative rounded-lg overflow-hidden border border-gray-300">
-            <img
-              src={heroImageUrl}
-              alt="Hero Image Preview"
-              className="w-full h-48 object-cover"
-              onError={(e) => {
-                console.error("Failed to load image:", heroImageUrl);
-                const img = e.target as HTMLImageElement;
-                img.style.display = "none";
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => handleRemoveImage()}
-              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors"
-              aria-label="Remove image"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-          <div className="flex flex-col items-center gap-4">
-            <Upload className="h-6 w-6 text-gray-400" />
-            <p className="text-sm text-gray-600 text-center">Drag and drop or click to select</p>
-            <UploadButton
-              endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                console.log("Upload response:", res);
-                if (res?.[0]) {
-                  const uploadedUrl = res[0].url;
-                  console.log("Uploaded URL:", uploadedUrl);
-                  handleImageUpload(uploadedUrl);
-                }
-              }}
-              onUploadError={(error: Error) => {
-                console.error("Upload error:", error);
-                setError(`Upload error: ${error.message}`);
-              }}
-            />
-          </div>
-        </div>
-        <p className="mt-2 text-xs text-gray-500">
-          Recommended size: 1200x400px or wider
-        </p>
       </div>
 
       <button

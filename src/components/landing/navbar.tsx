@@ -51,7 +51,7 @@ export function Navbar() {
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
             className="w-11 h-11 flex items-center justify-center"
           >
-            <Image src="/logo.png" alt="Bytescart" width={44} height={44} className="object-contain" />
+            <Image src="/logo.jpeg" alt="Bytescart" width={44} height={44} className="object-contain" />
           </motion.div>
           <span className="text-gray-900 font-semibold text-lg tracking-tight">
             Bytescart

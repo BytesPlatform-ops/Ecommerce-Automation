@@ -50,19 +50,15 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
 
   return (
     <>
-      {/* Toggle button - visible only on mobile */}
-      {isMobile && (
+      {/* Hamburger button - visible only on mobile when sidebar is closed */}
+      {isMobile && !isOpen && (
         <button
           type="button"
           onClick={toggleSidebar}
           className="fixed top-4 left-4 z-[60] h-11 w-11 bg-white rounded-xl shadow-lg flex items-center justify-center border border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label="Open menu"
         >
-          {isOpen ? (
-            <X className="h-5 w-5 text-gray-700" />
-          ) : (
-            <Menu className="h-5 w-5 text-gray-700" />
-          )}
+          <Menu className="h-5 w-5 text-gray-700" />
         </button>
       )}
 
@@ -82,7 +78,7 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
       <aside
         className={`
           ${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 z-50
-          w-72 bg-white border-r border-gray-200/80 flex flex-col shadow-xl shadow-gray-200/50
+          w-72 bg-white border-r border-gray-200/80 flex flex-col shadow-xl shadow-gray-200/50 overflow-hidden
           transition-all duration-300 ease-in-out
           ${isMobile 
             ? (isOpen ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none")
@@ -90,6 +86,17 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
           } 
         `}
       >
+        {/* Close button inside sidebar - top right */}
+        {isMobile && (
+          <button
+            type="button"
+            onClick={closeSidebar}
+            className="absolute top-4 right-4 z-10 h-9 w-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition-all"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
         {/* Sidebar content */}
         <div className="flex flex-col h-full" onClick={isMobile ? closeSidebar : undefined}>
           {children}

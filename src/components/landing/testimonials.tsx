@@ -117,7 +117,7 @@ export function Testimonials() {
 
       <div className="relative max-w-4xl mx-auto">
         {/* Carousel */}
-        <div className="relative h-[340px] sm:h-[300px] overflow-hidden">
+        <div className="relative h-[440px] sm:h-[340px] overflow-hidden">
           {getVisibleTestimonials().map((testimonial) => (
             <motion.div
               key={`${testimonial.name}-${testimonial.position}`}
@@ -134,7 +134,7 @@ export function Testimonials() {
               transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
               className="absolute inset-0"
             >
-              <div className="h-full rounded-3xl border border-gray-200/60 bg-white/80 backdrop-blur-xl p-8 sm:p-10 flex flex-col justify-between shadow-xl shadow-violet-100/30">
+              <div className="h-full rounded-3xl border border-gray-200/60 bg-white/80 backdrop-blur-xl p-5 sm:p-10 flex flex-col justify-between shadow-xl shadow-violet-100/30">
                 {/* Quote icon and stars */}
                 <div className="flex items-start justify-between mb-4">
                   <Quote className="w-8 h-8 text-violet-200" />
@@ -145,19 +145,19 @@ export function Testimonials() {
                   </div>
                 </div>
 
-                <p className="text-gray-700 text-lg leading-relaxed flex-1">
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed flex-1">
                   &ldquo;{testimonial.text}&rdquo;
                 </p>
 
                 {/* ROI Result Badge */}
-                <div className="mt-4 mb-6">
+                <div className="mt-3 mb-4 sm:mt-4 sm:mb-6">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200/60">
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
                     <span className="text-sm font-semibold text-emerald-700">{testimonial.result}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-5 border-t border-gray-100">
+                <div className="flex items-center gap-3 sm:gap-4 pt-4 sm:pt-5 border-t border-gray-100">
                   <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${testimonial.accentColor} flex items-center justify-center shadow-lg`}>
                     <span className="text-white text-sm font-bold">{testimonial.avatar}</span>
                   </div>

@@ -31,7 +31,7 @@ export default async function AdminLayout({
         <div className="p-6 border-b border-gray-100/80">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-12 w-12 flex items-center justify-center">
-              <Image src="/logo.png" alt="Bytescart" width={48} height={48} className="object-contain" />
+              <Image src="/logo.jpeg" alt="Bytescart" width={48} height={48} className="object-contain" />
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
@@ -55,7 +55,7 @@ export default async function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1.5">
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto min-h-0">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-3">Menu</p>
           <Link
             href="/dashboard"
@@ -119,7 +119,7 @@ export default async function AdminLayout({
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-gray-100 space-y-2">
+        <div className="p-4 border-t border-gray-100 space-y-2 shrink-0">
           {store && (
             <Link
               href={`/stores/${store.subdomainSlug}`}

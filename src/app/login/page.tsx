@@ -82,7 +82,7 @@ export default function LoginPage() {
               className="inline-flex items-center gap-2.5 group"
             >
               <div className="w-12 h-12 flex items-center justify-center">
-                <Image src="/logo.png" alt="Bytescart" width={48} height={48} className="object-contain" />
+                <Image src="/logo.jpeg" alt="Bytescart" width={48} height={48} className="object-contain" />
               </div>
               <span className="font-serif text-xl tracking-tight text-neutral-900">
                 Bytescart

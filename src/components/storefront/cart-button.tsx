@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ShoppingBag, X, Trash2, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "./cart-context";
@@ -62,8 +63,8 @@ export function CartButton() {
         )}
       </button>
 
-      {/* Cart Drawer */}
-      {isMounted && typeof window !== "undefined" && isCartOpen && (
+      {/* Cart Drawer - rendered via portal to escape navbar transform */}
+      {isMounted && typeof window !== "undefined" && isCartOpen && createPortal(
         <>
           {/* Overlay */}
           <div
@@ -73,7 +74,7 @@ export function CartButton() {
           />
 
           {/* Drawer */}
-          <div className="fixed top-0 right-0 h-screen w-full sm:max-w-[440px] bg-white z-[70] cart-drawer" style={{ overflowAnchor: 'none', boxShadow: '-8px 0 40px rgba(0,0,0,0.1)' }}>
+          <div className="fixed inset-y-0 right-0 w-full sm:max-w-[440px] bg-white z-[70] cart-drawer" style={{ overflowAnchor: 'none', boxShadow: '-8px 0 40px rgba(0,0,0,0.1)' }}>
             <div className="flex flex-col h-full" style={{ color: '#000000' }}>
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 shrink-0">
@@ -187,7 +188,8 @@ export function CartButton() {
               )}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );

@@ -90,7 +90,7 @@ export default function SignupPage() {
               className="inline-flex items-center gap-1.5 group"
             >
               <div className="w-10 h-10 flex items-center justify-center">
-                <Image src="/logo.png" alt="Bytescart" width={40} height={40} className="object-contain" />
+                <Image src="/logo.jpeg" alt="Bytescart" width={40} height={40} className="object-contain" />
               </div>
               <span className="font-serif text-base tracking-tight text-neutral-900">
                 Bytescart
