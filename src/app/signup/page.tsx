@@ -85,16 +85,8 @@ export default function SignupPage() {
             transition={{ delay: 0.15, duration: 0.5 }}
             className="mb-4 text-center"
           >
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 group"
-            >
-              <div className="w-10 h-10 flex items-center justify-center">
-                <Image src="/logo.jpeg" alt="Bytescart" width={40} height={40} className="object-contain" />
-              </div>
-              <span className="font-serif text-base tracking-tight text-neutral-900">
-                Bytescart
-              </span>
+            <Link href="/" className="inline-flex items-center justify-center">
+              <Image src="/asset 1.svg" alt="Bytescart" width={150} height={38} className="object-contain" />
             </Link>
           </motion.div>
 

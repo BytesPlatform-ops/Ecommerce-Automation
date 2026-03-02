@@ -8,8 +8,8 @@ import { Mail, Phone, MapPin, Send, ArrowRight, Sparkles } from "lucide-react";
 const MapComponent = dynamic(() => import("./map-component"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[400px] rounded-3xl bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
-      <div className="w-10 h-10 rounded-full border-4 border-violet-600 border-t-transparent animate-spin" />
+    <div className="w-full h-[400px] rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-4 border-[#10B981] border-t-transparent animate-spin" />
     </div>
   ),
 });
@@ -60,7 +60,7 @@ export function ContactPage() {
     <div className="relative min-h-screen overflow-hidden">
       {/* Animated gradient mesh background */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-violet-50/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-emerald-50/30" />
         
         {/* Floating orbs */}
         <motion.div
@@ -70,7 +70,7 @@ export function ContactPage() {
             scale: [1, 1.2, 0.9, 1],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-violet-200/40 to-blue-200/30 blur-3xl"
+          className="absolute top-20 left-[10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-emerald-200/30 to-teal-200/20 blur-3xl"
         />
         <motion.div
           animate={{
@@ -79,7 +79,7 @@ export function ContactPage() {
             scale: [1, 0.9, 1.1, 1],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[40%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-blue-200/30 to-cyan-200/20 blur-3xl"
+          className="absolute top-[40%] right-[5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-teal-200/20 to-emerald-100/20 blur-3xl"
         />
         <motion.div
           animate={{
@@ -87,7 +87,7 @@ export function ContactPage() {
             y: [0, -60, 30, 0],
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-20 left-[30%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-violet-300/20 to-pink-200/20 blur-3xl"
+          className="absolute bottom-20 left-[30%] w-[400px] h-[400px] rounded-full bg-gradient-to-br from-emerald-200/20 to-teal-100/20 blur-3xl"
         />
 
         {/* Subtle grid pattern */}
@@ -107,10 +107,10 @@ export function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 shadow-lg shadow-violet-500/5 mb-8"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 shadow-lg shadow-emerald-500/5 mb-8"
           >
-            <Sparkles className="w-4 h-4 text-violet-600" />
-            <span className="text-sm font-medium bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
+            <Sparkles className="w-4 h-4 text-[#10B981]" />
+            <span className="text-sm font-medium text-[#10B981]">
               We&apos;d love to hear from you
             </span>
           </motion.div>
@@ -123,7 +123,7 @@ export function ContactPage() {
           >
             <span className="text-gray-900">Get in </span>
             <span className="relative">
-              <span className="bg-gradient-to-r from-violet-600 via-blue-600 to-violet-600 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+              <span className="text-[#10B981]">
                 Touch
               </span>
               <motion.svg
@@ -142,8 +142,8 @@ export function ContactPage() {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0" y1="0" x2="200" y2="0">
-                    <stop stopColor="#7c3aed" />
-                    <stop offset="1" stopColor="#2563eb" />
+                    <stop stopColor="#10B981" />
+                    <stop offset="1" stopColor="#059669" />
                   </linearGradient>
                 </defs>
               </motion.svg>
@@ -174,9 +174,9 @@ export function ContactPage() {
               transition={{ duration: 0.7 }}
               className="lg:col-span-3"
             >
-              <div className="relative p-8 sm:p-10 rounded-3xl bg-white/60 backdrop-blur-2xl border border-white/80 shadow-2xl shadow-violet-500/5">
+              <div className="relative p-8 sm:p-10 rounded-3xl bg-white/60 backdrop-blur-2xl border border-white/80 shadow-2xl shadow-emerald-500/5">
                 {/* Decorative corner accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-blue-500/5 rounded-tr-3xl rounded-bl-[100px]" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-tr-3xl rounded-bl-[100px]" />
                 
                 <div className="relative">
                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
@@ -231,7 +231,7 @@ export function ContactPage() {
                           animate={{
                             y: focused === "name" || formData.name ? -24 : 0,
                             scale: focused === "name" || formData.name ? 0.85 : 1,
-                            color: focused === "name" ? "#7c3aed" : "#6b7280",
+                            color: focused === "name" ? "#10B981" : "#6b7280",
                           }}
                           className="absolute left-4 top-4 text-gray-500 pointer-events-none origin-left transition-all"
                         >
@@ -245,7 +245,7 @@ export function ContactPage() {
                           onFocus={() => setFocused("name")}
                           onBlur={() => setFocused(null)}
                           required
-                          className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-violet-400 focus:bg-white transition-all"
+                          className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-[#10B981] focus:bg-white transition-all"
                         />
                       </div>
 
@@ -255,7 +255,7 @@ export function ContactPage() {
                           animate={{
                             y: focused === "email" || formData.email ? -24 : 0,
                             scale: focused === "email" || formData.email ? 0.85 : 1,
-                            color: focused === "email" ? "#7c3aed" : "#6b7280",
+                            color: focused === "email" ? "#10B981" : "#6b7280",
                           }}
                           className="absolute left-4 top-4 text-gray-500 pointer-events-none origin-left transition-all"
                         >
@@ -269,7 +269,7 @@ export function ContactPage() {
                           onFocus={() => setFocused("email")}
                           onBlur={() => setFocused(null)}
                           required
-                          className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-violet-400 focus:bg-white transition-all"
+                          className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-[#10B981] focus:bg-white transition-all"
                         />
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export function ContactPage() {
                         animate={{
                           y: focused === "subject" || formData.subject ? -24 : 0,
                           scale: focused === "subject" || formData.subject ? 0.85 : 1,
-                          color: focused === "subject" ? "#7c3aed" : "#6b7280",
+                          color: focused === "subject" ? "#10B981" : "#6b7280",
                         }}
                         className="absolute left-4 top-4 text-gray-500 pointer-events-none origin-left transition-all"
                       >
@@ -294,7 +294,7 @@ export function ContactPage() {
                         onFocus={() => setFocused("subject")}
                         onBlur={() => setFocused(null)}
                         required
-                        className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-violet-400 focus:bg-white transition-all"
+                        className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-[#10B981] focus:bg-white transition-all"
                       />
                     </div>
 
@@ -304,7 +304,7 @@ export function ContactPage() {
                         animate={{
                           y: focused === "message" || formData.message ? -24 : 0,
                           scale: focused === "message" || formData.message ? 0.85 : 1,
-                          color: focused === "message" ? "#7c3aed" : "#6b7280",
+                          color: focused === "message" ? "#10B981" : "#6b7280",
                         }}
                         className="absolute left-4 top-4 text-gray-500 pointer-events-none origin-left transition-all"
                       >
@@ -318,7 +318,7 @@ export function ContactPage() {
                         onBlur={() => setFocused(null)}
                         required
                         rows={5}
-                        className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-violet-400 focus:bg-white transition-all resize-none"
+                        className="w-full px-4 pt-6 pb-3 rounded-xl border-2 border-gray-100 bg-white/80 backdrop-blur-sm text-gray-900 focus:outline-none focus:border-[#10B981] focus:bg-white transition-all resize-none"
                       />
                     </div>
 
@@ -328,7 +328,7 @@ export function ContactPage() {
                       disabled={sending}
                       whileHover={sending ? {} : { scale: 1.02 }}
                       whileTap={sending ? {} : { scale: 0.98 }}
-                      className="w-full py-4 px-8 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold text-lg shadow-xl shadow-violet-500/25 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="w-full py-4 px-8 rounded-xl bg-[#10B981] text-white font-semibold text-lg shadow-xl shadow-emerald-500/25 hover:shadow-2xl hover:shadow-emerald-500/40 hover:bg-[#059669] transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {sending ? (
                         <>
@@ -363,14 +363,14 @@ export function ContactPage() {
                   label: "Email Us",
                   value: "bytesuite@bytesplatform.com",
                   subtext: "We reply within 24 hours",
-                  gradient: "from-violet-500 to-violet-600",
+                  gradient: "from-[#059669] to-[#10B981]",
                 },
                 {
                   icon: Phone,
                   label: "Call Us",
-                  value: "+1 (555) 123-4567",
+                  value: "+1 (904) 765-6781",
                   subtext: "Mon-Fri, 9am-6pm EST",
-                  gradient: "from-blue-500 to-blue-600",
+                  gradient: "from-teal-500 to-teal-600",
                 },
                 {
                   icon: MapPin,
@@ -387,7 +387,7 @@ export function ContactPage() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 + i * 0.1 }}
                   whileHover={{ y: -4, scale: 1.02 }}
-                  className="group relative p-6 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-lg shadow-gray-200/30 hover:shadow-xl hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer"
+                  className="group relative p-6 rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-lg shadow-gray-200/30 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-xl bg-gradient-to-br ${item.gradient} shadow-lg`}>
@@ -397,7 +397,7 @@ export function ContactPage() {
                       <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">
                         {item.label}
                       </p>
-                      <p className="text-lg font-semibold text-gray-900 group-hover:text-violet-600 transition-colors">
+                      <p className="text-lg font-semibold text-gray-900 group-hover:text-[#10B981] transition-colors">
                         {item.value}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">{item.subtext}</p>
@@ -412,7 +412,7 @@ export function ContactPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.6 }}
-                className="p-6 rounded-2xl bg-gradient-to-br from-violet-600 to-blue-600 text-white shadow-xl shadow-violet-500/25"
+                className="p-6 rounded-2xl bg-gradient-to-br from-[#059669] to-[#10B981] text-white shadow-xl shadow-emerald-500/25"
               >
                 <h4 className="font-semibold mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -446,7 +446,7 @@ export function ContactPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="relative rounded-3xl overflow-hidden shadow-2xl shadow-violet-500/10 border border-white/80"
+            className="relative rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/10 border border-white/80"
             style={{ isolation: "isolate" }}
           >
             {/* Header bar */}
@@ -457,7 +457,7 @@ export function ContactPage() {
                 <div className="w-3 h-3 rounded-full bg-green-400" />
               </div>
               <div className="flex-1 flex items-center justify-center gap-2">
-                <MapPin className="w-4 h-4 text-violet-600" />
+                <MapPin className="w-4 h-4 text-[#10B981]" />
                 <span className="text-sm font-semibold text-gray-700">Bytescart HQ &mdash; Denton, Texas</span>
               </div>
               <div className="flex items-center gap-1.5">

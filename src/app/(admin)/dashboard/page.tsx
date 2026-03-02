@@ -185,7 +185,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2 stat-value">
+              <p className="text-xl font-bold text-gray-900 mt-2 stat-value">
                 ${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${revenueTrend >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Total Orders</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2 stat-value">{totalOrders}</p>
+              <p className="text-xl font-bold text-gray-900 mt-2 stat-value">{totalOrders}</p>
               <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${orderTrend >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {orderTrend >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
                 {Math.abs(orderTrend).toFixed(1)}% vs prev period
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Products</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2 stat-value">{productCount}</p>
+              <p className="text-xl font-bold text-gray-900 mt-2 stat-value">{productCount}</p>
               {lowStockCount > 0 ? (
                 <p className="text-xs text-amber-600 font-medium mt-2 flex items-center gap-1">
                   ⚠️ {lowStockCount} low stock
@@ -243,7 +243,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Avg. Order</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2 stat-value">
+              <p className="text-xl font-bold text-gray-900 mt-2 stat-value">
                 ${avgOrderValue.toFixed(2)}
               </p>
               <p className="text-xs text-gray-500 font-medium mt-2 flex items-center gap-1">

@@ -294,11 +294,11 @@ export function LivePreview() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-center"
         >
-          <span className="text-[#00FF88] text-xs font-semibold tracking-wider uppercase mb-4 block">
+          <span className="text-[#10B981] text-xs font-semibold tracking-wider uppercase mb-4 block">
             Live Stores
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3">
-            Stores built with <span className="text-[#00FF88]">Bytescart</span>
+            Stores built with <span className="text-[#10B981]">Bytescart</span>
           </h2>
           <p className="text-current opacity-50 max-w-xl mx-auto text-base sm:text-lg font-light">
             Real stores, generating real revenue — all built with a single prompt.
@@ -316,7 +316,7 @@ export function LivePreview() {
           {[
             { label: "Total GMV", value: "$2.4M+" },
             { label: "Active Stores", value: "12,000+" },
-            { label: "Avg. Setup Time", value: "58s" },
+            { label: "Avg. Setup Time", value: "60s" },
             { label: "Uptime", value: "99.9%" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">

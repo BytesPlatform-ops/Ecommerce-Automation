@@ -77,16 +77,8 @@ export default function LoginPage() {
             transition={{ delay: 0.15, duration: 0.5 }}
             className="mb-8 text-center"
           >
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2.5 group"
-            >
-              <div className="w-12 h-12 flex items-center justify-center">
-                <Image src="/logo.jpeg" alt="Bytescart" width={48} height={48} className="object-contain" />
-              </div>
-              <span className="font-serif text-xl tracking-tight text-neutral-900">
-                Bytescart
-              </span>
+            <Link href="/" className="inline-flex items-center justify-center">
+              <Image src="/asset 1.svg" alt="Bytescart" width={160} height={40} className="object-contain" />
             </Link>
           </motion.div>
 

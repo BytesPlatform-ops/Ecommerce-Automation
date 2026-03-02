@@ -81,7 +81,7 @@ export function FinalCTA() {
               pulse ? "scale-105 shadow-[0_0_50px_rgba(0,255,136,0.3)]" : ""
             }`}
           >
-            Generate My Store — Free
+            Start Building — Free
           </Link>
         </motion.div>
       </div>

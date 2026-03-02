@@ -152,7 +152,7 @@ export function Comparison() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold text-[#1A3D2B]">The Bytescart Way</h3>
-                    <p className="text-xs sm:text-sm text-[#D4873A] font-medium">AI-powered automation</p>
+                    <p className="text-xs sm:text-sm text-[#D4873A] font-medium">Built-in automation</p>
                   </div>
                 </div>
 

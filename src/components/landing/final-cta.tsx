@@ -114,7 +114,7 @@ export function FinalCTA() {
             >
               No coding. No design skills. No DevOps knowledge.
               <br className="hidden sm:block" />
-              Just describe your store and watch it come to life.
+              Just fill in your details and your store is live in minutes.
             </motion.p>
 
             <motion.div
@@ -129,7 +129,7 @@ export function FinalCTA() {
                 className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 rounded-2xl bg-[#D4873A] text-[#0D2B1F] font-bold text-lg shadow-2xl shadow-[#D4873A]/30 hover:shadow-[0_0_40px_rgba(212,135,58,0.4)] hover:-translate-y-1 transition-all duration-500 w-full sm:w-auto"
               >
                 <Sparkles className="w-5 h-5" />
-                <span>Generate My Store</span>
+                <span>Start Building Free</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#D4873A] to-[#C9A84C] blur-2xl opacity-40 group-hover:opacity-60 transition-opacity -z-10" />
               </Link>

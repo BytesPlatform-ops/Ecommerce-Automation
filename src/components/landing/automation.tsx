@@ -6,14 +6,14 @@ import { SectionWrapper } from "./section-wrapper";
 const steps = [
   {
     label: "Input",
-    description: "Describe your store",
+    description: "Set up your store details",
     icon: "💬",
     color: "from-purple-500 to-purple-600",
     glowColor: "purple",
   },
   {
     label: "Code",
-    description: "Generate frontend & API",
+    description: "Build frontend & API",
     icon: "⚡",
     color: "from-blue-500 to-blue-600",
     glowColor: "blue",

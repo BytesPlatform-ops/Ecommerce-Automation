@@ -132,7 +132,7 @@ function FloatingDashboard() {
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 2.5, duration: 0.6 }}
           className="absolute -left-6 top-1/3 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0B0F14] border border-[#00FF88]/20 shadow-xl">
           <span className="text-[#00FF88] text-xs">⚡</span>
-          <span className="text-white/60 text-[10px] font-medium whitespace-nowrap">AI-Generated</span>
+          <span className="text-white/60 text-[10px] font-medium whitespace-nowrap">Instantly Live</span>
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 2.7, duration: 0.6 }}
           className="absolute -right-6 top-1/2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0B0F14] border border-white/10 shadow-xl">
@@ -151,7 +151,7 @@ function FloatingDashboard() {
 
 // ─── Scrolling marquee ───────────────────────────────────────────────────────
 const marqueeItems = [
-  "12,000+ Stores Live", "60-Second Setup", "AI Product Generator",
+  "12,000+ Stores Live", "60-Second Setup", "Built-In Product Tools",
   "Stripe Payments", "Custom Domains", "Global Shipping",
   "99.9% Uptime", "Real-Time Analytics", "Multi-Currency", "SEO Optimized",
 ];
@@ -162,7 +162,7 @@ function Marquee() {
     <div className="relative overflow-hidden py-3 border-y border-white/[0.05] mt-14">
       <motion.div
         animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
         className="flex whitespace-nowrap"
       >
         {items.map((item, i) => (
@@ -187,7 +187,7 @@ function ParticleField() {
     if (!ctx) return;
 
     let animId: number;
-    const particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number }[] = [];
+    const particles: { x: number; y: number; vx: number; vy: number; size: number; opacity: number; pulse: number }[] = [];
     const isMobile = window.innerWidth < 768;
     const count = isMobile ? 0 : 60;
 
@@ -343,7 +343,7 @@ export function Hero() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00FF88] opacity-50" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00FF88]" />
           </span>
-          <span className="text-[#00FF88] text-xs font-semibold tracking-widest uppercase">AI-Powered Commerce Platform</span>
+          <span className="text-[#00FF88] text-xs font-semibold tracking-widest uppercase">All-in-One Commerce Platform</span>
           <span className="hidden sm:inline text-white/20 text-xs">·</span>
           <span className="hidden sm:inline text-white/40 text-xs">Open Beta</span>
         </motion.div>
@@ -405,8 +405,8 @@ export function Hero() {
           className="text-white/45 max-w-2xl mx-auto mb-10 leading-relaxed font-light"
           style={{ fontSize: "clamp(0.9rem, 1.2vw, 1.05rem)" }}
         >
-          Describe your store. Our AI builds it — products, payments, shipping, domain —
-          all live in under 60 seconds. No code, no design skills, no limits.
+          Set up your store in minutes — products, payments, shipping, and your own domain —
+          all included and ready to go. No code, no design skills, no limits.
         </motion.p>
 
         {/* CTA Buttons */}
@@ -430,7 +430,7 @@ export function Hero() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
               </svg>
-              <span className="relative z-10">Generate My Store — Free</span>
+              <span className="relative z-10">Start Building — Free</span>
             </Link>
           </motion.div>
           <button className="group flex items-center gap-2.5 px-6 py-4 text-white/60 font-medium text-base hover:text-white transition-colors duration-300">

@@ -45,7 +45,7 @@ function StatCounter({ value, suffix, label, delay }: { value: number; suffix: s
     >
       <span
         ref={ref}
-        className="block text-4xl sm:text-5xl md:text-6xl font-bold text-[#00FF88] tracking-tight"
+        className="block text-4xl sm:text-5xl md:text-6xl font-bold text-[#10B981] tracking-tight"
       >
         0{suffix}
       </span>

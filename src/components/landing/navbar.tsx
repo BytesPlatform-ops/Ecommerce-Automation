@@ -45,17 +45,13 @@ export function Navbar() {
     >
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
+        <Link href="/" className="flex items-center flex-shrink-0">
           <motion.div
-            whileHover={{ rotate: 8, scale: 1.05 }}
+            whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="w-11 h-11 flex items-center justify-center"
           >
-            <Image src="/logo.jpeg" alt="Bytescart" width={44} height={44} className="object-contain rounded-lg" />
+            <Image src="/asset1.svg" alt="Bytescart" width={160} height={40} className="object-contain" />
           </motion.div>
-          <span className="text-[#F5F0E8] font-semibold text-lg tracking-tight">
-            Bytescart
-          </span>
         </Link>
 
         {/* Desktop nav links - centered */}

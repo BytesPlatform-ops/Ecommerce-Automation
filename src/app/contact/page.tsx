@@ -1,5 +1,6 @@
 import { ContactPage } from "@/components/landing/contact";
-import { Navbar, Footer } from "@/components/landing";
+import { Navbar } from "@/components/bytescart/navbar";
+import { Footer } from "@/components/bytescart/footer";
 
 export const metadata = {
   title: "Contact Us - Bytescart",
