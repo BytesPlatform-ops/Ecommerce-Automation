@@ -86,7 +86,7 @@ export default function SignupPage() {
             className="mb-4 text-center"
           >
             <Link href="/" className="inline-flex items-center justify-center">
-              <Image src="/asset 1.svg" alt="Bytescart" width={150} height={38} className="object-contain" />
+              <Image src="/asset1.svg" alt="Bytescart" width={150} height={38} className="object-contain" />
             </Link>
           </motion.div>
 

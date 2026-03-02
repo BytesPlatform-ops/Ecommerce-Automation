@@ -78,7 +78,7 @@ export default function LoginPage() {
             className="mb-8 text-center"
           >
             <Link href="/" className="inline-flex items-center justify-center">
-              <Image src="/asset 1.svg" alt="Bytescart" width={160} height={40} className="object-contain" />
+              <Image src="/asset1.svg" alt="Bytescart" width={160} height={40} className="object-contain" />
             </Link>
           </motion.div>
 

@@ -11,7 +11,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
           {/* Brand */}
           <Link href="/" className="inline-block flex-shrink-0">
-            <Image src="/asset 2.svg" alt="Bytescart" width={130} height={34} className="object-contain brightness-0 invert opacity-70" />
+            <Image src="/asset2.svg" alt="Bytescart" width={130} height={34} className="object-contain brightness-0 invert opacity-70" />
           </Link>
 
           {/* All links in one row */}

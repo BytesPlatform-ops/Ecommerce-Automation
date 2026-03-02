@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { AuthBackground } from "@/components/auth/auth-background";
@@ -26,16 +27,8 @@ export default function ForgotPasswordPage() {
             transition={{ delay: 0.15, duration: 0.5 }}
             className="mb-8 text-center"
           >
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2.5 group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                <span className="text-white font-serif text-lg font-semibold leading-none">B</span>
-              </div>
-              <span className="font-serif text-xl tracking-tight text-neutral-900">
-                Bytescart
-              </span>
+            <Link href="/" className="inline-flex items-center justify-center">
+              <Image src="/asset1.svg" alt="Bytescart" width={160} height={40} className="object-contain" />
             </Link>
           </motion.div>
 
