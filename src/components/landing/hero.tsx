@@ -518,7 +518,7 @@ export function Hero() {
             className="text-center lg:text-left"
           >
             {/* Main headline - Elegant serif typography */}
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-5xl lg:text-5xl xl:text-6xl 2xl:text-6xl font-bold text-[#111827] leading-[1.1] tracking-tight mb-6 sm:mb-6 lg:mb-5">
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-bold text-[#111827] leading-[1.1] tracking-tight mb-6 sm:mb-6 lg:mb-5">
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -554,7 +554,7 @@ export function Hero() {
               transition={{ delay: 0.65, duration: 0.7 }}
               className="text-base sm:text-base md:text-lg lg:text-base xl:text-lg text-[#6B7280] leading-relaxed mb-8 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
             >
-              Our AI builds the frontend, backend, database, payments — and deploys your complete store in <span className="text-[#111827] font-semibold">60 seconds</span>.
+              We build the frontend, backend, database, payments — and deploy your complete store in <span className="text-[#111827] font-semibold">60 seconds</span>.
             </motion.p>
 
             {/* CTAs */}
@@ -576,13 +576,15 @@ export function Hero() {
               </Link>
 
               <a
-                href="#demo"
+                href="http://bytescart.ai/stores/happy-tails-co"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-2 border-[#E5E7EB] text-[#374151] font-semibold text-sm sm:text-base bg-white hover:border-[#059669] hover:bg-[#059669]/5 transition-all duration-300"
               >
                 <span className="w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-[#059669]/10 flex items-center justify-center group-hover:bg-[#059669]/20 transition-colors flex-shrink-0">
                   <Play className="w-3 sm:w-4 h-3 sm:h-4 text-[#059669] ml-0.5" fill="currentColor" />
                 </span>
-                <span>Watch Demo</span>
+                <span>View Demo Store</span>
               </a>
             </motion.div>
 
