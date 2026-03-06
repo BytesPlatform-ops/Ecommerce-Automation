@@ -31,22 +31,6 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // Note: 'unsafe-eval' is required for Meta Pixel to function
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://connect.stripe.com https://uploadthing.com https://connect.facebook.net",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: blob: https://utfs.io https://*.ufs.sh https://images.unsplash.com https://*.stripe.com https://server.arcgisonline.com https://www.facebook.com https://www.facebook.com/tr/",
-              "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://uploadthing.com https://*.uploadthing.com https://api.sendgrid.com https://connect.facebook.net https://www.facebook.com",
-              "frame-src https://js.stripe.com https://connect.stripe.com https://www.openstreetmap.org",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self' https://connect.stripe.com",
-            ].join("; "),
-          },
         ],
       },
     ];
