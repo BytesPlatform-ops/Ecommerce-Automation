@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
           </p>
         </div>
 
-        <OnboardingForm themes={themes || []} userId={user.id} />
+        <OnboardingForm themes={themes || []} userId={user.id} userEmail={user.email ?? ""} />
       </div>
     </div>
   );

@@ -1,9 +1,28 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, animate, useScroll, useSpring, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  animate,
+  useScroll,
+  useSpring,
+  AnimatePresence,
+} from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Play, ArrowRight, Sparkles, Zap, Shield, Globe, Palette, Package, Settings } from "lucide-react";
+import {
+  Play,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Shield,
+  Globe,
+  Palette,
+  Package,
+  Settings,
+} from "lucide-react";
+import { trackViewDemoStore } from "@/lib/gtag";
 
 const typingPrompts = [
   "A minimalist sneaker store with dark mode and streetwear aesthetic...",
@@ -23,11 +42,28 @@ const buildSteps = [
 /* Three.js inspired depth parallax effect */
 function ParallaxOrbs() {
   const { scrollY } = useScroll();
-  const y1 = useSpring(useTransform(scrollY, [0, 500], [0, -100]), { stiffness: 100, damping: 30 });
-  const y2 = useSpring(useTransform(scrollY, [0, 500], [0, -50]), { stiffness: 100, damping: 30 });
-  const y3 = useSpring(useTransform(scrollY, [0, 500], [0, -150]), { stiffness: 100, damping: 30 });
+  const y1 = useSpring(useTransform(scrollY, [0, 500], [0, -100]), {
+    stiffness: 100,
+    damping: 30,
+  });
+  const y2 = useSpring(useTransform(scrollY, [0, 500], [0, -50]), {
+    stiffness: 100,
+    damping: 30,
+  });
+  const y3 = useSpring(useTransform(scrollY, [0, 500], [0, -150]), {
+    stiffness: 100,
+    damping: 30,
+  });
 
-  const [particles, setParticles] = useState<Array<{left: string; top: string; opacity: number; duration: number; delay: number}>>([]);
+  const [particles, setParticles] = useState<
+    Array<{
+      left: string;
+      top: string;
+      opacity: number;
+      duration: number;
+      delay: number;
+    }>
+  >([]);
 
   useEffect(() => {
     // Generate particles only on client to avoid hydration mismatch
@@ -79,7 +115,11 @@ function ParallaxOrbs() {
           }}
           animate={{
             y: [0, -30, 0],
-            opacity: [particle.opacity * 0.5, particle.opacity + 0.3, particle.opacity * 0.5],
+            opacity: [
+              particle.opacity * 0.5,
+              particle.opacity + 0.3,
+              particle.opacity * 0.5,
+            ],
           }}
           transition={{
             duration: particle.duration,
@@ -91,15 +131,26 @@ function ParallaxOrbs() {
       ))}
 
       {/* Subtle noise texture overlay */}
-      <div className="absolute inset-0 opacity-[0.015]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-      }} />
+      <div
+        className="absolute inset-0 opacity-[0.015]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
     </div>
   );
 }
 
 /* Animated counter with spring physics */
-function AnimatedCounter({ target, suffix = "", prefix = "" }: { target: number; suffix?: string; prefix?: string }) {
+function AnimatedCounter({
+  target,
+  suffix = "",
+  prefix = "",
+}: {
+  target: number;
+  suffix?: string;
+  prefix?: string;
+}) {
   const count = useMotionValue(0);
   const rounded = useTransform(count, (v) => Math.round(v));
   const [display, setDisplay] = useState(0);
@@ -116,7 +167,13 @@ function AnimatedCounter({ target, suffix = "", prefix = "" }: { target: number;
     };
   }, [count, rounded, target]);
 
-  return <span>{prefix}{display.toLocaleString()}{suffix}</span>;
+  return (
+    <span>
+      {prefix}
+      {display.toLocaleString()}
+      {suffix}
+    </span>
+  );
 }
 
 /* Typewriter effect with cursor */
@@ -127,11 +184,14 @@ function TypewriterEffect() {
 
   useEffect(() => {
     const prompt = typingPrompts[currentPrompt];
-    
+
     if (!isDeleting && displayed.length < prompt.length) {
-      const timeout = setTimeout(() => {
-        setDisplayed(prompt.slice(0, displayed.length + 1));
-      }, 40 + Math.random() * 30);
+      const timeout = setTimeout(
+        () => {
+          setDisplayed(prompt.slice(0, displayed.length + 1));
+        },
+        40 + Math.random() * 30,
+      );
       return () => clearTimeout(timeout);
     } else if (!isDeleting && displayed.length === prompt.length) {
       const timeout = setTimeout(() => setIsDeleting(true), 2000);
@@ -193,13 +253,15 @@ function BuildProgress() {
           transition={{ delay: i * 0.1, duration: 0.4 }}
           className="flex items-center gap-3"
         >
-          <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs transition-all duration-300 ${
-            i < activeStep
-              ? "bg-[#059669] text-white"
-              : i === activeStep
-              ? "bg-[#059669]/20 text-[#059669]"
-              : "bg-gray-200 text-gray-400"
-          }`}>
+          <div
+            className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs transition-all duration-300 ${
+              i < activeStep
+                ? "bg-[#059669] text-white"
+                : i === activeStep
+                  ? "bg-[#059669]/20 text-[#059669]"
+                  : "bg-gray-200 text-gray-400"
+            }`}
+          >
             {i < activeStep ? (
               <motion.span
                 initial={{ scale: 0 }}
@@ -219,13 +281,15 @@ function BuildProgress() {
               <span className="text-[10px]">{step.icon}</span>
             )}
           </div>
-          <span className={`text-xs font-mono transition-colors duration-300 ${
-            i < activeStep
-              ? "text-[#059669]"
-              : i === activeStep
-              ? "text-[#059669]"
-              : "text-gray-400"
-          }`}>
+          <span
+            className={`text-xs font-mono transition-colors duration-300 ${
+              i < activeStep
+                ? "text-[#059669]"
+                : i === activeStep
+                  ? "text-[#059669]"
+                  : "text-gray-400"
+            }`}
+          >
             {step.label}
           </span>
           {i === activeStep && (
@@ -241,7 +305,7 @@ function BuildProgress() {
           )}
         </motion.div>
       ))}
-      
+
       {completed && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -278,12 +342,20 @@ function FloatingBadge({
     <motion.div
       initial={{ opacity: 0, y: 30, scale: 0.8 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay: delay + 1, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        delay: delay + 1,
+        duration: 0.8,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
       className={className}
     >
       <motion.div
         animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 5 + delay, repeat: Infinity, ease: "easeInOut" }}
+        transition={{
+          duration: 5 + delay,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
         className="px-4 py-3 rounded-2xl bg-white/95 backdrop-blur-2xl border border-gray-200 shadow-xl shadow-gray-200/50"
       >
         {children}
@@ -294,7 +366,9 @@ function FloatingBadge({
 
 /* AI morphing store preview */
 function StorefrontMockup() {
-  const [activeTab, setActiveTab] = useState<'design' | 'products' | 'settings'>('design');
+  const [activeTab, setActiveTab] = useState<
+    "design" | "products" | "settings"
+  >("design");
 
   return (
     <motion.div
@@ -314,7 +388,9 @@ function StorefrontMockup() {
           <div className="flex-1 mx-1 md:mx-3">
             <div className="h-6 md:h-7 rounded-lg bg-[#374151] flex items-center px-2 md:px-3 gap-1.5">
               <Shield className="w-2 md:w-3 h-2 md:h-3 text-[#10B981] flex-shrink-0" />
-              <span className="text-[8px] md:text-xs text-gray-400 font-mono truncate">dashboard.bytescart.dev</span>
+              <span className="text-[8px] md:text-xs text-gray-400 font-mono truncate">
+                dashboard.bytescart.dev
+              </span>
             </div>
           </div>
         </div>
@@ -325,7 +401,9 @@ function StorefrontMockup() {
             <div className="w-6 md:w-7 h-6 md:h-7 rounded-lg bg-gradient-to-br from-[#059669] to-[#10B981] flex items-center justify-center">
               <Sparkles className="w-3 md:w-3.5 h-3 md:h-3.5 text-white" />
             </div>
-            <span className="text-[10px] md:text-sm font-bold text-[#111827]">Bytescart Dashboard</span>
+            <span className="text-[10px] md:text-sm font-bold text-[#111827]">
+              Bytescart Dashboard
+            </span>
           </div>
           <div className="w-5 md:w-6 h-5 md:h-6 rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] flex items-center justify-center text-[9px] md:text-xs font-semibold text-white">
             JD
@@ -337,17 +415,17 @@ function StorefrontMockup() {
           {/* Sidebar */}
           <div className="hidden sm:flex flex-col w-28 md:w-36 border-r border-gray-100 bg-gray-50/80 p-2 md:p-3 gap-1">
             {[
-              { icon: Palette, label: 'Design', tab: 'design' },
-              { icon: Package, label: 'Products', tab: 'products' },
-              { icon: Settings, label: 'Settings', tab: 'settings' },
+              { icon: Palette, label: "Design", tab: "design" },
+              { icon: Package, label: "Products", tab: "products" },
+              { icon: Settings, label: "Settings", tab: "settings" },
             ].map((item) => (
               <button
                 key={item.tab}
                 onClick={() => setActiveTab(item.tab as any)}
                 className={`flex items-center gap-2 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all ${
                   activeTab === item.tab
-                    ? 'bg-white text-[#059669] border border-[#059669]/30 shadow-sm'
-                    : 'text-gray-600 hover:text-[#059669]'
+                    ? "bg-white text-[#059669] border border-[#059669]/30 shadow-sm"
+                    : "text-gray-600 hover:text-[#059669]"
                 }`}
               >
                 <item.icon className="w-3.5 md:w-4 h-3.5 md:h-4 flex-shrink-0" />
@@ -359,7 +437,7 @@ function StorefrontMockup() {
           {/* Main panel */}
           <div className="flex-1 p-2 md:p-4 space-y-2 md:space-y-3">
             <AnimatePresence mode="wait">
-              {activeTab === 'design' && (
+              {activeTab === "design" && (
                 <motion.div
                   key="design"
                   initial={{ opacity: 0, y: 5 }}
@@ -369,13 +447,15 @@ function StorefrontMockup() {
                   className="space-y-3 md:space-y-4"
                 >
                   <div>
-                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">Brand Colors</p>
+                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">
+                      Brand Colors
+                    </p>
                     <div className="flex gap-1.5">
                       {[
-                        { color: 'bg-[#059669]', name: 'Green' },
-                        { color: 'bg-[#3B82F6]', name: 'Blue' },
-                        { color: 'bg-[#8B5CF6]', name: 'Purple' },
-                        { color: 'bg-[#F59E0B]', name: 'Amber' },
+                        { color: "bg-[#059669]", name: "Green" },
+                        { color: "bg-[#3B82F6]", name: "Blue" },
+                        { color: "bg-[#8B5CF6]", name: "Purple" },
+                        { color: "bg-[#F59E0B]", name: "Amber" },
                       ].map((c) => (
                         <motion.button
                           key={c.name}
@@ -387,9 +467,11 @@ function StorefrontMockup() {
                   </div>
 
                   <div>
-                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">Typography</p>
+                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">
+                      Typography
+                    </p>
                     <div className="space-y-1 md:space-y-1.5">
-                      {['Heading Font', 'Body Font'].map((item) => (
+                      {["Heading Font", "Body Font"].map((item) => (
                         <div
                           key={item}
                           className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-[9px] md:text-xs text-[#374151]"
@@ -401,22 +483,26 @@ function StorefrontMockup() {
                   </div>
 
                   <div>
-                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">Layout</p>
+                    <p className="text-[9px] md:text-xs font-semibold text-[#111827] mb-1.5">
+                      Layout
+                    </p>
                     <div className="grid grid-cols-2 gap-1.5">
-                      {['Grid', 'Carousel', 'List', 'Featured'].map((layout) => (
-                        <button
-                          key={layout}
-                          className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg text-[8px] md:text-xs bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/30 font-medium hover:bg-[#3B82F6]/20 transition-colors"
-                        >
-                          {layout}
-                        </button>
-                      ))}
+                      {["Grid", "Carousel", "List", "Featured"].map(
+                        (layout) => (
+                          <button
+                            key={layout}
+                            className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg text-[8px] md:text-xs bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/30 font-medium hover:bg-[#3B82F6]/20 transition-colors"
+                          >
+                            {layout}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
                 </motion.div>
               )}
 
-              {activeTab === 'products' && (
+              {activeTab === "products" && (
                 <motion.div
                   key="products"
                   initial={{ opacity: 0, y: 5 }}
@@ -426,9 +512,9 @@ function StorefrontMockup() {
                   className="space-y-2 md:space-y-3"
                 >
                   {[
-                    { name: 'Sneaker Max Pro', price: '$189', status: '✓' },
-                    { name: 'Urban Hoodie', price: '$89', status: '✓' },
-                    { name: 'Classic Runner', price: '$149', status: '○' },
+                    { name: "Sneaker Max Pro", price: "$189", status: "✓" },
+                    { name: "Urban Hoodie", price: "$89", status: "✓" },
+                    { name: "Classic Runner", price: "$149", status: "○" },
                   ].map((product, i) => (
                     <motion.div
                       key={i}
@@ -438,10 +524,16 @@ function StorefrontMockup() {
                       className="flex items-center justify-between px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-gray-50 border border-gray-200"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-[9px] md:text-xs font-medium text-[#111827] truncate">{product.name}</p>
-                        <p className="text-[8px] md:text-[9px] text-[#059669]">{product.price}</p>
+                        <p className="text-[9px] md:text-xs font-medium text-[#111827] truncate">
+                          {product.name}
+                        </p>
+                        <p className="text-[8px] md:text-[9px] text-[#059669]">
+                          {product.price}
+                        </p>
                       </div>
-                      <span className={`text-xs ${product.status === '✓' ? 'text-[#059669]' : 'text-gray-400'}`}>
+                      <span
+                        className={`text-xs ${product.status === "✓" ? "text-[#059669]" : "text-gray-400"}`}
+                      >
                         {product.status}
                       </span>
                     </motion.div>
@@ -452,7 +544,7 @@ function StorefrontMockup() {
                 </motion.div>
               )}
 
-              {activeTab === 'settings' && (
+              {activeTab === "settings" && (
                 <motion.div
                   key="settings"
                   initial={{ opacity: 0, y: 5 }}
@@ -462,9 +554,9 @@ function StorefrontMockup() {
                   className="space-y-2 md:space-y-3"
                 >
                   {[
-                    { label: 'Store Name', value: 'My Store' },
-                    { label: 'Email', value: 'owner@store.ai' },
-                    { label: 'Domain', value: 'mystore.com' },
+                    { label: "Store Name", value: "My Store" },
+                    { label: "Email", value: "owner@store.ai" },
+                    { label: "Domain", value: "mystore.com" },
                   ].map((setting, i) => (
                     <motion.div
                       key={i}
@@ -473,8 +565,12 @@ function StorefrontMockup() {
                       transition={{ delay: i * 0.08 }}
                       className="px-2 md:px-2.5 py-1 md:py-1.5 rounded-lg bg-gray-50 border border-gray-200"
                     >
-                      <p className="text-[8px] md:text-[9px] text-gray-500 font-medium">{setting.label}</p>
-                      <p className="text-[9px] md:text-xs text-[#111827] font-semibold">{setting.value}</p>
+                      <p className="text-[8px] md:text-[9px] text-gray-500 font-medium">
+                        {setting.label}
+                      </p>
+                      <p className="text-[9px] md:text-xs text-[#111827] font-semibold">
+                        {setting.value}
+                      </p>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -487,7 +583,9 @@ function StorefrontMockup() {
         <div className="flex items-center justify-between px-2 md:px-4 py-2 border-t border-gray-100 bg-gradient-to-r from-white to-gray-50">
           <div className="flex items-center gap-1 md:gap-1.5">
             <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="text-[8px] md:text-xs text-gray-500">Live preview updating...</span>
+            <span className="text-[8px] md:text-xs text-gray-500">
+              Live preview updating...
+            </span>
           </div>
           <button className="px-2 md:px-2.5 py-0.5 md:py-1 rounded-lg bg-gradient-to-r from-[#059669] to-[#10B981] text-white text-[8px] md:text-xs font-semibold hover:shadow-lg transition-shadow">
             Publish
@@ -505,7 +603,10 @@ export function Hero() {
   const containerRef = useRef<HTMLElement>(null);
 
   return (
-    <section ref={containerRef} className="relative min-h-screen lg:h-screen flex items-center pt-24 sm:pt-28 lg:pt-36 pb-12 sm:pb-24 lg:pb-24 overflow-hidden bg-[#F8FAFC]">
+    <section
+      ref={containerRef}
+      className="relative min-h-screen lg:h-screen flex items-center pt-24 sm:pt-28 lg:pt-36 pb-12 sm:pb-24 lg:pb-24 overflow-hidden bg-[#F8FAFC]"
+    >
       <ParallaxOrbs />
 
       <div className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
@@ -554,7 +655,9 @@ export function Hero() {
               transition={{ delay: 0.65, duration: 0.7 }}
               className="text-base sm:text-base md:text-lg lg:text-base xl:text-lg text-[#6B7280] leading-relaxed mb-8 sm:mb-8 lg:mb-6 max-w-xl mx-auto lg:mx-0"
             >
-              We build the frontend, backend, database, payments — and deploy your complete store in <span className="text-[#111827] font-semibold">60 seconds</span>.
+              We build the frontend, backend, database, payments — and deploy
+              your complete store in{" "}
+              <span className="text-[#111827] font-semibold">60 seconds</span>.
             </motion.p>
 
             {/* CTAs */}
@@ -579,10 +682,14 @@ export function Hero() {
                 href="http://bytescart.ai/stores/happy-tails-co"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={trackViewDemoStore}
                 className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-2 border-[#E5E7EB] text-[#374151] font-semibold text-sm sm:text-base bg-white hover:border-[#059669] hover:bg-[#059669]/5 transition-all duration-300"
               >
                 <span className="w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-[#059669]/10 flex items-center justify-center group-hover:bg-[#059669]/20 transition-colors flex-shrink-0">
-                  <Play className="w-3 sm:w-4 h-3 sm:h-4 text-[#059669] ml-0.5" fill="currentColor" />
+                  <Play
+                    className="w-3 sm:w-4 h-3 sm:h-4 text-[#059669] ml-0.5"
+                    fill="currentColor"
+                  />
                 </span>
                 <span>View Demo Store</span>
               </a>
@@ -610,7 +717,9 @@ export function Hero() {
                   <p className="text-3xl sm:text-3xl md:text-4xl font-black text-[#059669]">
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                   </p>
-                  <p className="text-xs sm:text-xs md:text-sm text-[#6B7280] mt-2 font-medium line-clamp-2">{stat.label}</p>
+                  <p className="text-xs sm:text-xs md:text-sm text-[#6B7280] mt-2 font-medium line-clamp-2">
+                    {stat.label}
+                  </p>
                 </motion.div>
               ))}
             </motion.div>
@@ -620,23 +729,35 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.5, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              delay: 0.5,
+              duration: 1.2,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
             className="relative mt-8 sm:mt-12 lg:mt-0 lg:block lg:max-h-[calc(100vh-8rem)] lg:flex lg:items-center lg:justify-center"
           >
             {/* Floating badges - Hidden on mobile, shown on lg */}
-            <FloatingBadge className="absolute -left-10 top-10 z-20 hidden lg:block" delay={0}>
+            <FloatingBadge
+              className="absolute -left-10 top-10 z-20 hidden lg:block"
+              delay={0}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#10B981]/15 flex items-center justify-center">
                   <Shield className="w-4 h-4 text-[#059669]" />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#111827]">SSL Active</p>
-                  <p className="text-[10px] text-gray-500">256-bit encryption</p>
+                  <p className="text-[10px] text-gray-500">
+                    256-bit encryption
+                  </p>
                 </div>
               </div>
             </FloatingBadge>
 
-            <FloatingBadge className="absolute -right-6 top-1/4 z-20 hidden lg:block" delay={0.5}>
+            <FloatingBadge
+              className="absolute -right-6 top-1/4 z-20 hidden lg:block"
+              delay={0.5}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#F59E0B]/15 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-[#F59E0B]" />
@@ -648,13 +769,18 @@ export function Hero() {
               </div>
             </FloatingBadge>
 
-            <FloatingBadge className="absolute -left-6 bottom-20 z-20 hidden lg:block" delay={1}>
+            <FloatingBadge
+              className="absolute -left-6 bottom-20 z-20 hidden lg:block"
+              delay={1}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-[#3B82F6]/15 flex items-center justify-center">
                   <Globe className="w-4 h-4 text-[#3B82F6]" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-[#111827]">Edge Deployed</p>
+                  <p className="text-xs font-bold text-[#111827]">
+                    Edge Deployed
+                  </p>
                   <p className="text-[10px] text-gray-500">200+ locations</p>
                 </div>
               </div>
@@ -667,4 +793,3 @@ export function Hero() {
     </section>
   );
 }
-

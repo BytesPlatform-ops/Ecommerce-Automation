@@ -1,8 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Crown, CreditCard, ExternalLink, Zap, Calendar, AlertTriangle } from "lucide-react";
+import {
+  Crown,
+  CreditCard,
+  ExternalLink,
+  Zap,
+  Calendar,
+  AlertTriangle,
+} from "lucide-react";
 import { UpgradeModal } from "./upgrade-modal";
+import { trackProPayment } from "@/lib/gtag";
 
 interface SubscriptionManagementProps {
   subscriptionStatus: {
@@ -19,7 +27,9 @@ interface SubscriptionManagementProps {
   };
 }
 
-export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManagementProps) {
+export function SubscriptionManagement({
+  subscriptionStatus,
+}: SubscriptionManagementProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
 
@@ -50,16 +60,24 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
       <div className="dash-animate-in bg-white border border-gray-200 rounded-2xl overflow-hidden">
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-              isPro
-                ? "bg-gradient-to-br from-violet-500 to-blue-600"
-                : "bg-gray-100"
-            }`}>
-              <Crown className={`h-5 w-5 ${isPro ? "text-white" : "text-gray-400"}`} />
+            <div
+              className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                isPro
+                  ? "bg-gradient-to-br from-violet-500 to-blue-600"
+                  : "bg-gray-100"
+              }`}
+            >
+              <Crown
+                className={`h-5 w-5 ${isPro ? "text-white" : "text-gray-400"}`}
+              />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Platform Subscription</h2>
-              <p className="text-sm text-gray-500">Your plan determines how many products you can add</p>
+              <h2 className="text-lg font-bold text-gray-900">
+                Platform Subscription
+              </h2>
+              <p className="text-sm text-gray-500">
+                Your plan determines how many products you can add
+              </p>
             </div>
           </div>
         </div>
@@ -68,9 +86,13 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Current Plan */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Current Plan</p>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Current Plan
+              </p>
               <div className="flex items-center gap-2">
-                <span className={`text-xl font-bold ${isPro ? "text-violet-600" : "text-gray-900"}`}>
+                <span
+                  className={`text-xl font-bold ${isPro ? "text-violet-600" : "text-gray-900"}`}
+                >
                   {isPro ? "Pro" : "Free"}
                 </span>
                 {isPro && isActive && (
@@ -93,26 +115,34 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
 
             {/* Product Usage */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Product Usage</p>
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Product Usage
+              </p>
               <p className="text-xl font-bold text-gray-900">
                 {subscriptionStatus.productCount}
-                <span className="text-gray-400 font-normal text-base">/{subscriptionStatus.effectiveLimit}</span>
+                <span className="text-gray-400 font-normal text-base">
+                  /{subscriptionStatus.effectiveLimit}
+                </span>
               </p>
               <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    subscriptionStatus.productCount >= subscriptionStatus.effectiveLimit
+                    subscriptionStatus.productCount >=
+                    subscriptionStatus.effectiveLimit
                       ? "bg-red-500"
-                      : subscriptionStatus.productCount >= subscriptionStatus.effectiveLimit - 3
-                      ? "bg-amber-500"
-                      : isPro
-                      ? "bg-violet-500"
-                      : "bg-gray-400"
+                      : subscriptionStatus.productCount >=
+                          subscriptionStatus.effectiveLimit - 3
+                        ? "bg-amber-500"
+                        : isPro
+                          ? "bg-violet-500"
+                          : "bg-gray-400"
                   }`}
                   style={{
                     width: `${Math.min(
-                      (subscriptionStatus.productCount / subscriptionStatus.effectiveLimit) * 100,
-                      100
+                      (subscriptionStatus.productCount /
+                        subscriptionStatus.effectiveLimit) *
+                        100,
+                      100,
                     )}%`,
                   }}
                 />
@@ -127,15 +157,21 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
                     <AlertTriangle className="w-3 h-3" /> Grace Period
                   </p>
                   <p className="text-xl font-bold text-amber-600">
-                    {subscriptionStatus.gracePeriodDaysLeft} day{subscriptionStatus.gracePeriodDaysLeft !== 1 ? "s" : ""} left
+                    {subscriptionStatus.gracePeriodDaysLeft} day
+                    {subscriptionStatus.gracePeriodDaysLeft !== 1 ? "s" : ""}{" "}
+                    left
                   </p>
                 </>
               ) : isPro && subscriptionStatus.gracePeriodEnd ? (
                 <>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Renews</p>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Renews
+                  </p>
                   <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-gray-400" />
-                    {new Date(subscriptionStatus.gracePeriodEnd).toLocaleDateString("en-US", {
+                    {new Date(
+                      subscriptionStatus.gracePeriodEnd,
+                    ).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
@@ -144,7 +180,9 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
                 </>
               ) : (
                 <>
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</p>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Status
+                  </p>
                   <p className="text-sm font-medium text-gray-500">
                     {isPro ? "Subscribed" : "No active subscription"}
                   </p>
@@ -169,7 +207,10 @@ export function SubscriptionManagement({ subscriptionStatus }: SubscriptionManag
 
             {!isPro && (
               <button
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={() => {
+                  trackProPayment();
+                  setShowUpgradeModal(true);
+                }}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 text-white font-semibold text-sm shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 hover:-translate-y-0.5 transition-all"
               >
                 <Zap className="w-4 h-4" />

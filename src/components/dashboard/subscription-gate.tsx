@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { UpgradeBanner } from "./upgrade-banner";
 import { UpgradeModal } from "./upgrade-modal";
+import { trackProPayment } from "@/lib/gtag";
 
 interface SubscriptionStatusData {
   tier: string;
@@ -21,7 +22,9 @@ interface SubscriptionGateProps {
   subscriptionStatus: SubscriptionStatusData;
 }
 
-export function SubscriptionGate({ subscriptionStatus }: SubscriptionGateProps) {
+export function SubscriptionGate({
+  subscriptionStatus,
+}: SubscriptionGateProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
@@ -34,7 +37,10 @@ export function SubscriptionGate({ subscriptionStatus }: SubscriptionGateProps) 
         isGracePeriod={subscriptionStatus.isGracePeriod}
         gracePeriodDaysLeft={subscriptionStatus.gracePeriodDaysLeft}
         subscriptionStatus={subscriptionStatus.subscriptionStatus}
-        onUpgradeClick={() => setShowUpgradeModal(true)}
+        onUpgradeClick={() => {
+          trackProPayment();
+          setShowUpgradeModal(true);
+        }}
       />
       <UpgradeModal
         isOpen={showUpgradeModal}

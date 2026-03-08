@@ -30,22 +30,22 @@ function getPasswordStrength(password: string) {
     score <= 1
       ? "Weak"
       : score <= 2
-      ? "Fair"
-      : score <= 3
-      ? "Good"
-      : score <= 4
-      ? "Strong"
-      : "Excellent";
+        ? "Fair"
+        : score <= 3
+          ? "Good"
+          : score <= 4
+            ? "Strong"
+            : "Excellent";
   const color =
     score <= 1
       ? "bg-red-400"
       : score <= 2
-      ? "bg-orange-400"
-      : score <= 3
-      ? "bg-amber-400"
-      : score <= 4
-      ? "bg-emerald-400"
-      : "bg-emerald-500";
+        ? "bg-orange-400"
+        : score <= 3
+          ? "bg-amber-400"
+          : score <= 4
+            ? "bg-emerald-400"
+            : "bg-emerald-500";
   return { score, label, color, checks };
 }
 
@@ -83,7 +83,7 @@ export function SignupForm() {
       !/[0-9]/.test(password)
     ) {
       setError(
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       );
       return;
     }
@@ -91,7 +91,7 @@ export function SignupForm() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -100,6 +100,11 @@ export function SignupForm() {
         setError(error.message);
         return;
       }
+
+      // Track signup in GA4
+      import("@/lib/gtag").then(({ trackSignup }) => {
+        trackSignup(authData?.user?.id ?? email);
+      });
 
       // Send signup notification email to admins (fire and forget)
       fetch("/api/auth/signup-notification", {
@@ -265,7 +270,9 @@ export function SignupForm() {
                       ) : (
                         <X className="h-2.5 w-2.5 text-neutral-300" />
                       )}
-                      <span className={`text-[11px] transition-colors duration-200 ${item.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                      <span
+                        className={`text-[11px] transition-colors duration-200 ${item.met ? "text-emerald-600" : "text-muted-foreground"}`}
+                      >
                         {item.label}
                       </span>
                     </div>
@@ -290,10 +297,10 @@ export function SignupForm() {
             focusedField === "confirmPassword"
               ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
               : confirmPassword.length > 0 && password !== confirmPassword
-              ? "border-red-300 shadow-[0_0_0_3px_rgba(239,68,68,0.06)]"
-              : confirmPassword.length > 0 && password === confirmPassword
-              ? "border-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.06)]"
-              : "border-border hover:border-neutral-400"
+                ? "border-red-300 shadow-[0_0_0_3px_rgba(239,68,68,0.06)]"
+                : confirmPassword.length > 0 && password === confirmPassword
+                  ? "border-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.06)]"
+                  : "border-border hover:border-neutral-400"
           }`}
         >
           <Lock
@@ -342,9 +349,13 @@ export function SignupForm() {
               }`}
             >
               {password === confirmPassword ? (
-                <><Check className="h-2.5 w-2.5" /></>
+                <>
+                  <Check className="h-2.5 w-2.5" />
+                </>
               ) : (
-                <><X className="h-2.5 w-2.5" /></>
+                <>
+                  <X className="h-2.5 w-2.5" />
+                </>
               )}
             </motion.p>
           )}

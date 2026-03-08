@@ -9,9 +9,10 @@ import { Check } from "lucide-react";
 interface OnboardingFormProps {
   themes: Theme[];
   userId: string;
+  userEmail: string;
 }
 
-export function OnboardingForm({ themes, userId }: OnboardingFormProps) {
+export function OnboardingForm({ themes, userId, userEmail }: OnboardingFormProps) {
   const [storeName, setStoreName] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<string | null>(
     themes[0]?.id || null
@@ -63,6 +64,16 @@ export function OnboardingForm({ themes, userId }: OnboardingFormProps) {
       });
       
       console.log("Store created:", result);
+
+      // Notify admins about the new store (fire and forget)
+      const storeUrl = `https://www.bytescart.ai/stores/${slug}`;
+      fetch("/api/auth/signup-notification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, storeName: storeName.trim(), storeUrl }),
+      }).catch((err) => {
+        console.error("Failed to send store creation notification:", err);
+      });
 
       // Redirect after successful store creation
       router.refresh();

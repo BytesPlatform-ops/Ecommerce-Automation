@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { trackPurchase } from "@/lib/gtag";
 
 /**
  * SubscriptionVerifier — auto-verifies the subscription after returning from Stripe Checkout.
  * This is a fallback mechanism in case the webhook was delayed or failed.
- * 
+ *
  * When the URL contains ?subscription=success&session_id=cs_xxx, this component
  * calls /api/subscription/verify to ensure the store is upgraded to PRO.
  */
@@ -32,6 +33,9 @@ export function SubscriptionVerifier() {
           const data = await res.json();
           if (data.success) {
             setVerified(true);
+            if (data.subscriptionId) {
+              trackPurchase(data.subscriptionId, (data.amount ?? 0) / 100);
+            }
             // Refresh the page to show updated subscription status (remove query params)
             router.replace("/dashboard");
             router.refresh();

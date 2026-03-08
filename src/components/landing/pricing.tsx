@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { SectionWrapper } from "./section-wrapper";
 import { Check, X, Sparkles, Zap, ArrowRight, Crown } from "lucide-react";
 import Link from "next/link";
+import { trackProPayment } from "@/lib/gtag";
 
 const freeFeatures = [
   "Up to 15 products",
@@ -31,14 +32,24 @@ const proFeatures = [
 ];
 
 const agencyComparison = [
-  { feature: "Development time", agency: "3-6 months", bytescart: "60 seconds" },
+  {
+    feature: "Development time",
+    agency: "3-6 months",
+    bytescart: "60 seconds",
+  },
   { feature: "Upfront cost", agency: "$3,000+", bytescart: "$0" },
-  { feature: "Monthly maintenance", agency: "$500-2,000/mo", bytescart: "Included" },
+  {
+    feature: "Monthly maintenance",
+    agency: "$500-2,000/mo",
+    bytescart: "Included",
+  },
   { feature: "Tech expertise needed", agency: "Yes", bytescart: "None" },
 ];
 
 export function Pricing() {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">(
+    "monthly",
+  );
 
   return (
     <SectionWrapper id="pricing" className="py-16 sm:py-24 bg-[#F5F0E8]">
@@ -70,7 +81,8 @@ export function Pricing() {
           transition={{ delay: 0.2 }}
           className="text-[#8FA898] max-w-2xl mx-auto text-lg"
         >
-          Launch your store for free with 15 products. Upgrade to Pro when you need more.
+          Launch your store for free with 15 products. Upgrade to Pro when you
+          need more.
         </motion.p>
 
         {/* Billing Toggle */}
@@ -101,7 +113,9 @@ export function Pricing() {
               }`}
             >
               Yearly
-              <span className="ml-1.5 text-xs text-[#D4873A] font-semibold">Save 17%</span>
+              <span className="ml-1.5 text-xs text-[#D4873A] font-semibold">
+                Save 17%
+              </span>
             </button>
           </div>
         </motion.div>
@@ -119,11 +133,15 @@ export function Pricing() {
           >
             <div className="mb-6">
               <h3 className="text-lg font-bold text-[#1A3D2B] mb-1">Free</h3>
-              <p className="text-sm text-[#8FA898]">Perfect for getting started</p>
+              <p className="text-sm text-[#8FA898]">
+                Perfect for getting started
+              </p>
             </div>
 
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-5xl font-black text-[#1A3D2B]"><span className="text-[#D4873A]">$</span>0</span>
+              <span className="text-5xl font-black text-[#1A3D2B]">
+                <span className="text-[#D4873A]">$</span>0
+              </span>
               <span className="text-[#8FA898]">/forever</span>
             </div>
 
@@ -156,7 +174,7 @@ export function Pricing() {
           >
             {/* Amber border */}
             <div className="absolute -inset-px rounded-3xl border-2 border-[#D4873A]" />
-            
+
             <div className="relative rounded-3xl bg-white p-8 shadow-2xl shadow-[#D4873A]/20">
               {/* Badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -175,12 +193,15 @@ export function Pricing() {
                   <Crown className="w-5 h-5 text-[#D4873A]" />
                   Pro Plan
                 </h3>
-                <p className="text-sm text-[#8FA898]">Everything you need to succeed</p>
+                <p className="text-sm text-[#8FA898]">
+                  Everything you need to succeed
+                </p>
               </div>
 
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-5xl font-black text-[#1A3D2B]">
-                  <span className="text-[#D4873A]">$</span>{billingPeriod === "monthly" ? "49.99" : "500"}
+                  <span className="text-[#D4873A]">$</span>
+                  {billingPeriod === "monthly" ? "49.99" : "500"}
                 </span>
                 <span className="text-[#8FA898]">
                   /{billingPeriod === "monthly" ? "mo" : "yr"}
@@ -199,6 +220,7 @@ export function Pricing() {
 
               <Link
                 href="/signup"
+                onClick={() => trackProPayment()}
                 className="group w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-[#D4873A] text-white font-bold shadow-xl shadow-[#D4873A]/30 hover:bg-[#E8A04F] hover:shadow-[#D4873A]/50 hover:-translate-y-1 transition-all duration-500 mb-8"
               >
                 <Zap className="w-5 h-5" />
@@ -221,7 +243,10 @@ export function Pricing() {
                     className="flex items-center gap-2"
                   >
                     <div className="w-5 h-5 rounded-full bg-[#D4873A]/20 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-[#D4873A]" strokeWidth={3} />
+                      <Check
+                        className="w-3 h-3 text-[#D4873A]"
+                        strokeWidth={3}
+                      />
                     </div>
                     <span className="text-sm text-[#1A3D2B]">{feature}</span>
                   </motion.div>
@@ -256,15 +281,21 @@ export function Pricing() {
                   className="flex items-center gap-4 p-4 rounded-2xl bg-[#F5F0E8] border border-[#2E5C40]/10"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#1A3D2B] mb-2">{item.feature}</p>
+                    <p className="text-sm font-medium text-[#1A3D2B] mb-2">
+                      {item.feature}
+                    </p>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <X className="w-4 h-4 text-red-400" />
-                        <span className="text-sm text-[#8FA898] line-through">{item.agency}</span>
+                        <span className="text-sm text-[#8FA898] line-through">
+                          {item.agency}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-[#D4873A]" />
-                        <span className="text-sm font-semibold text-[#D4873A]">{item.bytescart}</span>
+                        <span className="text-sm font-semibold text-[#D4873A]">
+                          {item.bytescart}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -275,7 +306,10 @@ export function Pricing() {
             {/* Bottom callout */}
             <div className="mt-8 p-4 rounded-2xl bg-[#0D2B1F] border border-[#2E5C40]">
               <p className="text-center text-sm text-[#F5F0E8]">
-                <span className="font-semibold text-[#D4873A]">30,000+ hours</span> of development time saved for our customers
+                <span className="font-semibold text-[#D4873A]">
+                  30,000+ hours
+                </span>{" "}
+                of development time saved for our customers
               </p>
             </div>
           </motion.div>

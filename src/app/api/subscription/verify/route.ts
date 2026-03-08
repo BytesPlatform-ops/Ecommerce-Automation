@@ -26,11 +26,11 @@ function getSubscriptionPeriodEnd(subscription: Stripe.Subscription): Date {
 
 /**
  * POST /api/subscription/verify
- * 
+ *
  * Called after the user returns from Stripe Checkout to verify the payment
  * and update the subscription tier. This serves as a fallback in case the
  * webhook was not received or failed.
- * 
+ *
  * Body: { sessionId: string }
  */
 export async function POST(request: NextRequest) {
@@ -49,10 +49,7 @@ export async function POST(request: NextRequest) {
     const { sessionId } = body as { sessionId?: string };
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "Missing sessionId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
     // Find user's store
@@ -89,7 +86,7 @@ export async function POST(request: NextRequest) {
     if (session.metadata?.storeId !== store.id) {
       return NextResponse.json(
         { error: "Session does not match your store" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -116,7 +113,7 @@ export async function POST(request: NextRequest) {
     if (!subscriptionId || !customerId) {
       return NextResponse.json(
         { error: "Missing subscription or customer ID in session" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -163,12 +160,14 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Subscription activated",
       tier: "PRO",
+      subscriptionId,
+      amount: subscription.items.data[0]?.price?.unit_amount ?? 0,
     });
   } catch (error) {
     console.error("Subscription verify error:", error);
     return NextResponse.json(
       { error: "Failed to verify subscription" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

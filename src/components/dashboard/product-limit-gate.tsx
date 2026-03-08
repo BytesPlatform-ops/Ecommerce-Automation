@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Crown, Lock, ArrowRight, Zap } from "lucide-react";
 import { UpgradeModal } from "./upgrade-modal";
+import { trackProPayment } from "@/lib/gtag";
 
 interface ProductLimitGateProps {
   subscriptionStatus: {
@@ -17,7 +18,9 @@ interface ProductLimitGateProps {
   };
 }
 
-export function ProductLimitGate({ subscriptionStatus }: ProductLimitGateProps) {
+export function ProductLimitGate({
+  subscriptionStatus,
+}: ProductLimitGateProps) {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   return (
@@ -34,31 +37,46 @@ export function ProductLimitGate({ subscriptionStatus }: ProductLimitGateProps) 
           </h2>
 
           <p className="text-gray-500 max-w-md mx-auto mb-2">
-            You&apos;ve used all <span className="font-semibold text-gray-700">{subscriptionStatus.productCount}</span> of{" "}
-            <span className="font-semibold text-gray-700">{subscriptionStatus.effectiveLimit}</span> product slots
-            on the Free plan.
+            You&apos;ve used all{" "}
+            <span className="font-semibold text-gray-700">
+              {subscriptionStatus.productCount}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-gray-700">
+              {subscriptionStatus.effectiveLimit}
+            </span>{" "}
+            product slots on the Free plan.
           </p>
 
           {subscriptionStatus.isGracePeriod && (
             <p className="text-amber-600 text-sm font-medium mb-4">
-              Grace period: {subscriptionStatus.gracePeriodDaysLeft} day{subscriptionStatus.gracePeriodDaysLeft !== 1 ? "s" : ""} remaining
+              Grace period: {subscriptionStatus.gracePeriodDaysLeft} day
+              {subscriptionStatus.gracePeriodDaysLeft !== 1 ? "s" : ""}{" "}
+              remaining
             </p>
           )}
 
           {/* Progress bar */}
           <div className="max-w-xs mx-auto mb-8">
             <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-red-400 to-red-500 rounded-full" style={{ width: "100%" }} />
+              <div
+                className="h-full bg-gradient-to-r from-red-400 to-red-500 rounded-full"
+                style={{ width: "100%" }}
+              />
             </div>
             <p className="text-xs text-gray-400 mt-1.5">
-              {subscriptionStatus.productCount}/{subscriptionStatus.effectiveLimit} products
+              {subscriptionStatus.productCount}/
+              {subscriptionStatus.effectiveLimit} products
             </p>
           </div>
 
           {/* Upgrade CTA */}
           <div className="space-y-4">
             <button
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={() => {
+                trackProPayment();
+                setShowUpgradeModal(true);
+              }}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 text-white font-bold text-lg shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 transition-all"
             >
               <Zap className="w-5 h-5" />
@@ -74,7 +92,9 @@ export function ProductLimitGate({ subscriptionStatus }: ProductLimitGateProps) 
           {/* Feature comparison */}
           <div className="mt-10 grid grid-cols-2 gap-4 max-w-md mx-auto">
             <div className="text-left p-4 rounded-xl bg-gray-50 border border-gray-100">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Free Plan</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Free Plan
+              </p>
               <ul className="space-y-1.5 text-sm text-gray-500">
                 <li>15 products</li>
                 <li>Basic features</li>

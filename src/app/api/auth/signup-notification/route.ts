@@ -11,6 +11,8 @@ const NOTIFICATION_RECIPIENTS = [
 
 const schema = z.object({
   email: z.string().trim().email("Valid email required"),
+  storeName: z.string().trim().min(1).max(100).optional(),
+  storeUrl: z.string().trim().url().optional(),
 });
 
 function escapeHtml(value: string) {
@@ -71,7 +73,27 @@ export async function POST(request: Request) {
       timeZoneName: "short",
     });
 
-    const subjectLine = `[Bytescart] New User Signup: ${data.email}`;
+    const subjectLine = data.storeName
+      ? `[Bytescart] New Store Created: ${data.storeName}`
+      : `[Bytescart] New User Signup: ${data.email}`;
+
+    const storeSection = data.storeName
+      ? `
+                <tr>
+                  <td style="padding:16px 20px;border-bottom:1px solid #efe3d4;">
+                    <div style="color:#8a6f59;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;margin-bottom:4px;">Store Name</div>
+                    <div style="font-weight:600;font-size:16px;color:#2a1d14;">${escapeHtml(data.storeName)}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 20px;border-bottom:1px solid #efe3d4;">
+                    <div style="color:#8a6f59;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;margin-bottom:4px;">Store URL</div>
+                    <div style="font-size:14px;color:#2a1d14;">
+                      <a href="${escapeHtml(data.storeUrl ?? "")}" style="color:#c9a875;text-decoration:none;font-weight:600;">${escapeHtml(data.storeUrl ?? "")}</a>
+                    </div>
+                  </td>
+                </tr>`
+      : "";
 
     const htmlBody = `
       <div style="background-color:#f6f1ea;padding:24px 12px;">
@@ -83,14 +105,14 @@ export async function POST(request: Request) {
                 Bytescart
               </div>
               <div style="font-family:Arial,sans-serif;font-size:12px;letter-spacing:2.4px;color:#8a6f59;margin-top:6px;">
-                NEW USER SIGNUP NOTIFICATION
+                ${data.storeName ? "NEW STORE CREATED" : "NEW USER SIGNUP NOTIFICATION"}
               </div>
               <div style="height:1px;width:72px;background:#c9a875;margin:18px auto 0;"></div>
             </td>
           </tr>
           <tr>
             <td style="padding:24px 32px 12px;font-family:Arial,sans-serif;color:#3b2a20;font-size:14px;line-height:1.7;">
-              <p style="margin:0 0 20px;font-size:16px;">🎉 <strong>Great news!</strong> A new user has signed up for Bytescart.</p>
+              <p style="margin:0 0 20px;font-size:16px;">🎉 <strong>Great news!</strong> ${data.storeName ? "A new store has been created on Bytescart." : "A new user has signed up for Bytescart."}</p>
               
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;background:#fbf8f4;border:1px solid #efe3d4;border-radius:8px;">
                 <tr>
@@ -99,16 +121,17 @@ export async function POST(request: Request) {
                     <div style="font-weight:600;font-size:16px;color:#2a1d14;">${escapeHtml(data.email)}</div>
                   </td>
                 </tr>
+                ${storeSection}
                 <tr>
                   <td style="padding:16px 20px;">
-                    <div style="color:#8a6f59;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;margin-bottom:4px;">Signup Date</div>
+                    <div style="color:#8a6f59;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;margin-bottom:4px;">${data.storeName ? "Created On" : "Signup Date"}</div>
                     <div style="font-size:14px;color:#3b2a20;">${escapeHtml(signupDate)}</div>
                   </td>
                 </tr>
               </table>
               
               <p style="margin:20px 0 0;color:#666;font-size:13px;">
-                This user has created an account and will be directed to the onboarding flow to set up their store.
+                ${data.storeName ? "The store is now live and accessible at the URL above." : "This user has created an account and will be directed to the onboarding flow to set up their store."}
               </p>
             </td>
           </tr>
@@ -121,17 +144,31 @@ export async function POST(request: Request) {
       </div>
     `;
 
-    const textBody = [
-      "New User Signup Notification - Bytescart",
-      "",
-      `User Email: ${data.email}`,
-      `Signup Date: ${signupDate}`,
-      "",
-      "This user has created an account and will be directed to the onboarding flow to set up their store.",
-      "",
-      "---",
-      "This is an automated notification from Bytescart.",
-    ].join("\n");
+    const textBody = data.storeName
+      ? [
+          "New Store Created - Bytescart",
+          "",
+          `User Email: ${data.email}`,
+          `Store Name: ${data.storeName}`,
+          `Store URL: ${data.storeUrl ?? ""}`,
+          `Created On: ${signupDate}`,
+          "",
+          "The store is now live and accessible at the URL above.",
+          "",
+          "---",
+          "This is an automated notification from Bytescart.",
+        ].join("\n")
+      : [
+          "New User Signup Notification - Bytescart",
+          "",
+          `User Email: ${data.email}`,
+          `Signup Date: ${signupDate}`,
+          "",
+          "This user has created an account and will be directed to the onboarding flow to set up their store.",
+          "",
+          "---",
+          "This is an automated notification from Bytescart.",
+        ].join("\n");
 
     // Send to all notification recipients
     await sgMail.send({
@@ -142,7 +179,7 @@ export async function POST(request: Request) {
       html: htmlBody,
     });
 
-    console.log(`[signup-notification] Email sent for new signup: ${data.email}`);
+    console.log(`[signup-notification] Email sent for: ${data.email}${data.storeName ? ` | store: ${data.storeName}` : ""}`);
 
     return NextResponse.json({ ok: true });
   } catch (error) {
