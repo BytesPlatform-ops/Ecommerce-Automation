@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, DM_Sans, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "@uploadthing/react/styles.css";
 
@@ -33,6 +34,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-P12DQ0HH5K"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-P12DQ0HH5K');
+          `}
+        </Script>
+      </head>
       <body className={`${inter.variable} ${dmSans.variable} ${playfair.variable} ${inter.className} antialiased`} suppressHydrationWarning>
         {children}
       </body>
