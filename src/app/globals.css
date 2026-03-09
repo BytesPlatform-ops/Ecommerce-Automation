@@ -1710,6 +1710,78 @@ input[type="radio"] {
   border-radius: 0.5rem;
 }
 
+/* ─── Upgrade Button Animations ─── */
+@keyframes upgrade-shimmer {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(300%) skewX(-20deg); }
+}
+
+@keyframes upgrade-glow {
+  0%, 100% { box-shadow: 0 2px 12px rgba(109, 40, 217, 0.45), 0 4px 16px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 4px 24px rgba(109, 40, 217, 0.7), 0 6px 28px rgba(99, 102, 241, 0.5); }
+}
+
+@keyframes upgrade-glow-urgent {
+  0%, 100% { box-shadow: 0 2px 12px rgba(139, 92, 246, 0.45), 0 4px 16px rgba(219, 39, 119, 0.3); }
+  50% { box-shadow: 0 4px 24px rgba(139, 92, 246, 0.7), 0 6px 28px rgba(219, 39, 119, 0.5); }
+}
+
+.upgrade-btn {
+  position: relative;
+  overflow: hidden;
+  animation: upgrade-glow 2.5s ease-in-out infinite;
+  transition: transform 0.18s ease;
+}
+
+.upgrade-btn::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: 0;
+  width: 35%;
+  height: 120%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45) 50%, transparent);
+  transform: translateX(-200%) skewX(-20deg);
+  animation: upgrade-shimmer 3s ease-in-out infinite 0.8s;
+  pointer-events: none;
+}
+
+.upgrade-btn:hover {
+  transform: scale(1.06) translateY(-1px);
+}
+
+.upgrade-btn:active {
+  transform: scale(0.96);
+}
+
+.upgrade-btn-urgent {
+  position: relative;
+  overflow: hidden;
+  animation: upgrade-glow-urgent 2s ease-in-out infinite;
+  transition: transform 0.18s ease;
+}
+
+.upgrade-btn-urgent::after {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: 0;
+  width: 35%;
+  height: 120%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45) 50%, transparent);
+  transform: translateX(-200%) skewX(-20deg);
+  animation: upgrade-shimmer 2.2s ease-in-out infinite 0.5s;
+  pointer-events: none;
+}
+
+.upgrade-btn-urgent:hover {
+  transform: scale(1.06) translateY(-1px);
+}
+
+.upgrade-btn-urgent:active {
+  transform: scale(0.96);
+}
+
 /* ─── Dashboard Product Card (improved) ─── */
 .dash-product-card {
   border-radius: 0.875rem;

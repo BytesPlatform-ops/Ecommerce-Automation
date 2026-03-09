@@ -9,6 +9,12 @@ import { logAudit, AuditAction, getRequestIp } from "@/lib/audit";
 import { secureLog } from "@/lib/security";
 
 export async function POST(request: NextRequest) {
+  // If no webhook secret is configured, gracefully acknowledge so Stripe stops retrying.
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json({ received: true, note: "webhook disabled" });
+  }
+
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
@@ -17,15 +23,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: "Missing stripe-signature header" },
       { status: 400 }
-    );
-  }
-
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is not set");
-    return NextResponse.json(
-      { error: "Webhook secret not configured" },
-      { status: 500 }
     );
   }
 

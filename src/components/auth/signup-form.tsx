@@ -106,15 +106,6 @@ export function SignupForm() {
         trackSignup(authData?.user?.id ?? email);
       });
 
-      // Send signup notification email to admins (fire and forget)
-      fetch("/api/auth/signup-notification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }).catch((err) => {
-        console.error("Failed to send signup notification:", err);
-      });
-
       router.push("/onboarding");
       router.refresh();
     } catch {

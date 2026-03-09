@@ -1,6 +1,6 @@
 "use client";
 
-import { Crown, AlertTriangle, ArrowRight } from "lucide-react";
+import { Crown, AlertTriangle, ArrowRight, Sparkles, Zap } from "lucide-react";
 
 interface UpgradeBannerProps {
   tier: string;
@@ -43,7 +43,7 @@ export function UpgradeBanner({
           </div>
           <button
             onClick={onUpgradeClick}
-            className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-amber-600 text-white rounded-xl hover:bg-amber-700 hover:scale-105 active:scale-95 transition-all shadow-md hover:shadow-amber-500/40"
           >
             Fix Payment
           </button>
@@ -71,7 +71,7 @@ export function UpgradeBanner({
           </div>
           <button
             onClick={onUpgradeClick}
-            className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-amber-600 text-white rounded-xl hover:bg-amber-700 hover:scale-105 active:scale-95 transition-all shadow-md hover:shadow-amber-500/40"
           >
             Resubscribe
           </button>
@@ -101,9 +101,10 @@ export function UpgradeBanner({
           </div>
           <button
             onClick={onUpgradeClick}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+            className="upgrade-btn-urgent flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-extrabold bg-gradient-to-br from-violet-600 via-purple-600 to-pink-600 text-white rounded-xl shadow-lg"
           >
-            Upgrade <ArrowRight className="w-3 h-3" />
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            Upgrade Now
           </button>
         </div>
       </div>
@@ -134,9 +135,10 @@ export function UpgradeBanner({
           </div>
           <button
             onClick={onUpgradeClick}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all"
+            className="upgrade-btn flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-xs font-extrabold bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 text-white rounded-xl shadow-lg"
           >
-            Upgrade <ArrowRight className="w-3 h-3" />
+            <Sparkles className="w-3.5 h-3.5" />
+            Go Pro
           </button>
         </div>
       </div>
@@ -198,9 +200,11 @@ export function UpgradeBanner({
         </div>
         <button
           onClick={onUpgradeClick}
-          className="flex-shrink-0 text-xs text-violet-600 font-medium hover:text-violet-700 transition-colors"
+          className="upgrade-btn flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-gradient-to-br from-violet-600 to-indigo-600 text-white rounded-xl shadow-md"
         >
-          Upgrade →
+          <Crown className="w-3 h-3" />
+          Upgrade
+          <ArrowRight className="w-3 h-3" />
         </button>
       </div>
     </div>
