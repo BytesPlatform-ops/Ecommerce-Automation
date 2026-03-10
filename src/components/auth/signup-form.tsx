@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +14,34 @@ import {
   Loader2,
   Check,
   X,
+  Phone,
+  ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
+
+// Country codes for dropdown
+const COUNTRY_CODES = [
+  { code: "+1", country: "USA/Canada", flag: "🇺🇸" },
+  { code: "+92", country: "Pakistan", flag: "🇵🇰" },
+  { code: "+44", country: "UK", flag: "🇬🇧" },
+  { code: "+91", country: "India", flag: "🇮🇳" },
+  { code: "+971", country: "UAE", flag: "🇦🇪" },
+  { code: "+966", country: "Saudi Arabia", flag: "🇸🇦" },
+  { code: "+61", country: "Australia", flag: "🇦🇺" },
+  { code: "+49", country: "Germany", flag: "🇩🇪" },
+  { code: "+33", country: "France", flag: "🇫🇷" },
+  { code: "+86", country: "China", flag: "🇨🇳" },
+  { code: "+81", country: "Japan", flag: "🇯🇵" },
+  { code: "+82", country: "South Korea", flag: "🇰🇷" },
+  { code: "+55", country: "Brazil", flag: "🇧🇷" },
+  { code: "+52", country: "Mexico", flag: "🇲🇽" },
+  { code: "+34", country: "Spain", flag: "🇪🇸" },
+  { code: "+39", country: "Italy", flag: "🇮🇹" },
+  { code: "+31", country: "Netherlands", flag: "🇳🇱" },
+  { code: "+46", country: "Sweden", flag: "🇸🇪" },
+  { code: "+47", country: "Norway", flag: "🇳🇴" },
+  { code: "+45", country: "Denmark", flag: "🇩🇰" },
+];
 
 function getPasswordStrength(password: string) {
   let score = 0;
@@ -50,54 +77,195 @@ function getPasswordStrength(password: string) {
 }
 
 export function SignupForm() {
+  // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Phone verification
+  const [countryCode, setCountryCode] = useState("+1");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
+  // Step management: "details" | "otp"
+  const [step, setStep] = useState<"details" | "otp">("details");
+  
+  // Loading states
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
+  const fullPhoneNumber = `${countryCode}${phoneNumber}`;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
+  // Resend timer countdown
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
+
+  // Validate form before sending OTP
+  const validateForm = (): boolean => {
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      return;
+      return false;
     }
-
     if (password.length < 8) {
       setError("Password must be at least 8 characters");
-      return;
+      return false;
     }
-
-    if (
-      !/[A-Z]/.test(password) ||
-      !/[a-z]/.test(password) ||
-      !/[0-9]/.test(password)
-    ) {
-      setError(
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-      );
-      return;
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+      return false;
     }
+    if (!phoneNumber || phoneNumber.length < 7) {
+      setError("Please enter a valid phone number");
+      return false;
+    }
+    return true;
+  };
 
-    setLoading(true);
+  // Send OTP
+  const handleSendOtp = async () => {
+    setError(null);
+    if (!validateForm()) return;
 
+    setSendingOtp(true);
     try {
-      const { data: authData, error } = await supabase.auth.signUp({
-        email,
-        password,
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: fullPhoneNumber }),
       });
 
-      if (error) {
-        setError(error.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to send OTP");
+        return;
+      }
+
+      // Move to OTP step
+      setStep("otp");
+      setResendTimer(60); // 60 second cooldown
+      setOtpCode(["", "", "", "", "", ""]);
+      
+      // Focus first OTP input after a short delay
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 100);
+    } catch {
+      setError("Failed to send OTP. Please try again.");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  // Handle OTP input
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return; // Only allow digits
+    
+    const newOtp = [...otpCode];
+    newOtp[index] = value.slice(-1); // Only keep last digit
+    setOtpCode(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle OTP paste
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pastedData.length > 0) {
+      const newOtp = [...otpCode];
+      for (let i = 0; i < pastedData.length && i < 6; i++) {
+        newOtp[i] = pastedData[i];
+      }
+      setOtpCode(newOtp);
+      // Focus the next empty input or the last one
+      const nextEmptyIndex = newOtp.findIndex(v => !v);
+      otpInputRefs.current[nextEmptyIndex === -1 ? 5 : nextEmptyIndex]?.focus();
+    }
+  };
+
+  // Handle OTP backspace
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Verify OTP and create account
+  const handleVerifyAndSignup = async () => {
+    const code = otpCode.join("");
+    if (code.length !== 6) {
+      setError("Please enter the 6-digit verification code");
+      return;
+    }
+
+    setError(null);
+    setVerifyingOtp(true);
+
+    try {
+      // First verify the OTP
+      const verifyResponse = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: fullPhoneNumber, code }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok || !verifyData.verified) {
+        setError(verifyData.error || "Invalid verification code");
+        return;
+      }
+
+      // OTP verified! Now create the account
+      setLoading(true);
+      const { data: authData, error: signupError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            phone: fullPhoneNumber,
+          },
+        },
+      });
+
+      if (signupError) {
+        setError(signupError.message);
         return;
       }
 
@@ -111,7 +279,39 @@ export function SignupForm() {
     } catch {
       setError("An unexpected error occurred");
     } finally {
+      setVerifyingOtp(false);
       setLoading(false);
+    }
+  };
+
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    
+    setError(null);
+    setSendingOtp(true);
+    
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: fullPhoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to resend OTP");
+        return;
+      }
+
+      setResendTimer(60);
+      setOtpCode(["", "", "", "", "", ""]);
+      otpInputRefs.current[0]?.focus();
+    } catch {
+      setError("Failed to resend OTP");
+    } finally {
+      setSendingOtp(false);
     }
   };
 
@@ -122,8 +322,10 @@ export function SignupForm() {
     { key: "number", label: "Number", met: strength.checks.number },
   ];
 
+  const selectedCountry = COUNTRY_CODES.find(c => c.code === countryCode) || COUNTRY_CODES[0];
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       <AnimatePresence mode="wait">
         {error && (
           <motion.div
@@ -141,239 +343,424 @@ export function SignupForm() {
         )}
       </AnimatePresence>
 
-      {/* Email field */}
-      <div className="space-y-2">
-        <label
-          htmlFor="email"
-          className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
-        >
-          Email address
-        </label>
-        <div
-          className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
-            focusedField === "email"
-              ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
-              : "border-border hover:border-neutral-400"
-          }`}
-        >
-          <Mail
-            className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
-              focusedField === "email"
-                ? "text-neutral-900"
-                : "text-muted-foreground"
-            }`}
-          />
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onFocus={() => setFocusedField("email")}
-            onBlur={() => setFocusedField(null)}
-            required
-            suppressHydrationWarning
-            className="w-full pl-11 pr-12 py-2.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
-            placeholder="you@example.com"
-          />
-        </div>
-      </div>
-
-      {/* Password field */}
-      <div className="space-y-2">
-        <label
-          htmlFor="password"
-          className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
-        >
-          Password
-        </label>
-        <div
-          className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
-            focusedField === "password"
-              ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
-              : "border-border hover:border-neutral-400"
-          }`}
-        >
-          <Lock
-            className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
-              focusedField === "password"
-                ? "text-neutral-900"
-                : "text-muted-foreground"
-            }`}
-          />
-          <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => setFocusedField("password")}
-            onBlur={() => setFocusedField(null)}
-            required
-            suppressHydrationWarning
-            className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
-            placeholder="Create a secure password"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors duration-200"
-            tabIndex={-1}
+      <AnimatePresence mode="wait">
+        {step === "details" ? (
+          <motion.form
+            key="details"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }}
+            className="space-y-4"
           >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+            {/* Email field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              >
+                Email address
+              </label>
+              <div
+                className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
+                  focusedField === "email"
+                    ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                    : "border-border hover:border-neutral-400"
+                }`}
+              >
+                <Mail
+                  className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
+                    focusedField === "email"
+                      ? "text-neutral-900"
+                      : "text-muted-foreground"
+                  }`}
+                />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setFocusedField("email")}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  suppressHydrationWarning
+                  className="w-full pl-11 pr-12 py-2.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
 
-        {/* Password strength meter */}
-        <AnimatePresence>
-          {password.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="pt-1.5 space-y-1.5">
-                {/* Strength bar */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-1 bg-neutral-100 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(strength.score / 5) * 100}%` }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className={`h-full rounded-full ${strength.color}`}
-                    />
-                  </div>
-                  <span className="text-[10px] font-medium text-muted-foreground min-w-[50px] text-right">
-                    {strength.label}
-                  </span>
+            {/* Phone number field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="phone"
+                className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              >
+                Phone Number
+              </label>
+              <div className="flex gap-2">
+                {/* Country code dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border bg-white transition-all duration-300 min-w-[100px] ${
+                      showCountryDropdown
+                        ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                        : "border-border hover:border-neutral-400"
+                    }`}
+                  >
+                    <span className="text-base">{selectedCountry.flag}</span>
+                    <span className="text-sm font-medium">{selectedCountry.code}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${showCountryDropdown ? "rotate-180" : ""}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {showCountryDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute z-50 top-full left-0 mt-1 w-56 max-h-60 overflow-y-auto bg-white rounded-xl border border-border shadow-lg"
+                      >
+                        {COUNTRY_CODES.map((country) => (
+                          <button
+                            key={country.code}
+                            type="button"
+                            onClick={() => {
+                              setCountryCode(country.code);
+                              setShowCountryDropdown(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-neutral-50 transition-colors ${
+                              countryCode === country.code ? "bg-neutral-100" : ""
+                            }`}
+                          >
+                            <span className="text-lg">{country.flag}</span>
+                            <span className="text-sm">{country.country}</span>
+                            <span className="text-sm text-muted-foreground ml-auto">{country.code}</span>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                {/* Requirements checklist */}
-                <div className="grid grid-cols-4 gap-1">
-                  {requirementItems.map((item) => (
-                    <div key={item.key} className="flex items-center gap-1">
-                      {item.met ? (
-                        <Check className="h-2.5 w-2.5 text-emerald-500" />
-                      ) : (
-                        <X className="h-2.5 w-2.5 text-neutral-300" />
-                      )}
-                      <span
-                        className={`text-[11px] transition-colors duration-200 ${item.met ? "text-emerald-600" : "text-muted-foreground"}`}
-                      >
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
+                {/* Phone input */}
+                <div
+                  className={`relative flex-1 flex items-center rounded-xl border bg-white transition-all duration-300 ${
+                    focusedField === "phone"
+                      ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                      : "border-border hover:border-neutral-400"
+                  }`}
+                >
+                  <Phone
+                    className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
+                      focusedField === "phone"
+                        ? "text-neutral-900"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                    onFocus={() => setFocusedField("phone")}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    suppressHydrationWarning
+                    className="w-full pl-11 pr-4 py-2.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
+                    placeholder="3001234567"
+                  />
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              <p className="text-[11px] text-muted-foreground">We&apos;ll send a verification code to this number</p>
+            </div>
 
-      {/* Confirm password field */}
-      <div className="space-y-1.5">
-        <label
-          htmlFor="confirmPassword"
-          className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
-        >
-          Confirm
-        </label>
-        <div
-          className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
-            focusedField === "confirmPassword"
-              ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
-              : confirmPassword.length > 0 && password !== confirmPassword
-                ? "border-red-300 shadow-[0_0_0_3px_rgba(239,68,68,0.06)]"
-                : confirmPassword.length > 0 && password === confirmPassword
-                  ? "border-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.06)]"
-                  : "border-border hover:border-neutral-400"
-          }`}
-        >
-          <Lock
-            className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
-              focusedField === "confirmPassword"
-                ? "text-neutral-900"
-                : "text-muted-foreground"
-            }`}
-          />
-          <input
-            id="confirmPassword"
-            type={showConfirmPassword ? "text" : "password"}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onFocus={() => setFocusedField("confirmPassword")}
-            onBlur={() => setFocusedField(null)}
-            required
-            suppressHydrationWarning
-            className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
-            placeholder="Confirm your password"
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors duration-200"
-            tabIndex={-1}
-          >
-            {showConfirmPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-          </button>
-        </div>
-        {/* Match indicator */}
-        <AnimatePresence>
-          {confirmPassword.length > 0 && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className={`text-[10px] flex items-center gap-0.5 ${
-                password === confirmPassword
-                  ? "text-emerald-600"
-                  : "text-red-500"
-              }`}
+            {/* Password field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              >
+                Password
+              </label>
+              <div
+                className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
+                  focusedField === "password"
+                    ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                    : "border-border hover:border-neutral-400"
+                }`}
+              >
+                <Lock
+                  className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
+                    focusedField === "password"
+                      ? "text-neutral-900"
+                      : "text-muted-foreground"
+                  }`}
+                />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField("password")}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  suppressHydrationWarning
+                  className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
+                  placeholder="Create a secure password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {/* Password strength meter */}
+              <AnimatePresence>
+                {password.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-1.5 space-y-1.5">
+                      {/* Strength bar */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1 bg-neutral-100 rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(strength.score / 5) * 100}%` }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            className={`h-full rounded-full ${strength.color}`}
+                          />
+                        </div>
+                        <span className="text-[10px] font-medium text-muted-foreground min-w-[50px] text-right">
+                          {strength.label}
+                        </span>
+                      </div>
+
+                      {/* Requirements checklist */}
+                      <div className="grid grid-cols-4 gap-1">
+                        {requirementItems.map((item) => (
+                          <div key={item.key} className="flex items-center gap-1">
+                            {item.met ? (
+                              <Check className="h-2.5 w-2.5 text-emerald-500" />
+                            ) : (
+                              <X className="h-2.5 w-2.5 text-neutral-300" />
+                            )}
+                            <span
+                              className={`text-[11px] transition-colors duration-200 ${item.met ? "text-emerald-600" : "text-muted-foreground"}`}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Confirm password field */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-xs font-medium text-muted-foreground uppercase tracking-wider"
+              >
+                Confirm
+              </label>
+              <div
+                className={`relative flex items-center rounded-xl border bg-white transition-all duration-300 ${
+                  focusedField === "confirmPassword"
+                    ? "border-neutral-900 shadow-[0_0_0_3px_rgba(0,0,0,0.06)]"
+                    : confirmPassword.length > 0 && password !== confirmPassword
+                      ? "border-red-300 shadow-[0_0_0_3px_rgba(239,68,68,0.06)]"
+                      : confirmPassword.length > 0 && password === confirmPassword
+                        ? "border-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.06)]"
+                        : "border-border hover:border-neutral-400"
+                }`}
+              >
+                <Lock
+                  className={`absolute left-4 h-4 w-4 transition-colors duration-200 ${
+                    focusedField === "confirmPassword"
+                      ? "text-neutral-900"
+                      : "text-muted-foreground"
+                  }`}
+                />
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onFocus={() => setFocusedField("confirmPassword")}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  suppressHydrationWarning
+                  className="w-full pl-11 pr-12 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none rounded-xl"
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors duration-200"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {/* Match indicator */}
+              <AnimatePresence>
+                {confirmPassword.length > 0 && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className={`text-[10px] flex items-center gap-0.5 ${
+                      password === confirmPassword
+                        ? "text-emerald-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {password === confirmPassword ? (
+                      <Check className="h-2.5 w-2.5" />
+                    ) : (
+                      <X className="h-2.5 w-2.5" />
+                    )}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Submit button - Send OTP */}
+            <motion.button
+              type="submit"
+              suppressHydrationWarning
+              disabled={sendingOtp}
+              whileHover={{ scale: sendingOtp ? 1 : 1.01 }}
+              whileTap={{ scale: sendingOtp ? 1 : 0.98 }}
+              className="auth-btn-primary group"
             >
-              {password === confirmPassword ? (
-                <>
-                  <Check className="h-2.5 w-2.5" />
-                </>
+              {sendingOtp ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Sending code...
+                </span>
               ) : (
-                <>
-                  <X className="h-2.5 w-2.5" />
-                </>
+                <span className="flex items-center justify-center gap-2">
+                  Continue
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
               )}
-            </motion.p>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Submit button */}
-      <motion.button
-        type="submit"
-        suppressHydrationWarning
-        disabled={loading}
-        whileHover={{ scale: loading ? 1 : 1.01 }}
-        whileTap={{ scale: loading ? 1 : 0.98 }}
-        className="auth-btn-primary group"
-      >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Creating account...
-          </span>
+            </motion.button>
+          </motion.form>
         ) : (
-          <span className="flex items-center justify-center gap-2">
-            Create account
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </span>
+          /* OTP Verification Step */
+          <motion.div
+            key="otp"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={() => { setStep("details"); setError(null); }}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="h-12 w-12 mx-auto bg-emerald-100 rounded-full flex items-center justify-center">
+                <Phone className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Verify your phone</h3>
+              <p className="text-sm text-muted-foreground">
+                We sent a 6-digit code to <span className="font-medium text-foreground">{fullPhoneNumber}</span>
+              </p>
+            </div>
+
+            {/* OTP Input */}
+            <div className="flex justify-center gap-2">
+              {otpCode.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => { otpInputRefs.current[index] = el; }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  onPaste={index === 0 ? handleOtpPaste : undefined}
+                  className="w-11 h-14 text-center text-xl font-semibold border rounded-xl bg-white focus:border-neutral-900 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] focus:outline-none transition-all"
+                />
+              ))}
+            </div>
+
+            {/* Resend */}
+            <div className="text-center">
+              {resendTimer > 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Resend code in <span className="font-medium">{resendTimer}s</span>
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={sendingOtp}
+                  className="text-sm text-neutral-900 font-medium hover:underline disabled:opacity-50"
+                >
+                  {sendingOtp ? "Sending..." : "Resend code"}
+                </button>
+              )}
+            </div>
+
+            {/* Verify button */}
+            <motion.button
+              type="button"
+              onClick={handleVerifyAndSignup}
+              disabled={verifyingOtp || loading || otpCode.join("").length !== 6}
+              whileHover={{ scale: verifyingOtp || loading ? 1 : 1.01 }}
+              whileTap={{ scale: verifyingOtp || loading ? 1 : 0.98 }}
+              className="auth-btn-primary group w-full"
+            >
+              {verifyingOtp || loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {loading ? "Creating account..." : "Verifying..."}
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Create account
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              )}
+            </motion.button>
+          </motion.div>
         )}
-      </motion.button>
-    </form>
+      </AnimatePresence>
+    </div>
   );
 }

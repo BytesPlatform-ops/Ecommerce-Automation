@@ -13,6 +13,7 @@ const schema = z.object({
   email: z.string().trim().email("Valid email required"),
   storeName: z.string().trim().min(1).max(100).optional(),
   storeUrl: z.string().trim().url().optional(),
+  phone: z.string().trim().max(20).optional(),
 });
 
 function escapeHtml(value: string) {
@@ -121,6 +122,12 @@ export async function POST(request: Request) {
                     <div style="font-weight:600;font-size:16px;color:#2a1d14;">${escapeHtml(data.email)}</div>
                   </td>
                 </tr>
+                ${data.phone ? `<tr>
+                  <td style="padding:16px 20px;border-bottom:1px solid #efe3d4;">
+                    <div style="color:#8a6f59;text-transform:uppercase;letter-spacing:1.6px;font-size:11px;margin-bottom:4px;">Phone Number</div>
+                    <div style="font-weight:600;font-size:16px;color:#2a1d14;">${escapeHtml(data.phone)}</div>
+                  </td>
+                </tr>` : ""}
                 ${storeSection}
                 <tr>
                   <td style="padding:16px 20px;">
@@ -149,6 +156,7 @@ export async function POST(request: Request) {
           "New Store Created - Bytescart",
           "",
           `User Email: ${data.email}`,
+          data.phone ? `Phone Number: ${data.phone}` : "",
           `Store Name: ${data.storeName}`,
           `Store URL: ${data.storeUrl ?? ""}`,
           `Created On: ${signupDate}`,

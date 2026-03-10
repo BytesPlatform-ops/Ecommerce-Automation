@@ -10,9 +10,10 @@ interface OnboardingFormProps {
   themes: Theme[];
   userId: string;
   userEmail: string;
+  userPhone?: string;
 }
 
-export function OnboardingForm({ themes, userId, userEmail }: OnboardingFormProps) {
+export function OnboardingForm({ themes, userId, userEmail, userPhone }: OnboardingFormProps) {
   const [storeName, setStoreName] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<string | null>(
     themes[0]?.id || null
@@ -70,7 +71,7 @@ export function OnboardingForm({ themes, userId, userEmail }: OnboardingFormProp
       fetch("/api/auth/signup-notification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail, storeName: storeName.trim(), storeUrl }),
+        body: JSON.stringify({ email: userEmail, storeName: storeName.trim(), storeUrl, phone: userPhone }),
       }).catch((err) => {
         console.error("Failed to send store creation notification:", err);
       });
