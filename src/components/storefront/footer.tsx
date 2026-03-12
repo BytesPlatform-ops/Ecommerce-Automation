@@ -168,6 +168,7 @@ export function StorefrontFooter({
               <input
                 type="email"
                 placeholder="your@email.com"
+                suppressHydrationWarning
                 className="flex-1 px-4 py-3 bg-background border border-border text-sm placeholder:text-muted-foreground transition-colors duration-200 min-w-0 footer-newsletter-input newsletter-input-themed"
               />
               <button
