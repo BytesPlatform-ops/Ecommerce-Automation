@@ -10,14 +10,34 @@ interface MobileSidebarToggleProps {
 export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [tourLocked, setTourLocked] = useState(false);
 
   const toggleSidebar = () => {
     setIsOpen((prev) => !prev);
   };
 
   const closeSidebar = () => {
+    if (tourLocked) return; // Don't close sidebar during tour
     setIsOpen(false);
   };
+
+  // Listen for tour events to open/close sidebar on mobile
+  useEffect(() => {
+    const handleTourOpen = () => {
+      setIsOpen(true);
+      setTourLocked(true);
+    };
+    const handleTourClose = () => {
+      setTourLocked(false);
+      setIsOpen(false);
+    };
+    window.addEventListener("tour-open-sidebar", handleTourOpen);
+    window.addEventListener("tour-close-sidebar", handleTourClose);
+    return () => {
+      window.removeEventListener("tour-open-sidebar", handleTourOpen);
+      window.removeEventListener("tour-close-sidebar", handleTourClose);
+    };
+  }, []);
 
   // Check if we're on mobile and handle resize
   useEffect(() => {
@@ -50,8 +70,8 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
 
   return (
     <>
-      {/* Hamburger button - visible only on mobile when sidebar is closed */}
-      {isMobile && !isOpen && (
+      {/* Hamburger button - visible only on mobile when sidebar is closed and tour not active */}
+      {isMobile && !isOpen && !tourLocked && (
         <button
           type="button"
           onClick={toggleSidebar}
@@ -77,7 +97,7 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
       {/* Sidebar */}
       <aside
         className={`
-          ${isMobile ? 'fixed' : 'static'} inset-y-0 left-0 z-50
+          ${isMobile ? 'fixed' : 'sticky top-0 h-screen'} inset-y-0 left-0 z-50
           w-72 bg-white border-r border-gray-200/80 flex flex-col shadow-xl shadow-gray-200/50 overflow-hidden
           transition-all duration-300 ease-in-out
           ${isMobile 
@@ -86,8 +106,8 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
           } 
         `}
       >
-        {/* Close button inside sidebar - top right */}
-        {isMobile && (
+        {/* Close button inside sidebar - top right (hidden during tour) */}
+        {isMobile && !tourLocked && (
           <button
             type="button"
             onClick={closeSidebar}

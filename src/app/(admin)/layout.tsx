@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LayoutDashboard, Package, Palette, Settings, LogOut, Store as StoreIcon, ExternalLink, Sparkles, CreditCard, Tag } from "lucide-react";
 import { MobileSidebarToggle } from "@/components/dashboard/mobile-sidebar-toggle";
+import { OnboardingTour } from "@/components/dashboard/onboarding-tour";
 
 export default async function AdminLayout({
   children,
@@ -59,6 +60,7 @@ export default async function AdminLayout({
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-3">Menu</p>
           <Link
             href="/dashboard"
+            data-tour="dashboard"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-blue-100 group-hover:bg-blue-500 rounded-lg flex items-center justify-center transition-colors">
@@ -68,6 +70,7 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/dashboard/products"
+            data-tour="products"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-green-100 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition-colors">
@@ -77,6 +80,7 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/dashboard/categories"
+            data-tour="categories"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-amber-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
@@ -86,6 +90,7 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/dashboard/themes"
+            data-tour="themes"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-purple-100 group-hover:bg-purple-500 rounded-lg flex items-center justify-center transition-colors">
@@ -95,6 +100,7 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/dashboard/payments"
+            data-tour="payments"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
@@ -109,6 +115,7 @@ export default async function AdminLayout({
           </Link>
           <Link
             href="/dashboard/settings"
+            data-tour="settings"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-gray-50 hover:to-slate-50 rounded-xl transition-all group"
           >
             <div className="h-9 w-9 bg-gray-100 group-hover:bg-gray-500 rounded-lg flex items-center justify-center transition-colors">
@@ -124,6 +131,7 @@ export default async function AdminLayout({
             <Link
               href={`/stores/${store.subdomainSlug}`}
               target="_blank"
+              data-tour="view-store"
               className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-sm hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.01] transition-all group"
             >
               <div className="flex items-center gap-2">
@@ -151,6 +159,9 @@ export default async function AdminLayout({
           {children}
         </div>
       </main>
+
+      {/* Onboarding Tour for new users */}
+      <OnboardingTour />
     </div>
   );
 }
