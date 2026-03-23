@@ -13,6 +13,7 @@ import { Suspense } from "react";
 import { StockNotificationAlert } from "@/components/dashboard/stock-notification-alert";
 import { SubscriptionGate } from "@/components/dashboard/subscription-gate";
 import { SubscriptionVerifier } from "@/components/dashboard/subscription-verifier";
+import { GettingStarted } from "@/components/dashboard/getting-started";
 import { OrderStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
@@ -50,6 +51,9 @@ export default async function DashboardPage() {
     prev30Revenue,
     recentOrders,
     recentOrdersForChart,
+    subscriptionStatus,
+    lowStockProducts,
+    lowStockVariants,
   ] = await Promise.all([
     prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
     prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
@@ -74,6 +78,23 @@ export default async function DashboardPage() {
       where: { storeId: store.id, createdAt: { gte: last7Days } },
       select: { total: true, createdAt: true },
       orderBy: { createdAt: "asc" },
+    }),
+    getSubscriptionStatus(store.id),
+    prisma.product.findMany({
+      where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } },
+      select: { id: true, name: true, stock: true, imageUrl: true },
+      orderBy: { stock: "asc" },
+    }),
+    prisma.productVariant.findMany({
+      where: {
+        product: { storeId: store.id, deletedAt: null },
+        stock: { lte: 10 },
+      },
+      select: {
+        id: true, sizeType: true, value: true, unit: true, stock: true,
+        product: { select: { id: true, name: true, imageUrl: true } },
+      },
+      orderBy: { stock: "asc" },
     }),
   ]);
 
@@ -125,15 +146,34 @@ export default async function DashboardPage() {
     }
   };
 
+  // Build low-stock items for the alert component (avoids a separate client fetch)
+  const lowStockItems = [
+    ...lowStockProducts.map((product) => ({
+      id: product.id,
+      productId: product.id,
+      productName: product.name,
+      currentStock: product.stock,
+      imageUrl: product.imageUrl,
+      variantInfo: null as string | null,
+      type: "product" as const,
+    })),
+    ...lowStockVariants.map((variant) => ({
+      id: variant.id,
+      productId: variant.product.id,
+      productName: variant.product.name,
+      currentStock: variant.stock,
+      imageUrl: variant.product.imageUrl,
+      variantInfo: `${variant.sizeType}${variant.value ? `: ${variant.value}` : ""}${variant.unit ? ` ${variant.unit}` : ""}`.trim(),
+      type: "variant" as const,
+    })),
+  ].sort((a, b) => a.currentStock - b.currentStock);
+
   const greeting = (() => {
     const hour = now.getHours();
     if (hour < 12) return "Good morning";
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   })();
-
-  // Fetch subscription status for the upgrade banner
-  const subscriptionStatus = await getSubscriptionStatus(store.id);
 
   return (
     <div className="space-y-8">
@@ -167,6 +207,14 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Getting Started Checklist — shown until all steps are complete */}
+      <GettingStarted
+        hasProducts={productCount > 0}
+        hasStripeConnected={!!store.stripeConnectId}
+        hasViewedStore={productCount > 0 && !!store.stripeConnectId}
+        storeSlug={store.subdomainSlug}
+      />
+
       {/* Verify subscription after returning from Stripe Checkout */}
       <Suspense fallback={null}>
         <SubscriptionVerifier />
@@ -176,7 +224,7 @@ export default async function DashboardPage() {
       <SubscriptionGate subscriptionStatus={subscriptionStatus} />
 
       {/* Stock Notifications */}
-      <StockNotificationAlert />
+      <StockNotificationAlert initialItems={lowStockItems} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -335,8 +383,8 @@ export default async function DashboardPage() {
                     <span className="dash-live-dot bg-emerald-500" /> Connected
                   </span>
                 ) : (
-                  <Link href="/dashboard/payments" className="dash-badge dash-badge-warning hover:opacity-80 transition-opacity">
-                    Setup Required
+                  <Link href="/dashboard/payments" className="dash-badge dash-badge-neutral hover:opacity-80 transition-opacity" title="Only needed when you're ready to accept orders">
+                    Not connected
                   </Link>
                 )}
               </div>

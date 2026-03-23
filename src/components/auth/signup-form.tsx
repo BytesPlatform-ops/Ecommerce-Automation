@@ -189,8 +189,12 @@ export function SignupForm() {
         trackSignup(authData?.user?.id ?? email);
       });
 
-      router.push("/onboarding");
+      // Wait for the session cookie to be fully established before navigating.
+      // Without this delay, the middleware may see an unauthenticated request
+      // and redirect the user back to /login — causing immediate drop-off.
       router.refresh();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      router.push("/onboarding");
     } catch {
       setError("An unexpected error occurred");
     } finally {

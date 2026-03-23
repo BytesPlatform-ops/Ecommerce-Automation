@@ -25,9 +25,13 @@ interface LowStockItem {
   type: "product" | "variant";
 }
 
-export function StockNotificationAlert() {
-  const [items, setItems] = useState<LowStockItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+interface StockNotificationAlertProps {
+  initialItems?: LowStockItem[];
+}
+
+export function StockNotificationAlert({ initialItems }: StockNotificationAlertProps) {
+  const [items, setItems] = useState<LowStockItem[]>(initialItems ?? []);
+  const [isLoading, setIsLoading] = useState(!initialItems);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -51,9 +55,11 @@ export function StockNotificationAlert() {
   }, []);
 
   useEffect(() => {
+    // Skip initial fetch if server already provided the data
+    if (initialItems) return;
     const initialTimeout = setTimeout(fetchLowStockItems, 800);
     return () => clearTimeout(initialTimeout);
-  }, [fetchLowStockItems]);
+  }, [fetchLowStockItems, initialItems]);
 
   const handleRefresh = () => {
     setIsLoading(true);

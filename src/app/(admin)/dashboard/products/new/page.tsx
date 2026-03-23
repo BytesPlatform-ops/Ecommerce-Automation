@@ -51,7 +51,12 @@ export default async function NewProductPage() {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                   Create New Product
                 </h1>
-                <p className="text-gray-600 mt-1">Add a new product to your {store.storeName} store</p>
+                <p className="text-gray-600 mt-1">
+                  Add a new product to your {store.storeName} store
+                  {!store.stripeConnectId && (
+                    <span className="text-gray-400"> — no payment setup needed</span>
+                  )}
+                </p>
               </div>
             </div>
           </div>

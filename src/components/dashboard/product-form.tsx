@@ -17,6 +17,7 @@ import {
   DollarSign,
   Package,
   Tag,
+  ChevronDown,
 } from "lucide-react";
 import { UpgradeModal } from "./upgrade-modal";
 
@@ -168,6 +169,7 @@ export function ProductForm({
   const [variants, setVariants] = useState<Variant[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showVariants, setShowVariants] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradeInfo, setUpgradeInfo] = useState<{
     currentCount: number;
@@ -189,6 +191,7 @@ export function ProductForm({
         stock: v.stock || 0,
       }));
       setVariants(variants);
+      if (variants.length > 0) setShowVariants(true);
     }
   }, [isEditing, product]);
 
@@ -625,171 +628,182 @@ export function ProductForm({
           </div>
         </div>
 
-        {/* Section 4: Product Variants */}
-        <div className="pt-8 border-t border-gray-200 space-y-6">
-          <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+        {/* Section 4: Product Variants (collapsible) */}
+        <div className="pt-8 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={() => setShowVariants(!showVariants)}
+            className="w-full flex items-center gap-3 pb-4 group"
+          >
             <div className="h-10 w-10 bg-orange-50 rounded-lg flex items-center justify-center">
               <Layers className="h-5 w-5 text-orange-600" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 text-left">
               <h2 className="text-lg font-semibold text-gray-900">
                 Product Variants
               </h2>
               <p className="text-sm text-gray-500">
-                Optional: Add sizes, volumes, or variations
+                Add sizes, colors, or other options
+                <span className="text-gray-400 ml-1">(optional)</span>
               </p>
             </div>
-            <button
-              type="button"
-              onClick={addVariant}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/20 transition-all text-sm font-medium"
-            >
-              <Plus className="h-4 w-4" />
-              Add Variant
-            </button>
-          </div>
+            <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${showVariants ? "rotate-180" : ""}`} />
+          </button>
 
-          {variants.length > 0 && (
-            <div className="space-y-4">
-              {variants.map((variant, index) => (
-                <div
-                  key={index}
-                  className="p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl space-y-5 hover:border-gray-300 hover:shadow-md transition-all"
-                >
-                  {/* Header with Type and Remove Button */}
-                  <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
-                    <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-orange-600">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Variant Type
-                      </label>
-                      <select
-                        value={variant.sizeType}
-                        onChange={(e) =>
-                          updateVariant(index, "sizeType", e.target.value)
-                        }
-                        className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
-                      >
-                        <option value="">Select type</option>
-                        <option value="VOLUME">Volume</option>
-                        <option value="WEIGHT">Weight</option>
-                        <option value="APPAREL_ALPHA">Apparel (S/M/L)</option>
-                        <option value="APPAREL_NUMERIC">
-                          Apparel (28/30/32)
-                        </option>
-                        <option value="FOOTWEAR">Footwear</option>
-                        <option value="DIMENSION">Dimension</option>
-                        <option value="COUNT">Count</option>
-                        <option value="STORAGE">Storage</option>
-                      </select>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeVariant(index)}
-                      className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 hover:text-red-700"
-                      title="Remove variant"
+          {showVariants && (
+            <div className="space-y-4 pt-2">
+              {variants.length > 0 && (
+                <div className="space-y-4">
+                  {variants.map((variant, index) => (
+                    <div
+                      key={index}
+                      className="p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl space-y-5 hover:border-gray-300 hover:shadow-md transition-all"
                     >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Value and Unit Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="col-span-1">
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Value
-                      </label>
-                      <input
-                        type="text"
-                        value={variant.value}
-                        onChange={(e) =>
-                          updateVariant(index, "value", e.target.value)
-                        }
-                        placeholder="e.g. 500"
-                        className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Unit
-                      </label>
-                      <select
-                        value={variant.unit}
-                        onChange={(e) =>
-                          updateVariant(index, "unit", e.target.value)
-                        }
-                        disabled={!variant.sizeType}
-                        className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
-                      >
-                        <option value="">Select unit</option>
-                        {variant.sizeType &&
-                          UNIT_OPTIONS[variant.sizeType as SizeType]?.map(
-                            (opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ),
-                          )}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Price and Stock Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Price{" "}
-                        <span className="text-gray-400 font-normal">
-                          (Optional)
-                        </span>
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-0 top-10 bottom-0 w-8 flex items-center justify-center text-gray-500 text-sm font-medium">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="999999.99"
-                          value={variant.price || ""}
-                          onChange={(e) => {
-                            const inputValue = e.target.value;
-                            updateVariant(index, "price", inputValue);
-                          }}
-                          placeholder="Leave empty for base price"
-                          className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none placeholder:text-gray-400 transition-all"
-                        />
+                      {/* Header with Type and Remove Button */}
+                      <div className="flex items-start gap-4 pb-4 border-b border-gray-200">
+                        <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-orange-600">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            Variant Type
+                          </label>
+                          <select
+                            value={variant.sizeType}
+                            onChange={(e) =>
+                              updateVariant(index, "sizeType", e.target.value)
+                            }
+                            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
+                          >
+                            <option value="">Select type</option>
+                            <option value="VOLUME">Volume</option>
+                            <option value="WEIGHT">Weight</option>
+                            <option value="APPAREL_ALPHA">Apparel (S/M/L)</option>
+                            <option value="APPAREL_NUMERIC">
+                              Apparel (28/30/32)
+                            </option>
+                            <option value="FOOTWEAR">Footwear</option>
+                            <option value="DIMENSION">Dimension</option>
+                            <option value="COUNT">Count</option>
+                            <option value="STORAGE">Storage</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(index)}
+                          className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 hover:text-red-700"
+                          title="Remove variant"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1.5">
-                        Variant-specific price (optional)
-                      </p>
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
-                        Stock
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={variant.stock}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "stock",
-                            parseInt(e.target.value) || 0,
-                          )
-                        }
-                        className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
-                      />
+                      {/* Value and Unit Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="col-span-1">
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            Value
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.value}
+                            onChange={(e) =>
+                              updateVariant(index, "value", e.target.value)
+                            }
+                            placeholder="e.g. 500"
+                            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
+                          />
+                        </div>
+
+                        <div className="col-span-2">
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            Unit
+                          </label>
+                          <select
+                            value={variant.unit}
+                            onChange={(e) =>
+                              updateVariant(index, "unit", e.target.value)
+                            }
+                            disabled={!variant.sizeType}
+                            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
+                          >
+                            <option value="">Select unit</option>
+                            {variant.sizeType &&
+                              UNIT_OPTIONS[variant.sizeType as SizeType]?.map(
+                                (opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ),
+                              )}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Price and Stock Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            Price{" "}
+                            <span className="text-gray-400 font-normal">
+                              (Optional)
+                            </span>
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-0 top-10 bottom-0 w-8 flex items-center justify-center text-gray-500 text-sm font-medium">
+                              $
+                            </span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="999999.99"
+                              value={variant.price || ""}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                updateVariant(index, "price", inputValue);
+                              }}
+                              placeholder="Leave empty for base price"
+                              className="w-full pl-8 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none placeholder:text-gray-400 transition-all"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1.5">
+                            Variant-specific price (optional)
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
+                            Stock
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={variant.stock}
+                            onChange={(e) =>
+                              updateVariant(
+                                index,
+                                "stock",
+                                parseInt(e.target.value) || 0,
+                              )
+                            }
+                            className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              <button
+                type="button"
+                onClick={addVariant}
+                className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl hover:border-gray-400 hover:text-gray-800 hover:bg-gray-50 transition-all text-sm font-medium w-full justify-center"
+              >
+                <Plus className="h-4 w-4" />
+                Add Variant
+              </button>
             </div>
           )}
         </div>
