@@ -74,7 +74,7 @@ enum Unit {
   S
   M
   L_SIZE
-  XL  
+  XL
   XXL
   // Apparel Numeric
   SIZE_28
@@ -108,12 +108,12 @@ enum Unit {
 }
 
 model Theme {
-  id            String   @id @default(cuid())
-  name          String   @unique
-  primaryHex    String
-  secondaryHex  String
-  fontFamily    String
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String   @unique
+  primaryHex   String
+  secondaryHex String
+  fontFamily   String
+  createdAt    DateTime @default(now())
 
   stores Store[]
 
@@ -121,59 +121,67 @@ model Theme {
 }
 
 model Store {
-  id                     String              @id @default(cuid())
-  ownerId                String              // References auth.users.id
-  subdomainSlug          String              @unique
-  storeName              String
-  aboutText              String?
-  heroImageUrl           String?
-  heroHeadline           String?
-  heroDescription        String?
-  heroTextAlign          HeroTextAlign       @default(Left)
-  storeLogoUrl           String?
-  themeId                String?
-  theme                  Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)
-  domain                 String?             @unique
-  domainStatus           DomainStatus        @default(Pending)
-  certificateGeneratedAt DateTime?
+  id                           String              @id @default(cuid())
+  ownerId                      String // References auth.users.id
+  subdomainSlug                String              @unique
+  storeName                    String
+  aboutText                    String?
+  heroImageUrl                 String?
+  heroHeadline                 String?
+  heroDescription              String?
+  heroTextAlign                HeroTextAlign       @default(Left)
+  storeLogoUrl                 String?
+  themeId                      String?
+  theme                        Theme?              @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  domain                       String?             @unique
+  domainStatus                 DomainStatus        @default(Pending)
+  certificateGeneratedAt       DateTime?
   // Stripe Connect fields
-  stripeConnectId        String?             @unique
-  stripeConnectStatus    StripeConnectStatus @default(NotConnected)
-  stripeConnectedAt      DateTime?
+  stripeConnectId              String?             @unique
+  stripeConnectStatus          StripeConnectStatus @default(NotConnected)
+  stripeConnectedAt            DateTime?
   // Platform Subscription fields
-  subscriptionTier             SubscriptionTier @default(FREE)
-  stripeCustomerId             String?          @unique
-  stripeSubscriptionId         String?          @unique
-  stripeSubscriptionStatus     String?          // active, past_due, canceled, trialing, etc.
+  subscriptionTier             SubscriptionTier    @default(FREE)
+  stripeCustomerId             String?             @unique
+  stripeSubscriptionId         String?             @unique
+  stripeSubscriptionStatus     String? // active, past_due, canceled, trialing, etc.
   subscriptionCurrentPeriodEnd DateTime?
-  productLimit                 Int              @default(15)
+  productLimit                 Int                 @default(15)
   // Contact Information fields
-  contactEmail           String?
-  contactPhone           String?
-  instagramUrl           String?
-  facebookUrl            String?
-  twitterUrl             String?
-  linkedinUrl            String?
-  youtubeUrl             String?
-  whatsappNumber         String?
-  supportedQueryTypes    String?             // JSON array: ["feedback", "complaint", "inquiry", "support"]
-  createdAt              DateTime            @default(now())
-  updatedAt              DateTime            @updatedAt
+  contactEmail                 String?
+  contactPhone                 String?
+  instagramUrl                 String?
+  facebookUrl                  String?
+  twitterUrl                   String?
+  linkedinUrl                  String?
+  youtubeUrl                   String?
+  whatsappNumber               String?
+  supportedQueryTypes          String? // JSON array: ["feedback", "complaint", "inquiry", "support"]
+  createdAt                    DateTime            @default(now())
+  updatedAt                    DateTime            @updatedAt
+  // Activation drip email tracking (null = not yet sent)
+  activationEmail2SentAt       DateTime?
+  activationEmail3SentAt       DateTime?
+  activationEmail4SentAt       DateTime?
+  activationEmail5SentAt       DateTime?
+  activationEmail6SentAt       DateTime?
+  activationEmail7SentAt       DateTime?
 
-  categories Category[]
-  products Product[]
-  orders   Order[]
-  faqs     StoreFaq[]
-  privacySections StorePrivacySection[]
+  categories              Category[]
+  products                Product[]
+  orders                  Order[]
+  faqs                    StoreFaq[]
+  privacySections         StorePrivacySection[]
   shippingReturnsSections StoreShippingReturnsSection[]
-  testimonials StoreTestimonial[]
-  stockNotifications StockNotification[]
-  shippingLocations StoreShippingLocation[]
+  testimonials            StoreTestimonial[]
+  stockNotifications      StockNotification[]
+  shippingLocations       StoreShippingLocation[]
 
   @@index([ownerId])
   @@index([themeId])
   @@index([domainStatus])
   @@index([domainStatus, domain])
+  @@index([createdAt])
   @@map("stores")
 }
 
@@ -273,20 +281,20 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(cuid())
+  id          String    @id @default(cuid())
   storeId     String
-  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   categoryId  String?
-  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   name        String
-  description String?     @db.Text
+  description String?   @db.Text
   sku         String?
-  price       Decimal     @db.Decimal(10, 2)
-  stock       Int         @default(0)
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
   imageUrl    String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deletedAt   DateTime?   // Soft delete: null = active, timestamp = deleted
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft delete: null = active, timestamp = deleted
 
   variants   ProductVariant[]
   images     ProductImage[]
@@ -317,7 +325,7 @@ model ProductVariant {
   productId String
   product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   sizeType  SizeType?
-  value     String?   // For numeric values or additional descriptors
+  value     String? // For numeric values or additional descriptors
   unit      Unit?
   price     Decimal?  @db.Decimal(10, 2) // Optional variant-specific price
   stock     Int       @default(0)
@@ -331,33 +339,33 @@ model ProductVariant {
 }
 
 model Order {
-  id                 String      @id @default(cuid())
-  storeId            String
-  store              Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  stripePaymentId    String      @unique
-  stripeSessionId    String?     @unique
-  customerEmail      String
-  customerName       String?
-  total              Decimal     @db.Decimal(10, 2)
-  currency           String      @default("usd")
-  status             OrderStatus @default(Pending)
-  paymentStatus      PaymentStatus @default(Pending)
+  id                String        @id @default(cuid())
+  storeId           String
+  store             Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  stripePaymentId   String        @unique
+  stripeSessionId   String?       @unique
+  customerEmail     String
+  customerName      String?
+  total             Decimal       @db.Decimal(10, 2)
+  currency          String        @default("usd")
+  status            OrderStatus   @default(Pending)
+  paymentStatus     PaymentStatus @default(Pending)
   // Shipping Information
-  shippingFirstName  String?
-  shippingLastName   String?
-  shippingCompany    String?
-  shippingAddress    String?
-  shippingApartment  String?
-  shippingCity       String?
-  shippingState      String?
-  shippingZipCode    String?
-  shippingCountry    String?
-  shippingPhone      String?
+  shippingFirstName String?
+  shippingLastName  String?
+  shippingCompany   String?
+  shippingAddress   String?
+  shippingApartment String?
+  shippingCity      String?
+  shippingState     String?
+  shippingZipCode   String?
+  shippingCountry   String?
+  shippingPhone     String?
   // Shipping tracking
-  trackingNumber     String?
-  shippedAt          DateTime?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  trackingNumber    String?
+  shippedAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   items OrderItem[]
 
@@ -370,17 +378,17 @@ model Order {
 }
 
 model OrderItem {
-  id          String         @id @default(cuid())
+  id          String          @id @default(cuid())
   orderId     String
-  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId   String
-  product     Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  product     Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
   variantId   String?
   variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
-  productName String         // Snapshot of product name at time of purchase
-  variantInfo String?        // Snapshot of variant details (e.g., "Size: L", "Volume: 500ml")
+  productName String // Snapshot of product name at time of purchase
+  variantInfo String? // Snapshot of variant details (e.g., "Size: L", "Volume: 500ml")
   quantity    Int
-  unitPrice   Decimal        @db.Decimal(10, 2)
+  unitPrice   Decimal         @db.Decimal(10, 2)
 
   @@index([orderId])
   @@index([productId])
@@ -443,12 +451,12 @@ enum AuditAction {
 // ==================== PASSWORD RESET ====================
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   email     String
-  token     String   @unique
-  createdAt DateTime @default(now())
+  token     String    @unique
+  createdAt DateTime  @default(now())
   expiresAt DateTime
-  used      Boolean  @default(false)
+  used      Boolean   @default(false)
   usedAt    DateTime?
 
   @@index([email])
@@ -457,15 +465,14 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
-
 model AuditLog {
   id           String      @id @default(cuid())
   action       AuditAction
-  actorId      String?     // User ID (null for system/webhook actions)
-  storeId      String?     // Store scope (null for non-store actions like login)
-  resourceType String      // e.g., "Product", "Order", "Store"
-  resourceId   String?     // ID of the affected record
-  metadata     Json?       // Extra context: before/after diff, IP, user-agent, etc.
+  actorId      String? // User ID (null for system/webhook actions)
+  storeId      String? // Store scope (null for non-store actions like login)
+  resourceType String // e.g., "Product", "Order", "Store"
+  resourceId   String? // ID of the affected record
+  metadata     Json? // Extra context: before/after diff, IP, user-agent, etc.
   ipAddress    String?
   createdAt    DateTime    @default(now())
 
@@ -484,16 +491,16 @@ enum NotificationType {
 }
 
 model StockNotification {
-  id           String             @id @default(cuid())
-  storeId      String
-  store        Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  type         NotificationType   @default(LowStock)
+  id            String           @id @default(cuid())
+  storeId       String
+  store         Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  type          NotificationType @default(LowStock)
   // JSON array of {productId, productName, currentStock, variantInfo?}
-  affectedItems Json              // Track which products triggered the notification
-  isDismissed  Boolean            @default(false)
-  dismissedAt  DateTime?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  affectedItems Json // Track which products triggered the notification
+  isDismissed   Boolean          @default(false)
+  dismissedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@index([storeId])
   @@index([storeId, isDismissed])

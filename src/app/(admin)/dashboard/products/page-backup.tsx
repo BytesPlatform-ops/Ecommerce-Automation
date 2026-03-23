@@ -29,5 +29,5 @@ export default async function ProductsPage() {
     price: product.price.toNumber(),
   }));
 
-  return <ProductsPageContent products={products} />;
+  return <ProductsPageContent products={products} storeId={store.id} />;
 }

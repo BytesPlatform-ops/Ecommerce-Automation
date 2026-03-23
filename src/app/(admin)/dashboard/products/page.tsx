@@ -62,5 +62,5 @@ export default async function ProductsPage() {
     })),
   }));
 
-  return <ProductsPageContent products={serializedProducts} />;
+  return <ProductsPageContent products={serializedProducts} storeId={store.id} />;
 }

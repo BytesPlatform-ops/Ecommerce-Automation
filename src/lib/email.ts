@@ -1181,9 +1181,328 @@ export async function sendPasswordResetEmail(details: PasswordResetDetails) {
     console.error(`[Email] Failed to send password reset email to ${email}:`,
       error instanceof Error ? error.message : "Unknown error"
     );
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : "Failed to send email" 
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send email"
     };
   }
+}
+
+// ─── Activation Drip Emails (7-email sequence over 14 days) ───
+
+interface WelcomeEmailDetails {
+  email: string;
+  storeName: string;
+  storeSlug: string;
+}
+
+export interface ActivationEmailDetails {
+  email: string;
+  storeName: string;
+  storeSlug: string;
+  productCount: number;
+  hasStripe: boolean;
+}
+
+// Shared helpers
+const ADD_PRODUCT_URL = "https://www.bytescart.ai/dashboard/products/new";
+const DASHBOARD_URL = "https://www.bytescart.ai/dashboard";
+
+function activationEmailShell(headerTitle: string, headerSub: string, bodyHtml: string, footerExtra?: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f5;font-family:'Segoe UI','Trebuchet MS',sans-serif;line-height:1.6;color:#2c3e50;">
+  <div style="background-color:#f5f5f5;padding:40px 20px;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:50px 30px;text-align:center;position:relative;">
+        <h1 style="font-size:28px;margin:0 0 8px 0;font-weight:700;letter-spacing:-0.5px;">${headerTitle}</h1>
+        ${headerSub ? `<p style="margin:0;opacity:0.9;font-size:14px;letter-spacing:0.5px;">${headerSub}</p>` : ""}
+      </div>
+      <!-- Gold divider -->
+      <div style="height:3px;background:linear-gradient(90deg,transparent,#ffd700,transparent);"></div>
+      <!-- Content -->
+      <div style="padding:40px 35px;">
+        ${bodyHtml}
+      </div>
+      <!-- Footer -->
+      <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:30px;text-align:center;color:#999;font-size:12px;border-top:3px solid #ffd700;">
+        ${footerExtra || ""}
+        <p style="margin:6px 0;">&copy; ${new Date().getFullYear()} Bytescart. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+function ctaButton(label: string, url: string): string {
+  return `<div style="text-align:center;margin:32px 0;">
+    <a href="${url}" style="display:inline-block;background:#1a1a2e;color:#ffffff !important;padding:16px 48px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;letter-spacing:0.3px;">${label}</a>
+  </div>`;
+}
+
+function p(text: string, style?: string): string {
+  return `<p style="font-size:15px;line-height:1.8;margin:0 0 16px;color:#2c3e50;${style || ""}">${text}</p>`;
+}
+
+function goldBox(content: string): string {
+  return `<div style="background:linear-gradient(135deg,#f8f9fa 0%,#ffffff 100%);padding:24px;border-radius:10px;margin:24px 0;border:1px solid #e8e8e8;border-left:4px solid #ffd700;box-shadow:0 2px 8px rgba(0,0,0,0.05);">${content}</div>`;
+}
+
+function stepItem(num: string, title: string, desc: string): string {
+  return `<div style="display:flex;gap:12px;margin-bottom:14px;">
+    <div style="min-width:28px;height:28px;background:linear-gradient(135deg,#ffd700 0%,#ffed4e 100%);border-radius:50%;color:#1a1a2e;font-weight:700;font-size:12px;text-align:center;line-height:28px;flex-shrink:0;box-shadow:0 2px 8px rgba(255,215,0,0.3);">${num}</div>
+    <div>
+      <p style="margin:0;font-weight:600;color:#1a1a2e;font-size:14px;">${title}</p>
+      <p style="margin:4px 0 0;color:#666;font-size:13px;line-height:1.6;">${desc}</p>
+    </div>
+  </div>`;
+}
+
+function checkItem(title: string, desc: string): string {
+  return `<div style="display:flex;gap:12px;margin-bottom:14px;">
+    <div style="min-width:22px;height:22px;background:linear-gradient(135deg,#ffd700 0%,#ffed4e 100%);border-radius:50%;color:#1a1a2e;font-weight:700;font-size:11px;text-align:center;line-height:22px;flex-shrink:0;margin-top:2px;">&#10003;</div>
+    <div>
+      <p style="margin:0;font-weight:600;color:#1a1a2e;font-size:14px;">${title}</p>
+      <p style="margin:3px 0 0;color:#666;font-size:13px;line-height:1.6;">${desc}</p>
+    </div>
+  </div>`;
+}
+
+async function sendActivationEmail(to: string, subject: string, html: string, replyTo?: string) {
+  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+  const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@bytescart.store";
+  const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Bytescart";
+  const FROM_ADDRESS = `${FROM_NAME} <${FROM_EMAIL}>`;
+
+  if (!SENDGRID_API_KEY) {
+    console.warn("[Email] SENDGRID_API_KEY not configured.");
+    return { success: false, message: "SendGrid API key not configured" };
+  }
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  try {
+    const msg: MailDataRequired = { to, from: FROM_ADDRESS, subject, html };
+    if (replyTo) (msg as any).replyTo = replyTo;
+    await sgMail.send(msg);
+    console.log(`[Email] Activation email sent to ${to}: ${subject}`);
+    return { success: true, message: "Email sent" };
+  } catch (error) {
+    console.error(`[Email] Failed: ${subject} to ${to}:`, error instanceof Error ? error.message : "Unknown");
+    return { success: false, message: error instanceof Error ? error.message : "Failed to send" };
+  }
+}
+
+// ── Email 1: Welcome (immediate, at store creation) ──
+export async function sendWelcomeEmail(details: WelcomeEmailDetails) {
+  const { email, storeName, storeSlug } = details;
+  const name = escapeHtml(storeName);
+  const storeUrl = `https://www.bytescart.ai/stores/${escapeHtml(storeSlug)}`;
+
+  const html = activationEmailShell(
+    `${name} is Live`,
+    "YOUR STORE IS READY",
+    `${p(`Your store is already live at <a href="${storeUrl}" style="color:#ffd700;text-decoration:none;font-weight:600;">${name}</a>. Right now it's an empty storefront — but that changes the moment you add your first product.`)}
+     ${p("It takes less than 60 seconds. Just a name, a price, and a photo. That's it — you can always edit later.")}
+     ${ctaButton("Add Your First Product", ADD_PRODUCT_URL)}
+     ${goldBox(`<p style="margin:0;font-size:13px;color:#2c3e50;text-align:center;">Stores that add their first product within the first hour are <strong style="color:#1a1a2e;">5x more likely</strong> to make a sale in their first week.</p>`)}`
+  );
+
+  return sendActivationEmail(email, `${name} is live — here's what to do in the next 5 minutes`, html);
+}
+
+// ── Email 2: +3 hours (no products yet) ──
+export async function sendActivationEmail2(details: ActivationEmailDetails) {
+  const { email, storeName, storeSlug } = details;
+  const name = escapeHtml(storeName);
+  const storeUrl = `https://www.bytescart.ai/stores/${escapeHtml(storeSlug)}`;
+
+  const html = activationEmailShell(
+    "You're One Product Away",
+    `FROM TURNING ${escapeHtml(storeName).toUpperCase()} INTO A REAL STORE`,
+    `${p(`Right now, when someone visits <a href="${storeUrl}" style="color:#ffd700;text-decoration:none;font-weight:600;">${name}</a>, they see an empty page. But imagine it with just 2-3 products listed — a price, a photo, an "Add to Cart" button.`)}
+
+     <div style="background:linear-gradient(135deg,#f8f9fa 0%,#ffffff 100%);border-radius:10px;padding:20px;margin:24px 0;border:1px solid #e8e8e8;box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+       <table style="width:100%;border-collapse:collapse;">
+         <tr>
+           <td style="padding:8px 0;vertical-align:top;width:48%;">
+             <p style="margin:0 0 8px;font-weight:700;color:#999;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Before</p>
+             <div style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:8px;padding:28px;text-align:center;">
+               <p style="margin:0;color:#ccc;font-size:13px;">Empty storefront</p>
+               <p style="margin:4px 0 0;color:#ddd;font-size:11px;">No products listed</p>
+             </div>
+           </td>
+           <td style="width:4%;text-align:center;vertical-align:middle;"><span style="color:#ffd700;font-size:18px;font-weight:700;">→</span></td>
+           <td style="padding:8px 0;vertical-align:top;width:48%;">
+             <p style="margin:0 0 8px;font-weight:700;color:#ffd700;font-size:11px;text-transform:uppercase;letter-spacing:1px;">After</p>
+             <div style="background:#fff;border:2px solid #ffd700;border-radius:8px;padding:28px;text-align:center;">
+               <p style="margin:0;color:#1a1a2e;font-size:13px;font-weight:600;">Your products</p>
+               <p style="margin:4px 0 0;color:#666;font-size:11px;">Ready to sell</p>
+             </div>
+           </td>
+         </tr>
+       </table>
+     </div>
+
+     ${p("The difference? About 60 seconds of your time.")}
+     ${ctaButton("Add Your First Product", ADD_PRODUCT_URL)}`
+  );
+
+  return sendActivationEmail(email, `You're one product away from a real store`, html);
+}
+
+// ── Email 3: +24 hours (social proof) ──
+export async function sendActivationEmail3(details: ActivationEmailDetails) {
+  const { email, storeName } = details;
+  const name = escapeHtml(storeName);
+
+  const html = activationEmailShell(
+    "Others Are Already Selling",
+    "REAL RESULTS FROM A STORE OWNER",
+    `${p(`<strong style="color:#1a1a2e;">${name}</strong> has been live for a day now. While you've been thinking about it, other store owners have been taking action.`)}
+
+     ${goldBox(`<p style="margin:0 0 10px;color:#2c3e50;font-size:14px;font-style:italic;line-height:1.7;">"I added my first 3 products on a Tuesday afternoon during my lunch break. By Thursday evening, I had shared the link on my Instagram story and got my first order. I couldn't believe how fast it happened."</p>
+       <p style="margin:0;color:#999;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">— A Bytescart store owner</p>`)}
+
+     ${p("The hardest part isn't building the store — you've already done that. The hardest part is adding that first product. Once it's there, everything else clicks into place.")}
+     ${ctaButton("Add Your First Product Now", ADD_PRODUCT_URL)}
+     ${p("It takes less than 60 seconds. Seriously.", "color:#999;font-size:13px;text-align:center;")}`
+  );
+
+  return sendActivationEmail(email, `Other store owners added products yesterday — your turn?`, html);
+}
+
+// ── Email 4: +48 hours (address objections) ──
+export async function sendActivationEmail4(details: ActivationEmailDetails) {
+  const { email, storeName } = details;
+  const name = escapeHtml(storeName);
+
+  const html = activationEmailShell(
+    "Waiting for Perfect?",
+    "IT DOESN'T NEED TO BE",
+    `${p(`We get it. You created <strong style="color:#1a1a2e;">${name}</strong> but maybe you haven't listed a product yet because something feels like it's not ready. Here's the thing — it doesn't need to be perfect to start.`)}
+
+     <div style="margin:24px 0;">
+       ${checkItem("Phone photos work great", "You don't need a professional photographer. Natural light + your phone = good enough to start.")}
+       ${checkItem("You don't need shipping figured out yet", "Just get your products listed. You can sort logistics later.")}
+       ${checkItem("Start with just one product", "Some of our most successful stores launched with a single item. You can always add more.")}
+       ${checkItem("You can edit everything later", "Nothing is permanent. Change prices, descriptions, photos — anytime.")}
+     </div>
+
+     ${p("<strong style=\"color:#1a1a2e;\">Give yourself permission to start messy.</strong> The store owners who succeed aren't the ones with perfect product photos — they're the ones who hit publish.")}
+     ${ctaButton("Just Add One Product", ADD_PRODUCT_URL)}`
+  );
+
+  return sendActivationEmail(email, `You don't need perfect photos to start selling`, html);
+}
+
+// ── Email 5: Day 4 (branched — with products vs without) ──
+export async function sendActivationEmail5(details: ActivationEmailDetails) {
+  const { email, storeName, storeSlug, productCount, hasStripe } = details;
+  const name = escapeHtml(storeName);
+  const storeUrl = `https://www.bytescart.ai/stores/${escapeHtml(storeSlug)}`;
+
+  if (productCount > 0) {
+    const nextStep = !hasStripe
+      ? { label: "Connect Payments", url: DASHBOARD_URL, text: "You've got products listed — amazing! The next step is connecting Stripe so customers can actually buy them. It takes about 2 minutes." }
+      : { label: "Share Your Store", url: storeUrl, text: `You've got ${productCount} product${productCount > 1 ? "s" : ""} listed and payments connected. Your store is ready for customers! Now it's time to share your link.` };
+
+    const html = activationEmailShell(
+      `Great Job on ${name}!`,
+      `${productCount} PRODUCT${productCount > 1 ? "S" : ""} LISTED AND COUNTING`,
+      `${p(nextStep.text)}
+       ${ctaButton(nextStep.label, nextStep.url)}`
+    );
+
+    return sendActivationEmail(email, `${name} is looking great — here's your next step`, html);
+  } else {
+    const html = activationEmailShell(
+      `${name} Is Still Waiting`,
+      "HERE'S WHAT YOU'RE LEAVING ON THE TABLE",
+      `${p(`It's been 4 days since you created <strong style="color:#1a1a2e;">${name}</strong>. Your storefront is live, your URL works, and everything is ready — except there are no products for anyone to buy.`)}
+
+       ${goldBox(`<p style="margin:0 0 4px;font-size:36px;font-weight:800;color:#1a1a2e;text-align:center;">3x</p>
+         <p style="margin:0;font-size:13px;color:#666;font-weight:600;text-align:center;">Stores that add products in the first week are 3x more likely to make a sale in their first month</p>`)}
+
+       ${p("You don't need 50 products. You don't need professional photos. You just need <strong style=\"color:#1a1a2e;\">one product listed</strong> to turn your empty storefront into a real store.")}
+       ${ctaButton("Add Your First Product", ADD_PRODUCT_URL)}`
+    );
+
+    return sendActivationEmail(email, `Here's what you're leaving on the table`, html);
+  }
+}
+
+// ── Email 6: Day 7 (personal, uses store name) ──
+export async function sendActivationEmail6(details: ActivationEmailDetails) {
+  const { email, storeName, storeSlug, productCount, hasStripe } = details;
+  const name = escapeHtml(storeName);
+  const storeUrl = `https://www.bytescart.ai/stores/${escapeHtml(storeSlug)}`;
+
+  if (productCount > 0 && hasStripe) {
+    const html = activationEmailShell(
+      `${name} Is Fully Set Up`,
+      "HERE'S HOW TO GET YOUR FIRST SALE",
+      `${p(`Your store has ${productCount} product${productCount > 1 ? "s" : ""}, payments are connected, and everything is ready. Now you just need eyeballs on it. Here are 3 things you can do right now:`)}
+
+       <div style="margin:24px 0;">
+         ${stepItem("1", "Share on social media", "Post your store link on Instagram, Facebook, TikTok, or wherever your audience is.")}
+         ${stepItem("2", "Send it to 10 friends", "Ask them to check it out and share honest feedback. Word of mouth is powerful.")}
+         ${stepItem("3", "Add it to your bio", "Put your store link in your Instagram bio, Twitter profile, or email signature.")}
+       </div>
+
+       ${ctaButton("Visit Your Store", storeUrl)}`
+    );
+
+    return sendActivationEmail(email, `3 ways to get your first sale on ${name}`, html);
+  }
+
+  const html = activationEmailShell(
+    `${name} Is Still Here`,
+    "YOUR STOREFRONT IS WAITING",
+    `${p(`It's been a week since you created <strong style="color:#1a1a2e;">${name}</strong>. Your store URL is live, your theme is set, everything is in place — except the shelves are empty.`)}
+     ${p(`We're not going to sugarcoat it: <strong style="color:#1a1a2e;">the ${name} storefront is ready. Your products aren't.</strong>`)}
+     ${p("We know life gets busy. But here's the thing — adding one product takes less time than reading this email. A name, a price, one photo. That's it.")}
+     ${ctaButton("Add a Product Right Now", ADD_PRODUCT_URL)}`
+  );
+
+  return sendActivationEmail(email, `The ${name} storefront is ready — your products aren't`, html);
+}
+
+// ── Email 7: Day 14 (last chance, reply-to enabled) ──
+export async function sendActivationEmail7(details: ActivationEmailDetails) {
+  const { email, storeName, productCount } = details;
+  const name = escapeHtml(storeName);
+
+  if (productCount > 0) {
+    const html = activationEmailShell(
+      `Checking In on ${name}`,
+      "",
+      `${p(`Hey! It's been 2 weeks since you created <strong style="color:#1a1a2e;">${name}</strong>. You've got ${productCount} product${productCount > 1 ? "s" : ""} listed — that's great.`)}
+       ${p("If there's anything holding you back from growing your store — whether it's a feature you need, something that's confusing, or just a question — <strong style=\"color:#1a1a2e;\">reply to this email</strong>. A real person reads it and we'll personally help you out.")}
+       ${p("We want to see you succeed.", "color:#999;font-size:13px;")}
+       ${ctaButton("Visit Your Dashboard", DASHBOARD_URL)}`,
+      `<p style="margin:0 0 8px;color:#bbb;font-size:11px;">You can reply directly to this email — we read every response.</p>`
+    );
+
+    return sendActivationEmail(email, `How's ${name} going? We'd love to help`, html, "bytesuite@bytesplatform.com");
+  }
+
+  const html = activationEmailShell(
+    "Is Something Holding You Back?",
+    "",
+    `${p(`It's been 2 weeks since you created <strong style="color:#1a1a2e;">${name}</strong>, and you haven't added any products yet. We're not here to nag — we genuinely want to understand what happened.`)}
+     ${p("Was it too complicated? Did you run out of time? Not sure what to list? Changed your mind entirely?")}
+     ${p("<strong style=\"color:#1a1a2e;\">Reply to this email and tell us.</strong> A real person will read your response and, if you want, we'll personally help you get your first product listed.")}
+     ${p("This is the last setup reminder we'll send. If Bytescart isn't for you, no hard feelings at all. But if there's even a small part of you that still wants to try — just reply.", "color:#999;font-size:14px;")}
+     ${ctaButton("Or Just Add a Product Now", ADD_PRODUCT_URL)}`,
+    `<p style="margin:0 0 8px;color:#bbb;font-size:11px;">This is the last activation email. You can reply directly — we read every response.</p>`
+  );
+
+  return sendActivationEmail(email, `${name} — is something holding you back?`, html, "bytesuite@bytesplatform.com");
 }

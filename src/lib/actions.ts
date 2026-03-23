@@ -16,6 +16,7 @@ import {
   getAccountBalance,
   getAccountPayouts,
 } from "@/lib/stripe";
+import { sendWelcomeEmail } from "@/lib/email";
 
 // ==================== CACHE REVALIDATION HELPER ====================
 
@@ -321,6 +322,73 @@ export async function createProduct(
       price: v.price ? v.price.toString() : null,
     })),
   };
+}
+
+const SAMPLE_PRODUCTS = [
+  {
+    name: "Classic Cotton T-Shirt",
+    description: "A comfortable everyday essential made from 100% organic cotton. Soft, breathable, and built to last.",
+    price: 29.99,
+    stock: 50,
+    imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop",
+  },
+  {
+    name: "Ceramic Coffee Mug",
+    description: "Start your mornings right with this elegant 12oz ceramic mug. Microwave and dishwasher safe.",
+    price: 14.99,
+    stock: 100,
+    imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500&h=500&fit=crop",
+  },
+  {
+    name: "Premium Phone Case",
+    description: "Slim, lightweight protection for your phone. Shock-absorbent edges with a sleek matte finish.",
+    price: 19.99,
+    stock: 75,
+    imageUrl: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop",
+  },
+];
+
+export async function createSampleProducts(storeId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+    select: { id: true, subdomainSlug: true },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  // Only allow if store has zero products (prevents duplicates)
+  const existingCount = await prisma.product.count({
+    where: { storeId, deletedAt: null },
+  });
+
+  if (existingCount > 0) {
+    throw new Error("Sample products can only be added to an empty store");
+  }
+
+  const created = await prisma.product.createMany({
+    data: SAMPLE_PRODUCTS.map((p) => ({
+      storeId,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      imageUrl: p.imageUrl,
+    })),
+  });
+
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+  revalidateTag(CacheTags.products(storeId), "default");
+
+  return { count: created.count };
 }
 
 export async function updateProduct(
@@ -1920,6 +1988,18 @@ export async function createStore(
       resourceId: store.id,
       metadata: { storeName: store.storeName, slug: store.subdomainSlug },
     });
+
+    // Send welcome email (fire-and-forget — don't block store creation)
+    if (user.email) {
+      sendWelcomeEmail({
+        email: user.email,
+        storeName: store.storeName,
+        storeSlug: store.subdomainSlug,
+      }).catch((err) => {
+        console.error("[Email] Failed to send welcome email:", err);
+      });
+    }
+
     return store;
   });
 }
