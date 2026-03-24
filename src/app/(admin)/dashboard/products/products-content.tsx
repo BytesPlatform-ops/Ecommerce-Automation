@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Plus, Pencil, Package, Search, Tag, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
-import { CsvImportButton } from "@/components/dashboard/csv-import-button";
 import { createSampleProducts } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 
@@ -27,7 +26,7 @@ function ConfettiPiece({ color, left, delay, duration, size }: { color: string; 
   );
 }
 
-function Celebration({ onDone }: { onDone: () => void }) {
+function Celebration({ onDone, storeSlug }: { onDone: () => void; storeSlug: string }) {
   const [hiding, setHiding] = useState(false);
 
   useEffect(() => {
@@ -57,6 +56,14 @@ function Celebration({ onDone }: { onDone: () => void }) {
             <p className="font-semibold text-sm">Product added to your store!</p>
             <p className="text-xs text-gray-400 mt-0.5">Your store is now live for customers.</p>
           </div>
+          <a
+            href={`/stores/${storeSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 shrink-0 text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 whitespace-nowrap"
+          >
+            View store →
+          </a>
         </div>
       </div>
     </>
@@ -84,9 +91,10 @@ interface Product {
 interface ProductsPageContentProps {
   products: Product[];
   storeId: string;
+  storeSlug: string;
 }
 
-export default function ProductsPageContent({ products: initialProducts, storeId }: ProductsPageContentProps) {
+export default function ProductsPageContent({ products: initialProducts, storeId, storeSlug }: ProductsPageContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState(initialProducts);
   const [loadingSamples, setLoadingSamples] = useState(false);
@@ -122,10 +130,10 @@ export default function ProductsPageContent({ products: initialProducts, storeId
 
   return (
     <div className="space-y-6">
-      {showCelebration && <Celebration onDone={handleCelebrationDone} />}
+      {showCelebration && <Celebration onDone={handleCelebrationDone} storeSlug={storeSlug} />}
       {/* Header */}
-      <div className="dash-animate-in flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
+      <div className="dash-animate-in flex flex-col items-center md:flex-row md:items-center md:justify-between gap-4">
+        <div className="text-center md:text-left">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500 bg-clip-text text-transparent">
             Products
           </h1>
@@ -134,7 +142,6 @@ export default function ProductsPageContent({ products: initialProducts, storeId
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <CsvImportButton storeId={storeId} />
           <Link
             href="/dashboard/products/new"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"

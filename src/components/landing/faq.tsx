@@ -24,7 +24,7 @@ const faqs = [
   {
     question: "Is there a free plan?",
     answer:
-      "Yes! You can start with our Free plan — no credit card required. You get up to 15 products, a full admin dashboard, and all core features. When you're ready to scale, upgrade to Pro for up to 100 products.",
+      "Yes! You can start with our Free plan — no credit card required. You get up to 2 products, a full admin dashboard, and all core features. When you're ready to scale, upgrade to Pro for up to 100 products.",
   },
   {
     question: "Can I use my own domain?",

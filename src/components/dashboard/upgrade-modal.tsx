@@ -139,13 +139,13 @@ export function UpgradeModal({ isOpen, onClose, currentCount, limit }: UpgradeMo
           <div className="px-5 pt-2 pb-1 text-center">
             <div className="flex items-end justify-center gap-1">
               <span className="text-3xl font-black text-gray-900 tracking-tight">
-                {billingPeriod === "monthly" ? "$49.99" : "$41.67"}
+                {billingPeriod === "monthly" ? "$30" : "$25"}
               </span>
               <span className="text-gray-400 font-medium mb-1.5 text-sm">/mo</span>
             </div>
             {billingPeriod === "yearly" ? (
               <p className="text-xs text-emerald-600 font-semibold">
-                Billed $500/yr · Save $99.88 vs monthly
+                Billed $300/yr · Save $60 vs monthly
               </p>
             ) : (
               <p className="text-xs text-gray-400">Billed monthly · Cancel anytime</p>

@@ -227,8 +227,8 @@ export function constructWebhookEvent(
 const PLATFORM_PRODUCT_METADATA_KEY = "app";
 const PLATFORM_PRODUCT_METADATA_VALUE = "ecommerce-automation";
 const PRO_PLAN_NAME = "Pro Plan";
-const PRO_MONTHLY_PRICE = 4999; // $49.99 in cents
-const PRO_YEARLY_PRICE = 50000; // $500.00 in cents
+const PRO_MONTHLY_PRICE = 3000; // $30.00 in cents
+const PRO_YEARLY_PRICE = 30000; // $300.00 in cents
 
 // Module-level cache for product/price IDs (persists across requests in same process)
 let cachedProductId: string | null = null;

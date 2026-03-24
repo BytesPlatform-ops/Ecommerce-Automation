@@ -8,7 +8,7 @@ import Link from "next/link";
 import { trackProPayment } from "@/lib/gtag";
 
 const freeFeatures = [
-  "Up to 15 products",
+  "Up to 2 products",
   "Custom storefront",
   "Admin dashboard",
   "PostgreSQL database",
@@ -81,7 +81,7 @@ export function Pricing() {
           transition={{ delay: 0.2 }}
           className="text-[#8FA898] max-w-2xl mx-auto text-lg"
         >
-          Launch your store for free with 15 products. Upgrade to Pro when you
+          Launch your store for free with 2 products. Upgrade to Pro when you
           need more.
         </motion.p>
 
@@ -201,7 +201,7 @@ export function Pricing() {
               <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-5xl font-black text-[#1A3D2B]">
                   <span className="text-[#D4873A]">$</span>
-                  {billingPeriod === "monthly" ? "49.99" : "500"}
+                  {billingPeriod === "monthly" ? "30" : "300"}
                 </span>
                 <span className="text-[#8FA898]">
                   /{billingPeriod === "monthly" ? "mo" : "yr"}
@@ -209,7 +209,7 @@ export function Pricing() {
               </div>
               {billingPeriod === "yearly" && (
                 <p className="text-sm text-[#D4873A] font-medium mb-4">
-                  That&apos;s $41.67/mo — save $99.88/year
+                  That&apos;s $25/mo — save $60/year
                 </p>
               )}
               {billingPeriod === "monthly" && (

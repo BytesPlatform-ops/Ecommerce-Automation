@@ -374,6 +374,16 @@ export function ProductForm({
           </div>
         )}
 
+        {/* Minimum viable hint — only shown when creating, not editing */}
+        {!isEditing && (
+          <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            <CheckCircle2 className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+            <p className="text-sm text-blue-700">
+              <span className="font-semibold">Only 3 things needed to publish:</span> a name, a price, and a photo. Everything else is optional — you can always edit later.
+            </p>
+          </div>
+        )}
+
         {/* Section 1: Basic Information */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
@@ -640,11 +650,11 @@ export function ProductForm({
             </div>
             <div className="flex-1 text-left">
               <h2 className="text-lg font-semibold text-gray-900">
-                Product Variants
+                Advanced Options
               </h2>
               <p className="text-sm text-gray-500">
-                Add sizes, colors, or other options
-                <span className="text-gray-400 ml-1">(optional)</span>
+                Add sizes, colors, or other variants
+                <span className="text-gray-400 ml-1">— skip this for now if unsure</span>
               </p>
             </div>
             <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${showVariants ? "rotate-180" : ""}`} />

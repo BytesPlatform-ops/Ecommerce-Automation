@@ -14,6 +14,7 @@ import { StockNotificationAlert } from "@/components/dashboard/stock-notificatio
 import { SubscriptionGate } from "@/components/dashboard/subscription-gate";
 import { SubscriptionVerifier } from "@/components/dashboard/subscription-verifier";
 import { GettingStarted } from "@/components/dashboard/getting-started";
+import { StoreLiveBanner } from "@/components/dashboard/store-live-banner";
 import { OrderStatus } from "@prisma/client";
 
 // ==================== CACHED DASHBOARD DATA ====================
@@ -339,8 +340,14 @@ export default async function DashboardPage() {
         hasProducts={productCount > 0}
         hasStripeConnected={!!store.stripeConnectId}
         hasViewedStore={productCount > 0 && !!store.stripeConnectId}
+        hasCustomTheme={false}
         storeSlug={store.subdomainSlug}
       />
+
+      {/* Store live banner — shown once user has products, prompts them to share */}
+      {productCount > 0 && (
+        <StoreLiveBanner storeSlug={store.subdomainSlug} />
+      )}
 
       {/* Verify subscription after returning from Stripe Checkout */}
       <Suspense fallback={null}>
@@ -485,11 +492,43 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="dash-empty-state py-12">
-              <div className="icon-container">
-                <BarChart3 className="h-8 w-8 text-blue-500" />
+            <div className="relative rounded-xl overflow-hidden">
+              {/* Blurred storefront mockup */}
+              <div className="blur-sm opacity-40 pointer-events-none select-none p-2">
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {[["bg-blue-100","w-3/4"],["bg-purple-100","w-2/3"],["bg-emerald-100","w-4/5"],["bg-amber-100","w-3/5"],["bg-pink-100","w-2/3"],["bg-indigo-100","w-3/4"]].map(([bg, w], i) => (
+                    <div key={i} className={`${bg} rounded-xl p-3 space-y-2`}>
+                      <div className="h-16 rounded-lg bg-white/60" />
+                      <div className={`h-2 ${w} bg-gray-300 rounded`} />
+                      <div className="h-2 w-1/2 bg-gray-200 rounded" />
+                      <div className="h-6 w-full bg-gray-300 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {[70,50,85,40,60].map((w, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-8 h-2 bg-gray-200 rounded" />
+                      <div className="flex-1 h-6 bg-gray-100 rounded-lg">
+                        <div className="h-full bg-gradient-to-r from-blue-300 to-indigo-300 rounded-lg" style={{ width: `${w}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <p className="text-gray-500 text-sm">Revenue data will appear here once you receive orders</p>
+              {/* Overlay CTA */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[1px]">
+                <BarChart3 className="h-8 w-8 text-blue-400 mb-2" />
+                <p className="text-sm font-semibold text-gray-700">Your revenue chart will look like this</p>
+                <p className="text-xs text-gray-500 mt-1 mb-3">Add products and connect Stripe to start getting orders</p>
+                <Link
+                  href="/dashboard/products/new"
+                  className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:shadow-md transition-all"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add your first real product
+                </Link>
+              </div>
             </div>
           )}
         </div>

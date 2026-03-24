@@ -85,7 +85,7 @@ export function ProductLimitGate({
             </button>
 
             <p className="text-xs text-gray-400">
-              Get up to 100 products · Starting at $49.99/mo
+              Get up to 100 products · Starting at $30/mo
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export function ProductLimitGate({
                 Free Plan
               </p>
               <ul className="space-y-1.5 text-sm text-gray-500">
-                <li>15 products</li>
+                <li>2 products</li>
                 <li>Basic features</li>
                 <li>Standard support</li>
               </ul>

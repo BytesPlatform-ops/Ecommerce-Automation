@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum DomainStatus {
@@ -146,7 +146,7 @@ model Store {
   stripeSubscriptionId         String?             @unique
   stripeSubscriptionStatus     String? // active, past_due, canceled, trialing, etc.
   subscriptionCurrentPeriodEnd DateTime?
-  productLimit                 Int                 @default(15)
+  productLimit                 Int                 @default(2)
   // Contact Information fields
   contactEmail                 String?
   contactPhone                 String?

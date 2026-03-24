@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Upload, Loader2, X, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { importProductsFromCsv } from "@/lib/actions";
@@ -11,6 +12,7 @@ interface CsvImportButtonProps {
 
 export function CsvImportButton({ storeId }: CsvImportButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     type: "success" | "error";
@@ -19,6 +21,31 @@ export function CsvImportButton({ storeId }: CsvImportButtonProps) {
   } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Two-phase open: mount first, then trigger CSS transition on next tick
+  const openModal = () => {
+    setIsOpen(true);
+    requestAnimationFrame(() => setVisible(true));
+  };
+
+  const closeModal = () => {
+    if (loading) return;
+    setVisible(false);
+    // Wait for fade-out transition to finish before unmounting
+    setTimeout(() => {
+      setIsOpen(false);
+      setResult(null);
+    }, 200);
+  };
+
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, loading]);
 
   const handleFile = async (file: File) => {
     if (!file.name.endsWith(".csv")) {
@@ -78,25 +105,50 @@ export function CsvImportButton({ storeId }: CsvImportButtonProps) {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={openModal}
         className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-4 py-2.5 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all text-sm"
       >
         <Upload className="h-4 w-4" />
         Import CSV
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {isOpen && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "opacity 200ms ease",
+            opacity: visible ? 1 : 0,
+            pointerEvents: visible ? "auto" : "none",
+          }}
+        >
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => {
-              if (!loading) {
-                setIsOpen(false);
-                setResult(null);
-              }
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
             }}
+            onClick={closeModal}
           />
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden"
+            style={{
+              transition: "transform 200ms ease",
+              transform: visible ? "scale(1)" : "scale(0.95)",
+            }}
+          >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <div>
@@ -104,12 +156,7 @@ export function CsvImportButton({ storeId }: CsvImportButtonProps) {
                 <p className="text-sm text-gray-500 mt-0.5">Upload a CSV file to bulk-add products</p>
               </div>
               <button
-                onClick={() => {
-                  if (!loading) {
-                    setIsOpen(false);
-                    setResult(null);
-                  }
-                }}
+                onClick={closeModal}
                 className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 <X className="h-4 w-4" />
@@ -199,7 +246,8 @@ export function CsvImportButton({ storeId }: CsvImportButtonProps) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

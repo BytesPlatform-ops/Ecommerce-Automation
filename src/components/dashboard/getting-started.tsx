@@ -35,6 +35,7 @@ interface GettingStartedProps {
   hasProducts: boolean;
   hasStripeConnected: boolean;
   hasViewedStore: boolean;
+  hasCustomTheme: boolean;
   storeSlug: string;
 }
 
@@ -44,6 +45,7 @@ export function GettingStarted({
   hasProducts,
   hasStripeConnected,
   hasViewedStore,
+  hasCustomTheme,
   storeSlug,
 }: GettingStartedProps) {
   const [dismissed, setDismissed] = useState(true);
@@ -85,7 +87,7 @@ export function GettingStarted({
       href: "/dashboard/themes",
       cta: "Choose Theme",
       icon: <Palette className="h-4 w-4" />,
-      completed: true,
+      completed: hasCustomTheme,
       gradient: "from-purple-600 to-pink-600",
       glowColor: "shadow-purple-500/25",
       iconBg: "bg-gradient-to-br from-purple-500 to-pink-600",
@@ -283,7 +285,11 @@ export function GettingStarted({
                     </div>
                   ) : (
                     /* ─ Active step ─ */
-                    <div className="group flex items-start sm:items-center flex-wrap gap-x-3 gap-y-2 px-3 py-3 rounded-xl border border-gray-100 bg-gradient-to-r from-white to-gray-50/50 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                    <div className={`group flex items-start sm:items-center flex-wrap gap-x-3 gap-y-2 px-3 py-3 rounded-xl border bg-gradient-to-r from-white to-gray-50/50 hover:shadow-sm transition-all duration-200 ${
+                      step.id === nextStep?.id
+                        ? "border-blue-200 shadow-sm shadow-blue-100 ring-1 ring-blue-200/60"
+                        : "border-gray-100 hover:border-gray-200"
+                    }`}>
                       <div
                         className={`gs-step-icon shrink-0 ${step.iconBg} shadow-md ${step.glowColor}`}
                       >
@@ -300,7 +306,7 @@ export function GettingStarted({
                       <Link
                         href={step.href}
                         target={step.id === "preview" ? "_blank" : undefined}
-                        className={`gs-step-btn bg-gradient-to-r ${step.gradient} ${step.glowColor} w-full sm:w-auto justify-center`}
+                        className={`gs-step-btn bg-gradient-to-r ${step.gradient} ${step.glowColor} w-full sm:w-auto justify-center ${step.id === nextStep?.id ? "shadow-lg scale-[1.02]" : ""}`}
                       >
                         {step.cta}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />

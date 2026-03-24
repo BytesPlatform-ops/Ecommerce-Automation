@@ -79,13 +79,7 @@ export function OnboardingTour() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Show welcome on mount if not completed
-  useEffect(() => {
-    if (!localStorage.getItem(STORAGE_KEY)) {
-      const t = setTimeout(() => setPhase("welcome"), 800);
-      return () => clearTimeout(t);
-    }
-  }, []);
+  // Tour is no longer auto-launched — user is guided by the Getting Started checklist instead
 
   // Core: position highlight + tooltip whenever step or phase changes
   useEffect(() => {

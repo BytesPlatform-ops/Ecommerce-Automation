@@ -29,7 +29,7 @@ export function trackProductAdded(productId: string) {
 }
 
 /** Fired when a user initiates a Pro plan checkout */
-export function trackProPayment(value = 49.99) {
+export function trackProPayment(value = 30) {
   safeGtag("begin_checkout", {
     currency: "USD",
     value,

@@ -9,7 +9,7 @@ import { SubscriptionTier } from "@prisma/client";
 
 const GRACE_PERIOD_DAYS = 14;
 const PRO_PRODUCT_LIMIT = 100;
-const FREE_PRODUCT_LIMIT = 15;
+const FREE_PRODUCT_LIMIT = 2;
 
 /**
  * Helper: Extract current_period_end from a Stripe Subscription.

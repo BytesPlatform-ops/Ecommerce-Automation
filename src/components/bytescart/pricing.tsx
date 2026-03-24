@@ -12,13 +12,13 @@ const plans = {
       price: 0,
       period: "forever",
       description: "Perfect to test the waters",
-      features: ["1 store", "15 products", "Basic analytics", "Community support", "Bytescart branding"],
+      features: ["1 store", "2 products", "Basic analytics", "Community support", "Bytescart branding"],
       cta: "Start Free",
       highlighted: false,
     },
     {
       name: "Pro",
-      price: 49,
+      price: 30,
       period: "/mo",
       description: "For serious entrepreneurs",
       features: [
@@ -57,13 +57,13 @@ const plans = {
       price: 0,
       period: "forever",
       description: "Perfect to test the waters",
-      features: ["1 store", "50 products", "Basic analytics", "Community support", "Bytescart branding"],
+      features: ["1 store", "2 products", "Basic analytics", "Community support", "Bytescart branding"],
       cta: "Start Free",
       highlighted: false,
     },
     {
       name: "Pro",
-      price: 39,
+      price: 25,
       period: "/mo",
       description: "For serious entrepreneurs",
       features: [

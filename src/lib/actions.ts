@@ -333,20 +333,6 @@ const SAMPLE_PRODUCTS = [
     stock: 50,
     imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=500&fit=crop",
   },
-  {
-    name: "Ceramic Coffee Mug",
-    description: "Start your mornings right with this elegant 12oz ceramic mug. Microwave and dishwasher safe.",
-    price: 14.99,
-    stock: 100,
-    imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=500&h=500&fit=crop",
-  },
-  {
-    name: "Premium Phone Case",
-    description: "Slim, lightweight protection for your phone. Shock-absorbent edges with a sleek matte finish.",
-    price: 19.99,
-    stock: 75,
-    imageUrl: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=500&h=500&fit=crop",
-  },
 ];
 
 export async function createSampleProducts(storeId: string) {
