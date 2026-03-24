@@ -31,32 +31,31 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = "ecommerce-cart";
-
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children, storeSlug }: { children: ReactNode; storeSlug: string }) {
+  const cartStorageKey = `ecommerce-cart-${storeSlug}`;
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount — scoped to this store only
   useEffect(() => {
-    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    const stored = localStorage.getItem(cartStorageKey);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         setItems(parsed);
       } catch (e) {
         console.error("Failed to parse cart from localStorage:", e);
-        localStorage.removeItem(CART_STORAGE_KEY);
+        localStorage.removeItem(cartStorageKey);
       }
     }
     setIsHydrated(true);
-  }, []);
+  }, [cartStorageKey]);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isHydrated) {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(cartStorageKey, JSON.stringify(items));
       // Dispatch custom event to notify other components of cart changes
       const event = new CustomEvent("cartUpdated", { detail: { items } });
       window.dispatchEvent(event);

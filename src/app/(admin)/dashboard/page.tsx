@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { prisma, CacheTags } from "@/lib/prisma";
 import { getAuthUser, getOwnerStore } from "@/lib/admin-cache";
-import { getSubscriptionStatus } from "@/lib/actions";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import {
   Package, Palette, Eye, Plus, TrendingUp,
@@ -15,6 +15,145 @@ import { SubscriptionGate } from "@/components/dashboard/subscription-gate";
 import { SubscriptionVerifier } from "@/components/dashboard/subscription-verifier";
 import { GettingStarted } from "@/components/dashboard/getting-started";
 import { OrderStatus } from "@prisma/client";
+
+// ==================== CACHED DASHBOARD DATA ====================
+// unstable_cache persists across requests (ISR-like) so repeat visits
+// never wait for the remote DB.  Revalidated every 60 s or when
+// products/orders are mutated via CacheTags.
+const DASHBOARD_CACHE_TTL = 60; // seconds
+
+const DASHBOARD_EMPTY = {
+  productCount: 0,
+  totalOrders: 0,
+  completedOrders: 0,
+  last7DaysOrders: 0,
+  last30DaysOrders: 0,
+  prev30DaysOrders: 0,
+  totalRevenue: 0,
+  prevRevenue: 0,
+  recentOrders: [] as { id: string; customerName: string | null; customerEmail: string; total: number; status: string; createdAt: string; items: { quantity: number }[] }[],
+  recentOrdersForChart: [] as { total: number; createdAt: string }[],
+  lowStockProducts: [] as { id: string; name: string; stock: number; imageUrl: string | null }[],
+  lowStockVariants: [] as { id: string; sizeType: string | null; value: string | null; unit: string | null; stock: number; product: { id: string; name: string; imageUrl: string | null } }[],
+  dbError: false,
+};
+
+const getDashboardData = (storeId: string) =>
+  unstable_cache(
+    async () => {
+      try {
+        const now = new Date();
+        const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const last60Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+        // Queries split into 3 sequential batches (max 6 connections at once)
+        // to stay well under Supabase's pooler connection limit.
+
+        // Batch 1: lightweight counts (6 connections)
+        const [
+          productCount,
+          totalOrders,
+          completedOrders,
+          last7DaysOrders,
+          last30DaysOrders,
+          prev30DaysOrders,
+        ] = await Promise.all([
+          prisma.product.count({ where: { storeId, deletedAt: null } }),
+          prisma.order.count({ where: { storeId } }),
+          prisma.order.count({ where: { storeId, status: OrderStatus.Completed } }),
+          prisma.order.count({ where: { storeId, createdAt: { gte: last7Days } } }),
+          prisma.order.count({ where: { storeId, createdAt: { gte: last30Days } } }),
+          prisma.order.count({ where: { storeId, createdAt: { gte: last60Days, lt: last30Days } } }),
+        ]);
+
+        // Batch 2: aggregates + recent orders (4 connections)
+        const [
+          revenueAggregate,
+          prev30Revenue,
+          recentOrders,
+          recentOrdersForChart,
+        ] = await Promise.all([
+          prisma.order.aggregate({ where: { storeId, status: OrderStatus.Completed }, _sum: { total: true } }),
+          prisma.order.aggregate({ where: { storeId, status: OrderStatus.Completed, createdAt: { gte: last60Days, lt: last30Days } }, _sum: { total: true } }),
+          prisma.order.findMany({
+            where: { storeId },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+            select: {
+              id: true, customerName: true, customerEmail: true,
+              total: true, status: true, createdAt: true,
+              items: { select: { quantity: true } },
+            },
+          }),
+          prisma.order.findMany({
+            where: { storeId, createdAt: { gte: last7Days } },
+            select: { total: true, createdAt: true },
+            orderBy: { createdAt: "asc" },
+          }),
+        ]);
+
+        // Batch 3: stock queries (2 connections)
+        const [lowStockProducts, lowStockVariants] = await Promise.all([
+          prisma.product.findMany({
+            where: { storeId, deletedAt: null, stock: { lte: 10 } },
+            select: { id: true, name: true, stock: true, imageUrl: true },
+            orderBy: { stock: "asc" },
+          }),
+          prisma.productVariant.findMany({
+            where: { product: { storeId, deletedAt: null }, stock: { lte: 10 } },
+            select: {
+              id: true, sizeType: true, value: true, unit: true, stock: true,
+              product: { select: { id: true, name: true, imageUrl: true } },
+            },
+            orderBy: { stock: "asc" },
+          }),
+        ]);
+
+        return {
+          productCount,
+          totalOrders,
+          completedOrders,
+          last7DaysOrders,
+          last30DaysOrders,
+          prev30DaysOrders,
+          totalRevenue: Number(revenueAggregate._sum.total) || 0,
+          prevRevenue: Number(prev30Revenue._sum.total) || 0,
+          recentOrders: recentOrders.map(o => ({
+            id: o.id,
+            customerName: o.customerName,
+            customerEmail: o.customerEmail,
+            total: Number(o.total),
+            status: o.status,
+            createdAt: o.createdAt.toISOString(),
+            items: o.items,
+          })),
+          recentOrdersForChart: recentOrdersForChart.map(o => ({
+            total: Number(o.total),
+            createdAt: o.createdAt.toISOString(),
+          })),
+          lowStockProducts,
+          lowStockVariants: lowStockVariants.map(v => ({
+            id: v.id,
+            sizeType: v.sizeType,
+            value: v.value,
+            unit: v.unit,
+            stock: v.stock,
+            product: v.product,
+          })),
+          dbError: false,
+        };
+      } catch {
+        // Return safe empty data so the dashboard renders instead of crashing
+        return { ...DASHBOARD_EMPTY, dbError: true };
+      }
+    },
+    [`dashboard-${storeId}`],
+    {
+      tags: [CacheTags.products(storeId), CacheTags.orders(storeId)],
+      revalidate: DASHBOARD_CACHE_TTL,
+    }
+  )();
 
 export default async function DashboardPage() {
   // Deduplicated via React cache() — shared with layout.tsx
@@ -31,75 +170,55 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const now = new Date();
-  const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const last60Days = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+  // Fetch all dashboard metrics from cache (60 s TTL)
+  const data = await getDashboardData(store.id);
 
-  // Fire ALL queries at the same time instead of using $transaction
-  // (transactions serialize queries over the network — disastrous with
-  // a remote DB like Supabase where each round-trip is ~500ms).
-  const [
+  const {
     productCount,
-    lowStockCount,
     totalOrders,
     completedOrders,
     last7DaysOrders,
     last30DaysOrders,
     prev30DaysOrders,
-    revenueAggregate,
-    prev30Revenue,
+    totalRevenue,
+    prevRevenue,
     recentOrders,
     recentOrdersForChart,
-    subscriptionStatus,
     lowStockProducts,
     lowStockVariants,
-  ] = await Promise.all([
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null } }),
-    prisma.product.count({ where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } } }),
-    prisma.order.count({ where: { storeId: store.id } }),
-    prisma.order.count({ where: { storeId: store.id, status: OrderStatus.Completed } }),
-    prisma.order.count({ where: { storeId: store.id, createdAt: { gte: last7Days } } }),
-    prisma.order.count({ where: { storeId: store.id, createdAt: { gte: last30Days } } }),
-    prisma.order.count({ where: { storeId: store.id, createdAt: { gte: last60Days, lt: last30Days } } }),
-    prisma.order.aggregate({ where: { storeId: store.id, status: OrderStatus.Completed }, _sum: { total: true } }),
-    prisma.order.aggregate({ where: { storeId: store.id, status: OrderStatus.Completed, createdAt: { gte: last60Days, lt: last30Days } }, _sum: { total: true } }),
-    prisma.order.findMany({
-      where: { storeId: store.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: {
-        id: true, customerName: true, customerEmail: true,
-        total: true, status: true, createdAt: true,
-        items: { select: { quantity: true } },
-      },
-    }),
-    prisma.order.findMany({
-      where: { storeId: store.id, createdAt: { gte: last7Days } },
-      select: { total: true, createdAt: true },
-      orderBy: { createdAt: "asc" },
-    }),
-    getSubscriptionStatus(store.id),
-    prisma.product.findMany({
-      where: { storeId: store.id, deletedAt: null, stock: { lte: 10 } },
-      select: { id: true, name: true, stock: true, imageUrl: true },
-      orderBy: { stock: "asc" },
-    }),
-    prisma.productVariant.findMany({
-      where: {
-        product: { storeId: store.id, deletedAt: null },
-        stock: { lte: 10 },
-      },
-      select: {
-        id: true, sizeType: true, value: true, unit: true, stock: true,
-        product: { select: { id: true, name: true, imageUrl: true } },
-      },
-      orderBy: { stock: "asc" },
-    }),
-  ]);
+    dbError,
+  } = data;
 
-  const totalRevenue = Number(revenueAggregate._sum.total) || 0;
-  const prevRevenue = Number(prev30Revenue._sum.total) || 0;
+  // Derive low-stock count from already-fetched list (no extra query)
+  const lowStockCount = lowStockProducts.length;
+
+  // Build subscription status from the store object we already have
+  // (avoids 2 extra DB queries that getSubscriptionStatus was making)
+  const now = new Date();
+  const isGracePeriod =
+    store.subscriptionTier === "FREE" &&
+    store.subscriptionCurrentPeriodEnd !== null &&
+    now < store.subscriptionCurrentPeriodEnd;
+  let gracePeriodDaysLeft = 0;
+  if (isGracePeriod && store.subscriptionCurrentPeriodEnd) {
+    gracePeriodDaysLeft = Math.ceil(
+      (store.subscriptionCurrentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
+  const effectiveLimit = isGracePeriod ? 100 : store.productLimit;
+  const subscriptionStatus = {
+    tier: store.subscriptionTier,
+    productCount,
+    productLimit: store.productLimit,
+    effectiveLimit,
+    canAddProduct: productCount < effectiveLimit,
+    subscriptionStatus: store.stripeSubscriptionStatus,
+    isGracePeriod,
+    gracePeriodDaysLeft,
+    gracePeriodEnd: store.subscriptionCurrentPeriodEnd?.toISOString() || null,
+    hasStripeCustomer: !!store.stripeCustomerId,
+  };
+
   const avgOrderValue = completedOrders > 0 ? totalRevenue / completedOrders : 0;
   const completionRate = totalOrders > 0 ? (completedOrders / totalOrders * 100) : 0;
 
@@ -177,6 +296,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* DB connectivity warning — shown only when the DB was unreachable */}
+      {dbError && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-center gap-2">
+          <span className="text-amber-500">⚠️</span>
+          <span>Dashboard data is temporarily unavailable — could not reach the database. Stats will refresh automatically once the connection is restored.</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="dash-animate-in flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

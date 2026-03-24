@@ -29,20 +29,12 @@ export default async function AdminLayout({
       {/* Sidebar with Mobile Toggle */}
       <MobileSidebarToggle>
         {/* Logo & Store Info */}
-        <div className="p-6 border-b border-gray-100/80">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 flex items-center justify-center">
-              <Image src="/logo.jpeg" alt="Bytescart" width={48} height={48} className="object-contain" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                Bytescart
-              </h1>
-              <p className="text-xs text-gray-400">Store Dashboard</p>
-            </div>
+        <div className="px-4 py-2 border-b border-gray-100/80">
+          <div className="flex items-center">
+            <Image src="/asset1.svg" alt="Bytescart" width={128} height={48} className="object-contain" />
           </div>
           {store && (
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 mt-4">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 mt-2">
               <p className="text-sm font-semibold text-gray-900 truncate">{store.storeName}</p>
               <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
                 <span 
@@ -57,56 +49,56 @@ export default async function AdminLayout({
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto min-h-0">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 mb-3">Menu</p>
+
           <Link
             href="/dashboard"
             data-tour="dashboard"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-blue-100 group-hover:bg-blue-500 rounded-lg flex items-center justify-center transition-colors">
-              <LayoutDashboard className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-blue-100 group-hover:bg-blue-500 rounded-lg flex items-center justify-center transition-colors">
+              <LayoutDashboard className="h-4 w-4 text-blue-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Dashboard</span>
+            <span className="text-sm font-medium">Dashboard</span>
           </Link>
           <Link
             href="/dashboard/products"
             data-tour="products"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-green-100 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition-colors">
-              <Package className="h-5 w-5 text-green-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-green-100 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition-colors">
+              <Package className="h-4 w-4 text-green-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Products</span>
+            <span className="text-sm font-medium">Products</span>
           </Link>
           <Link
             href="/dashboard/categories"
             data-tour="categories"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-amber-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
-              <Tag className="h-5 w-5 text-amber-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-amber-100 group-hover:bg-amber-500 rounded-lg flex items-center justify-center transition-colors">
+              <Tag className="h-4 w-4 text-amber-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Categories</span>
+            <span className="text-sm font-medium">Categories</span>
           </Link>
           <Link
             href="/dashboard/themes"
             data-tour="themes"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-purple-100 group-hover:bg-purple-500 rounded-lg flex items-center justify-center transition-colors">
-              <Palette className="h-5 w-5 text-purple-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-purple-100 group-hover:bg-purple-500 rounded-lg flex items-center justify-center transition-colors">
+              <Palette className="h-4 w-4 text-purple-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Themes</span>
+            <span className="text-sm font-medium">Themes</span>
           </Link>
           <Link
             href="/dashboard/payments"
             data-tour="payments"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-              <CreditCard className="h-5 w-5 text-emerald-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-emerald-100 group-hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
+              <CreditCard className="h-4 w-4 text-emerald-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Payments</span>
+            <span className="text-sm font-medium">Payments</span>
             {store && !store.stripeConnectId && (
               <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
                 Setup
@@ -118,10 +110,10 @@ export default async function AdminLayout({
             data-tour="settings"
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gradient-to-r hover:from-gray-50 hover:to-slate-50 rounded-xl transition-all group"
           >
-            <div className="h-9 w-9 bg-gray-100 group-hover:bg-gray-500 rounded-lg flex items-center justify-center transition-colors">
-              <Settings className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
+            <div className="h-7 w-7 bg-gray-100 group-hover:bg-gray-500 rounded-lg flex items-center justify-center transition-colors">
+              <Settings className="h-4 w-4 text-gray-600 group-hover:text-white transition-colors" />
             </div>
-            <span className="font-medium">Settings</span>
+            <span className="text-sm font-medium">Settings</span>
           </Link>
         </nav>
 

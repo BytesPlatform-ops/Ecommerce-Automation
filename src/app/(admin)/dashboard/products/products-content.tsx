@@ -1,12 +1,67 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Package, Search, Tag, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Pencil, Package, Search, Tag, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
+import { CsvImportButton } from "@/components/dashboard/csv-import-button";
 import { createSampleProducts } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+
+const CONFETTI_COLORS = ["#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6","#f43f5e","#8b5cf6","#14b8a6"];
+
+function ConfettiPiece({ color, left, delay, duration, size }: { color: string; left: number; delay: number; duration: number; size: number }) {
+  return (
+    <div
+      className="confetti-piece"
+      style={{
+        left: `${left}%`,
+        backgroundColor: color,
+        width: size,
+        height: size,
+        animationDuration: `${duration}s, ${duration * 0.6}s`,
+        animationDelay: `${delay}s, ${delay}s`,
+      }}
+    />
+  );
+}
+
+function Celebration({ onDone }: { onDone: () => void }) {
+  const [hiding, setHiding] = useState(false);
+
+  useEffect(() => {
+    const hideTimer = setTimeout(() => setHiding(true), 3800);
+    const doneTimer = setTimeout(onDone, 4200);
+    return () => { clearTimeout(hideTimer); clearTimeout(doneTimer); };
+  }, [onDone]);
+
+  const pieces = Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    left: Math.random() * 100,
+    delay: Math.random() * 1.2,
+    duration: 2.5 + Math.random() * 2,
+    size: 6 + Math.round(Math.random() * 8),
+  }));
+
+  return (
+    <>
+      {pieces.map((p) => (
+        <ConfettiPiece key={p.id} color={p.color} left={p.left} delay={p.delay} duration={p.duration} size={p.size} />
+      ))}
+      <div className={`product-toast${hiding ? " toast-hiding" : ""}`}>
+        <div className="flex items-center gap-3 bg-gray-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl">
+          <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+          <div>
+            <p className="font-semibold text-sm">Product added to your store!</p>
+            <p className="text-xs text-gray-400 mt-0.5">Your store is now live for customers.</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 interface Product {
   id: string;
@@ -35,7 +90,19 @@ export default function ProductsPageContent({ products: initialProducts, storeId
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState(initialProducts);
   const [loadingSamples, setLoadingSamples] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("newProduct") === "1") {
+      setShowCelebration(true);
+      window.history.replaceState({}, "", "/dashboard/products");
+    }
+  }, []);
+
+  const handleCelebrationDone = useCallback(() => setShowCelebration(false), []);
 
   const handleProductDeleted = (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
@@ -55,6 +122,7 @@ export default function ProductsPageContent({ products: initialProducts, storeId
 
   return (
     <div className="space-y-6">
+      {showCelebration && <Celebration onDone={handleCelebrationDone} />}
       {/* Header */}
       <div className="dash-animate-in flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -65,13 +133,16 @@ export default function ProductsPageContent({ products: initialProducts, storeId
             {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} {searchQuery && 'found'}
           </p>
         </div>
-        <Link
-          href="/dashboard/products/new"
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <Plus className="h-5 w-5" />
-          Add Product
-        </Link>
+        <div className="flex items-center gap-2">
+          <CsvImportButton storeId={storeId} />
+          <Link
+            href="/dashboard/products/new"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Plus className="h-5 w-5" />
+            Add Product
+          </Link>
+        </div>
       </div>
 
       {products && products.length > 0 ? (

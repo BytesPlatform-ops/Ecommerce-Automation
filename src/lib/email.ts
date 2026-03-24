@@ -1289,7 +1289,7 @@ async function sendActivationEmail(to: string, subject: string, html: string, re
 
   try {
     const msg: MailDataRequired = { to, from: FROM_ADDRESS, subject, html };
-    if (replyTo) (msg as any).replyTo = replyTo;
+    (msg as any).replyTo = replyTo || "bytesuite@bytesplatform.com";
     await sgMail.send(msg);
     console.log(`[Email] Activation email sent to ${to}: ${subject}`);
     return { success: true, message: "Email sent" };

@@ -130,7 +130,7 @@ export default async function StorefrontLayout({
         }
       `}</style>
       <div className="storefront flex flex-col min-h-screen">
-        <CartProvider>
+        <CartProvider storeSlug={username}>
           <CheckoutSuccessHandler />
           <StorefrontNavbar 
             storeName={store.storeName} 

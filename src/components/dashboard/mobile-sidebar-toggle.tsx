@@ -111,7 +111,7 @@ export function MobileSidebarToggle({ children }: MobileSidebarToggleProps) {
           <button
             type="button"
             onClick={closeSidebar}
-            className="absolute top-4 right-4 z-10 h-9 w-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition-all"
+            className="absolute top-1 right-4 z-10 h-9 w-9 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition-all"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />

@@ -26,6 +26,7 @@ function revalidateStore(slug: string, storeId: string) {
   revalidateTag(CacheTags.storeById(storeId), "default");
   revalidateTag(CacheTags.sections(storeId), "default");
   revalidateTag(CacheTags.products(storeId), "default");
+  revalidateTag(CacheTags.orders(storeId), "default");
 }
 
 // ==================== STOCK NOTIFICATION HELPER ====================
@@ -389,6 +390,183 @@ export async function createSampleProducts(storeId: string) {
   revalidateTag(CacheTags.products(storeId), "default");
 
   return { count: created.count };
+}
+
+export async function importProductsFromCsv(
+  storeId: string,
+  csvText: string
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const store = await prisma.store.findFirst({
+    where: { id: storeId, ownerId: user.id },
+    select: {
+      id: true,
+      subdomainSlug: true,
+      subscriptionTier: true,
+      productLimit: true,
+      stripeSubscriptionStatus: true,
+      subscriptionCurrentPeriodEnd: true,
+    },
+  });
+
+  if (!store) {
+    throw new Error("Store not found or unauthorized");
+  }
+
+  // Parse CSV
+  const lines = csvText.split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length < 2) {
+    throw new Error("CSV must have a header row and at least one product row");
+  }
+
+  const headerRaw = lines[0].toLowerCase();
+  const headers = parseCsvRow(headerRaw);
+
+  const nameIdx = headers.findIndex((h) => h === "name" || h === "product name");
+  const priceIdx = headers.findIndex((h) => h === "price");
+  const descIdx = headers.findIndex((h) => h === "description");
+  const stockIdx = headers.findIndex((h) => h === "stock" || h === "quantity");
+  const categoryIdx = headers.findIndex((h) => h === "category");
+
+  if (nameIdx === -1) throw new Error("CSV must have a 'name' column");
+  if (priceIdx === -1) throw new Error("CSV must have a 'price' column");
+
+  // Look up categories for matching by name
+  const categories = await prisma.category.findMany({
+    where: { storeId },
+    select: { id: true, name: true },
+  });
+  const categoryMap = new Map(categories.map((c) => [c.name.toLowerCase(), c.id]));
+
+  // Parse rows
+  const products: Array<{
+    storeId: string;
+    name: string;
+    description: string | null;
+    price: number;
+    stock: number;
+    categoryId: string | null;
+  }> = [];
+
+  const errors: string[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCsvRow(lines[i]);
+    const rowNum = i + 1;
+
+    const name = cols[nameIdx]?.trim();
+    if (!name) {
+      errors.push(`Row ${rowNum}: Missing product name`);
+      continue;
+    }
+    if (name.length > 200) {
+      errors.push(`Row ${rowNum}: Name too long (max 200 chars)`);
+      continue;
+    }
+
+    const priceStr = cols[priceIdx]?.trim().replace(/[^0-9.]/g, "");
+    const price = parseFloat(priceStr);
+    if (isNaN(price) || price < 0 || price > 999999.99) {
+      errors.push(`Row ${rowNum}: Invalid price "${cols[priceIdx]?.trim()}"`);
+      continue;
+    }
+
+    const description = descIdx >= 0 ? (cols[descIdx]?.trim() || null) : null;
+
+    let stock = 0;
+    if (stockIdx >= 0 && cols[stockIdx]?.trim()) {
+      stock = parseInt(cols[stockIdx].trim(), 10);
+      if (isNaN(stock) || stock < 0) stock = 0;
+    }
+
+    let categoryId: string | null = null;
+    if (categoryIdx >= 0 && cols[categoryIdx]?.trim()) {
+      categoryId = categoryMap.get(cols[categoryIdx].trim().toLowerCase()) || null;
+    }
+
+    products.push({
+      storeId,
+      name: sanitizeString(name, 200),
+      description: description ? sanitizeString(description, 5000) : null,
+      price: Math.round(price * 100) / 100,
+      stock,
+      categoryId,
+    });
+  }
+
+  if (products.length === 0) {
+    throw new Error(
+      errors.length > 0
+        ? `No valid products found. Issues:\n${errors.join("\n")}`
+        : "No products found in CSV"
+    );
+  }
+
+  // Check product limit
+  const activeCount = await prisma.product.count({
+    where: { storeId, deletedAt: null },
+  });
+
+  let effectiveLimit = store.productLimit;
+  if (
+    store.subscriptionTier === "FREE" &&
+    store.subscriptionCurrentPeriodEnd &&
+    new Date() < store.subscriptionCurrentPeriodEnd
+  ) {
+    effectiveLimit = 100;
+  }
+
+  const remaining = effectiveLimit - activeCount;
+  if (remaining <= 0) {
+    return { success: false as const, error: "PRODUCT_LIMIT_REACHED" as const, imported: 0 };
+  }
+
+  // Trim to fit within limit
+  const toImport = products.slice(0, remaining);
+
+  const created = await prisma.product.createMany({ data: toImport });
+
+  revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+  revalidateTag(CacheTags.products(storeId), "default");
+
+  return {
+    success: true as const,
+    imported: created.count,
+    skipped: products.length - toImport.length,
+    errors,
+  };
+}
+
+/** Parse a single CSV row, handling quoted fields with commas */
+function parseCsvRow(row: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      if (inQuotes && row[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
 }
 
 export async function updateProduct(
@@ -1987,6 +2165,23 @@ export async function createStore(
       resourceType: "Store",
       resourceId: store.id,
       metadata: { storeName: store.storeName, slug: store.subdomainSlug },
+    });
+
+    // Auto-create sample products so the dashboard isn't empty on first visit
+    prisma.product.createMany({
+      data: SAMPLE_PRODUCTS.map((p) => ({
+        storeId: store.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        stock: p.stock,
+        imageUrl: p.imageUrl,
+      })),
+    }).then(() => {
+      revalidateTag(CacheTags.store(store.subdomainSlug), "default");
+      revalidateTag(CacheTags.products(store.id), "default");
+    }).catch((err) => {
+      console.error("[Store] Failed to create sample products:", err);
     });
 
     // Send welcome email (fire-and-forget — don't block store creation)

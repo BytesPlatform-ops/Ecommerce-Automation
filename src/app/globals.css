@@ -1962,3 +1962,46 @@ input[type="radio"] {
   border-radius: 50%;
   animation: dotPulse 2s infinite;
 }
+
+/* ─── Confetti Celebration ─── */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10px) rotate(0deg) scaleX(1);   opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(105vh) rotate(600deg) scaleX(-1); opacity: 0; }
+}
+@keyframes confetti-sway {
+  0%,100% { margin-left: 0px; }
+  25%     { margin-left: 30px; }
+  75%     { margin-left: -30px; }
+}
+.confetti-piece {
+  position: fixed;
+  top: -12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards, confetti-sway ease-in-out infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── Product Added Toast ─── */
+@keyframes toast-in {
+  from { transform: translateY(100px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+@keyframes toast-out {
+  from { transform: translateY(0);     opacity: 1; }
+  to   { transform: translateY(100px); opacity: 0; }
+}
+.product-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  animation: toast-in 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.product-toast.toast-hiding {
+  animation: toast-out 0.3s ease-in forwards;
+}

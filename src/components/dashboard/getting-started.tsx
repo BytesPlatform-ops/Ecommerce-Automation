@@ -57,7 +57,7 @@ export function GettingStarted({
     {
       id: "product",
       title: "Add your first product",
-      description: "List a product with a name, price, and image.",
+      description: "Your store is invisible to customers until you do this.",
       href: "/dashboard/products/new",
       cta: "Add Product",
       icon: <Package className="h-4 w-4" />,
@@ -69,7 +69,7 @@ export function GettingStarted({
     {
       id: "payments",
       title: "Connect payments",
-      description: "Link Stripe to accept payments — takes under 2 minutes.",
+      description: "Customers can't checkout until this is connected.",
       href: "/dashboard/payments",
       cta: "Setup Payments",
       icon: <CreditCard className="h-4 w-4" />,
@@ -283,7 +283,7 @@ export function GettingStarted({
                     </div>
                   ) : (
                     /* ─ Active step ─ */
-                    <div className="group flex items-center gap-3 px-3 py-3 rounded-xl border border-gray-100 bg-gradient-to-r from-white to-gray-50/50 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                    <div className="group flex items-start sm:items-center flex-wrap gap-x-3 gap-y-2 px-3 py-3 rounded-xl border border-gray-100 bg-gradient-to-r from-white to-gray-50/50 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
                       <div
                         className={`gs-step-icon shrink-0 ${step.iconBg} shadow-md ${step.glowColor}`}
                       >
@@ -293,14 +293,14 @@ export function GettingStarted({
                         <p className="text-sm font-semibold text-gray-900">
                           {step.title}
                         </p>
-                        <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
+                        <p className="text-xs text-gray-500 mt-0.5">
                           {step.description}
                         </p>
                       </div>
                       <Link
                         href={step.href}
                         target={step.id === "preview" ? "_blank" : undefined}
-                        className={`gs-step-btn bg-gradient-to-r ${step.gradient} ${step.glowColor}`}
+                        className={`gs-step-btn bg-gradient-to-r ${step.gradient} ${step.glowColor} w-full sm:w-auto justify-center`}
                       >
                         {step.cta}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />

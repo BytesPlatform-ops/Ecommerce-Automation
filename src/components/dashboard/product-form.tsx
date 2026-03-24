@@ -343,7 +343,7 @@ export function ProductForm({
       // Redirect after successful creation/update
       router.refresh();
       setTimeout(() => {
-        router.push("/dashboard/products");
+        router.push(isEditing ? "/dashboard/products" : "/dashboard/products?newProduct=1");
       }, 500);
     } catch (err) {
       console.error("Error:", err);

@@ -69,10 +69,10 @@ export function DeleteProductButton({ productId, onSuccess }: DeleteProductButto
         title={success ? "Success" : error ? "Error" : "Delete Product"}
         description={
           success
-            ? "Product has been removed from your store. It will no longer be visible to customers. You can restore it anytime from your products page."
+            ? "Product has been removed from your store. It will no longer be visible to customers."
             : error
               ? error
-              : "This will remove the product from your store so customers can no longer see or purchase it. Your order history will be preserved. You can restore it later if needed."
+              : "This will permanently remove the product from your store so customers can no longer see or purchase it. Your order history will be preserved."
         }
         children={
           success && (
