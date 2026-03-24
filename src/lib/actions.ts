@@ -17,6 +17,7 @@ import {
   getAccountPayouts,
 } from "@/lib/stripe";
 import { sendWelcomeEmail } from "@/lib/email";
+import { appendUserToSheet, updateUserInSheet, isGoogleSheetsConfigured } from "@/lib/google-sheets";
 
 // ==================== CACHE REVALIDATION HELPER ====================
 
@@ -314,7 +315,20 @@ export async function createProduct(
   // Invalidate storefront cache so new product appears
   revalidateTag(CacheTags.store(store.subdomainSlug), "default");
   revalidateTag(CacheTags.products(storeId), "default");
-  
+
+  // Update Google Sheet with new product count (fire-and-forget)
+  if (isGoogleSheetsConfigured()) {
+    prisma.product.count({
+      where: { storeId, deletedAt: null },
+    }).then((count) => {
+      updateUserInSheet(user.id, { productsAdded: count }).catch((err) => {
+        console.error("[Sheets] Failed to update product count:", err);
+      });
+    }).catch((err) => {
+      console.error("[Sheets] Failed to get product count:", err);
+    });
+  }
+
   return {
     ...product,
     price: product.price.toString(),
@@ -2181,6 +2195,23 @@ export async function createStore(
       });
     }
 
+    // Log user to Google Sheet for tracking (fire-and-forget)
+    if (isGoogleSheetsConfigured()) {
+      appendUserToSheet({
+        userId: user.id,
+        email: user.email ?? "",
+        phone: user.user_metadata?.phone ?? "",
+        storeName: store.storeName,
+        storeSlug: store.subdomainSlug,
+        signupDate: new Date().toISOString(),
+        productsAdded: 2, // Sample products are auto-created
+        subscriptionTier: "FREE",
+        stripeConnected: false,
+      }).catch((err) => {
+        console.error("[Sheets] Failed to log user to Google Sheet:", err);
+      });
+    }
+
     return store;
   });
 }
@@ -2360,6 +2391,13 @@ export async function saveStripeConnectAccount(
     resourceId: storeId,
     metadata: { stripeConnectId },
   });
+
+  // Update Google Sheet with Stripe connected status (fire-and-forget)
+  if (isGoogleSheetsConfigured()) {
+    updateUserInSheet(user.id, { stripeConnected: true }).catch((err) => {
+      console.error("[Sheets] Failed to update Stripe status:", err);
+    });
+  }
 
   return result;
 }

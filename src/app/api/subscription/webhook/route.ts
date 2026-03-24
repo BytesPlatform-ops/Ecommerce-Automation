@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { logAudit, AuditAction } from "@/lib/audit";
 import { secureLog } from "@/lib/security";
 import { SubscriptionTier } from "@prisma/client";
+import { updateUserInSheet, isGoogleSheetsConfigured } from "@/lib/google-sheets";
 
 const GRACE_PERIOD_DAYS = 14;
 const PRO_PRODUCT_LIMIT = 100;
@@ -181,6 +182,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     },
   });
 
+  // Update Google Sheet with subscription tier (fire-and-forget)
+  if (isGoogleSheetsConfigured()) {
+    prisma.store.findUnique({
+      where: { id: storeId },
+      select: { ownerId: true },
+    }).then((store) => {
+      if (store?.ownerId) {
+        updateUserInSheet(store.ownerId, { subscriptionTier: "PRO" }).catch((err) => {
+          console.error("[Sheets] Failed to update subscription tier:", err);
+        });
+      }
+    }).catch((err) => {
+      console.error("[Sheets] Failed to find store for Sheet update:", err);
+    });
+  }
+
   secureLog.info("Subscription activated", { storeId, subscriptionId });
 }
 
@@ -252,6 +269,22 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       graceEnd: graceEnd.toISOString(),
     },
   });
+
+  // Update Google Sheet with subscription tier (fire-and-forget)
+  if (isGoogleSheetsConfigured()) {
+    prisma.store.findUnique({
+      where: { id: resolvedStoreId },
+      select: { ownerId: true },
+    }).then((store) => {
+      if (store?.ownerId) {
+        updateUserInSheet(store.ownerId, { subscriptionTier: "FREE" }).catch((err) => {
+          console.error("[Sheets] Failed to update subscription tier:", err);
+        });
+      }
+    }).catch((err) => {
+      console.error("[Sheets] Failed to find store for Sheet update:", err);
+    });
+  }
 
   secureLog.info("Subscription canceled with grace period", {
     storeId: resolvedStoreId,
