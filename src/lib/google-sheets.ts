@@ -5,7 +5,7 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
 const SHEET_NAME = process.env.GOOGLE_SHEETS_SHEET_NAME || "User Signups";
 
 // Service account credentials from environment variables
-let credentials = null;
+let credentials: Record<string, unknown> | null = null;
 if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
   try {
     credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
