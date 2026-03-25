@@ -2,11 +2,9 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Package, Search, Tag, Sparkles, Loader2, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Package, Search, Tag, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { DeleteProductButton } from "@/components/dashboard/delete-product-button";
-import { createSampleProducts } from "@/lib/actions";
-import { useRouter } from "next/navigation";
 
 const CONFETTI_COLORS = ["#6366f1","#ec4899","#f59e0b","#10b981","#3b82f6","#f43f5e","#8b5cf6","#14b8a6"];
 
@@ -97,9 +95,7 @@ interface ProductsPageContentProps {
 export default function ProductsPageContent({ products: initialProducts, storeId, storeSlug }: ProductsPageContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState(initialProducts);
-  const [loadingSamples, setLoadingSamples] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -261,46 +257,17 @@ export default function ProductsPageContent({ products: initialProducts, storeId
           <div className="icon-container">
             <Package className="h-10 w-10 text-blue-500" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">No products yet</h3>
-          <p className="text-gray-600 mb-4 max-w-md mx-auto leading-relaxed">
-            Add your own product or load sample products to see how your store looks.
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">Your store is ready</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">
+            Add your first product to bring it to life and start selling to customers.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <Link
-              href="/dashboard/products/new"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
-            >
-              <Plus className="h-4 w-4" />
-              Add Product
-            </Link>
-            <button
-              onClick={async () => {
-                setLoadingSamples(true);
-                try {
-                  await createSampleProducts(storeId);
-                  router.refresh();
-                } catch {
-                  // Silently fail — most likely store already has products
-                } finally {
-                  setLoadingSamples(false);
-                }
-              }}
-              disabled={loadingSamples}
-              className="inline-flex items-center gap-2 border border-gray-200 bg-white text-gray-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingSamples ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Adding samples...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  Load Sample Products
-                </>
-              )}
-            </button>
-          </div>
+          <Link
+            href="/dashboard/products/new"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm"
+          >
+            <Plus className="h-5 w-5" />
+            Add Your First Product
+          </Link>
         </div>
       )}
     </div>
