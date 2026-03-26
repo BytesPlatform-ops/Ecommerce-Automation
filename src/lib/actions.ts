@@ -2167,23 +2167,6 @@ export async function createStore(
       metadata: { storeName: store.storeName, slug: store.subdomainSlug },
     });
 
-    // Auto-create sample products so the dashboard isn't empty on first visit
-    prisma.product.createMany({
-      data: SAMPLE_PRODUCTS.map((p) => ({
-        storeId: store.id,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        stock: p.stock,
-        imageUrl: p.imageUrl,
-      })),
-    }).then(() => {
-      revalidateTag(CacheTags.store(store.subdomainSlug), "default");
-      revalidateTag(CacheTags.products(store.id), "default");
-    }).catch((err) => {
-      console.error("[Store] Failed to create sample products:", err);
-    });
-
     // Send welcome email (fire-and-forget — don't block store creation)
     if (user.email) {
       sendWelcomeEmail({
@@ -2204,7 +2187,7 @@ export async function createStore(
         storeName: store.storeName,
         storeSlug: store.subdomainSlug,
         signupDate: new Date().toISOString(),
-        productsAdded: 2, // Sample products are auto-created
+        productsAdded: 0,
         subscriptionTier: "FREE",
         stripeConnected: false,
       }).catch((err) => {
